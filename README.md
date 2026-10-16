@@ -109,7 +109,7 @@ Tres entradas, según lo que busca cada quien:
 ## 🧩 Arquitectura
 
 ```mermaid
-flowchart LR
+flowchart TB
   F([☕ Caficultor]) --> L[Login<br/>wallet asignada]
   L --> Q{¿Tiene INVIMA?}
   Q -->|Sí · Ruta A| T[Tienda y productos]
