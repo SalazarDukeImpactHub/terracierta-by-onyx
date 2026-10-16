@@ -21,6 +21,10 @@ const ebGaramond = EB_Garamond({
   display: "swap",
 });
 
+// Toda la app depende de la sesión (el encabezado la lee en cada página): nunca se prerenderiza.
+// Sin esto, el build intenta generar páginas estáticas y ejecuta el módulo de login durante la compilación.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "Terracierta by Onyx — Café con nombre propio", template: "%s · Terracierta by Onyx" },
   description:
