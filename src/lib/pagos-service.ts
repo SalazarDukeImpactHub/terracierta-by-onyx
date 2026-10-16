@@ -59,6 +59,42 @@ export async function iniciarPagoDePedido(entrada: unknown): Promise<ResultadoIn
   });
 }
 
+/**
+ * Pago de una oferta de la Ruta B: paga la COOPERATIVA (su wallet de perfil) a la wallet del caficultor
+ * dueño del lote. El monto sale de la oferta guardada, nunca del navegador. Solo se paga una oferta
+ * aceptada (o una cuyo pago anterior falló, para reintentar).
+ */
+export async function iniciarPagoDeOferta(ofertaId: string, perfilCooperativaId: string): Promise<ResultadoInicio> {
+  const db = clienteAdmin();
+  const { data: oferta } = await db
+    .from("ofertas")
+    .select("id, estado, total, cooperativas!inner(perfil_id), lotes!inner(caficultor_id)")
+    .eq("id", ofertaId)
+    .eq("cooperativas.perfil_id", perfilCooperativaId) // solo ofertas de su cooperativa
+    .maybeSingle();
+  if (!oferta) return { ok: false, error: "No encontramos esa oferta", status: 404 };
+  if (oferta.estado !== "aceptada" && oferta.estado !== "fallida") {
+    return { ok: false, error: oferta.estado === "pagada" ? "Esta oferta ya está pagada" : "Primero hay que aceptar la oferta", status: 409 };
+  }
+
+  const caficultorId = (oferta.lotes as unknown as { caficultor_id: string }).caficultor_id;
+  const [{ data: pagador }, { data: receptor }] = await Promise.all([
+    db.from("profiles").select("wallet_address").eq("id", perfilCooperativaId).maybeSingle(),
+    db.from("profiles").select("wallet_address").eq("id", caficultorId).maybeSingle(),
+  ]);
+  if (!pagador?.wallet_address) return { ok: false, error: "Tu cooperativa no tiene una wallet asignada", status: 409 };
+  if (!receptor?.wallet_address) return { ok: false, error: "El caficultor todavía no tiene wallet para cobrar", status: 409 };
+
+  return iniciarYRegistrar({
+    tipo: "oferta",
+    referenciaId: oferta.id,
+    montoCop: oferta.total,
+    walletReceptor: receptor.wallet_address,
+    walletPagador: pagador.wallet_address,
+    urlRetorno: `${SITE_URL}/pago/retorno?tipo=oferta&ref=${oferta.id}`,
+  });
+}
+
 async function iniciarYRegistrar(input: {
   tipo: TipoPago;
   referenciaId: string;
@@ -160,7 +196,14 @@ async function aplicarAReferencia(tipo: TipoPago, referenciaId: string, estado: 
   if (tipo === "pedido") {
     await db.from("pedidos").update({ estado: estado === "completado" ? "pagado" : "fallido" }).eq("id", referenciaId);
   } else {
-    await db.from("ofertas").update({ estado: estado === "completado" ? "pagada" : "fallida" }).eq("id", referenciaId);
+    const { data: oferta } = await db
+      .from("ofertas")
+      .update({ estado: estado === "completado" ? "pagada" : "fallida" })
+      .eq("id", referenciaId)
+      .select("lote_id")
+      .maybeSingle();
+    // Pagada la oferta, el lote queda vendido
+    if (estado === "completado" && oferta) await db.from("lotes").update({ estado: "vendido" }).eq("id", oferta.lote_id);
   }
 }
 
@@ -171,7 +214,9 @@ async function nombreConcepto(tipo: TipoPago, referenciaId: string): Promise<str
     const producto = (data?.productos as unknown as { nombre: string } | null)?.nombre;
     return producto ? `${data?.cantidad} × ${producto}` : "Pedido";
   }
-  return "Compra de lote";
+  const { data } = await db.from("ofertas").select("lotes(kg, variedad, metodo)").eq("id", referenciaId).maybeSingle();
+  const lote = data?.lotes as unknown as { kg: number; variedad: string; metodo: string } | null;
+  return lote ? `Lote de ${lote.kg} kg · ${lote.variedad} ${lote.metodo}` : "Compra de lote";
 }
 
 /** Resuelve el pago de un pedido u oferta cuando la vuelta de la billetera no trae pago_id. */

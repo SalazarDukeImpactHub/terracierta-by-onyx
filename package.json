@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:local": "node scripts/dev-local.mjs",
     "db:reset": "supabase db reset",
+    "test:db": "node scripts/test-db.mjs",
     "test:rls": "supabase db reset && docker exec -i supabase_db_terracierta-by-onyx psql -U postgres -v ON_ERROR_STOP=1 -f - < supabase/tests/rls.sql",
     "build": "next build",
     "start": "next start",
