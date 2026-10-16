@@ -11,7 +11,7 @@
 | Tablas, RLS y datos semilla (Supabase) | Aplicados y probados (ver `AI_USAGE.md`) |
 | Pagos reales (Open Payments) | Lo entrega el compañero de pagos en `src/payments` — hoy es un stub |
 | Login real y asignación de wallets | Lo entrega el compañero de login en `src/auth` — hoy es un stub |
-| Ruta B: lote, agente top 3, oferta, pago de la cooperativa | Pendiente (las tablas ya existen) |
+| Ruta B: lote, agente top 3, oferta, pago de la cooperativa | Funciona localmente con **pagos y login simulados**. El agente es 100 % reglas (sin modelo de lenguaje) |
 
 ## Cómo correrlo
 
@@ -35,12 +35,22 @@ En `/acceso` hay tres perfiles de ejemplo: caficultora con INVIMA, caficultor si
 4. Entrar como Marta → **Pedidos y pagos recibidos**.
 5. Para ver un pago fallido, usá una wallet de comprador que contenga `fail` (ej. `$wallet.example.test/fail-yo`).
 
+### Probar la Ruta B
+
+1. Entrar como **Caficultor sin INVIMA** (Jairo, Marsella) → **Cargar mi lote** → por ejemplo lavado, Caturra, 500 kg, Marsella.
+2. El agente muestra las **3 cooperativas** con su puntaje, el desglose y el motivo. **Elegir** una crea la oferta (antes no se crea nada).
+3. Salir y entrar como **Cooperativa (cuenta demo)** → elegir *Cooperativa Cumbres Cafeteras* en el paso anterior para que la oferta le llegue a esta cuenta → **Aceptar oferta** → **Pagar con Open Payments** → autorizar en la billetera simulada.
+4. El recibo muestra el pago de la wallet de la cooperativa a la del caficultor; el lote pasa a *Vendido* y Jairo ve la oferta como *Pagada*.
+
+**Cómo puntúa el agente** (`src/lib/match.ts`, de 0 a 100): precio por kg 35 · cercanía 25 · método 15 · variedad 10 · capacidad 15. Una cooperativa solo se puede elegir si acepta el método y la variedad y tiene capacidad para los kilos. La cercanía usa una tabla **aproximada** de municipios; si un municipio no está, queda neutra.
+
 ### Pruebas
 
 ```bash
 npm run typecheck
-npm test            # validación y escape de datos (vitest)
-npm run test:rls    # pruebas de RLS contra la base local (necesita `supabase start`)
+npm test            # unitarias: validación, escape, agente de match, URL del sitio (vitest)
+npm run test:db     # integración de la Ruta B contra la base local (necesita `supabase start`)
+npm run test:rls    # pruebas de RLS contra la base local (recrea la base antes de correr)
 npm run db:reset    # recrea la base desde las migraciones y el seed
 ```
 

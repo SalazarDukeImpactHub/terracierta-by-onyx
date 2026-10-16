@@ -5,7 +5,7 @@
 -- Perfiles de ejemplo (provisionales; ver migración profiles_provisional)
 insert into public.profiles (id, rol, nombre, municipio, tiene_invima, wallet_address) values
   ('11111111-1111-4111-8111-111111111111', 'caficultor',  'Marta Ospina',  'Marsella', true,  'https://wallet.example.test/marta-ospina'),
-  ('22222222-2222-4222-8222-222222222222', 'caficultor',  'Jairo Montoya', 'Andes',    false, 'https://wallet.example.test/jairo-montoya'),
+  ('22222222-2222-4222-8222-222222222222', 'caficultor',  'Jairo Montoya', 'Marsella', false, 'https://wallet.example.test/jairo-montoya'),
   ('33333333-3333-4333-8333-333333333333', 'cooperativa', 'Cooperativa Cumbres Cafeteras (cuenta demo)', 'Marsella', false, 'https://wallet.example.test/cumbres-cafeteras');
 
 -- Cooperativas precargadas (la primera tiene cuenta demo que aprueba pagos)

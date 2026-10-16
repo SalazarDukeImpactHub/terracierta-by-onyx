@@ -6,6 +6,7 @@ import { formatoCop } from "@/lib/validacion";
 
 interface Vista {
   pagoId: string;
+  tipo: "pedido" | "oferta";
   estado: "pendiente" | "completado" | "fallido";
   monto: number;
   walletReceptor: string;
@@ -143,8 +144,8 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
         )}
       </div>
 
-      <Link href={volverA} className="btn btn-borde mt-6">
-        {fallo ? "Volver a intentar" : "Seguir mirando café"}
+      <Link href={vista.tipo === "oferta" ? "/cooperativa" : volverA} className="btn btn-borde mt-6">
+        {vista.tipo === "oferta" ? "Volver a mis ofertas" : fallo ? "Volver a intentar" : "Seguir mirando café"}
       </Link>
     </div>
   );
