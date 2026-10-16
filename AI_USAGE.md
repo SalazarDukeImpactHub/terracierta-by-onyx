@@ -83,6 +83,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | Protección por rol | `curl` con cookies de cada perfil | Sin sesión → `/acceso`; sin INVIMA → `/caficultor`; cooperativa ↔ caficultor redirigidos; cookie falsa → `/acceso`; ids basura → 404/400 |
 | 2026-10-16 | XSS y fotos | Producto con `<b>` e `<img onerror>` en nombre y descripción; PNG real; archivo de texto disfrazado de PNG | El HTML se muestra como texto (0 elementos inyectados, el título de la página no cambió); la foto subió a Storage y se ve en la tienda; el archivo falso fue rechazado ("no parece una imagen válida") |
 | 2026-10-16 | Secretos | Búsqueda en el bundle del navegador (`.next/static`) y en archivos versionables | La llave de servicio no aparece en el bundle; no hay llaves ni `.env` en el repo |
+| 2026-10-16 | Preparación para Vercel | `tsc`, `eslint`, `vitest run` tras cambiar `SITE_URL` | Tipos y lint sin errores; 25/25 pruebas (4 nuevas: localhost, valor manual, preview y producción de Vercel). **El despliegue real no se probó**: requiere las cuentas de Vercel y Supabase del equipo |
 
 ### Lo que falló y lo que se corrigió
 
@@ -110,6 +111,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`base-y-datos.md`](./prompts/base-y-datos.md) — aprobación del plan y arranque de la construcción.
 - [`tienda-checkout.md`](./prompts/tienda-checkout.md) — verificación de la Ruta A.
 - [`git-y-repo.md`](./prompts/git-y-repo.md) — repo propio y publicación en GitHub.
+- [`despliegue-vercel.md`](./prompts/despliegue-vercel.md) — preparación para desplegar en Vercel.
 
 ## Security
 
