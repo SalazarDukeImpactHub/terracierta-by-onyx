@@ -1,7 +1,7 @@
 # AI Usage Disclosure
 
 Proyecto: **Terracierta by Onyx** — Hackatón Open Payments Medellín 2026.
-Última actualización: 2026-10-16 — pasos 1 y 2 del orden de construcción + Ruta A (tienda, checkout contra mock, panel de pagos).
+Última actualización: 2026-10-16 — pasos 1 y 2 del orden de construcción + Ruta A (tienda, checkout contra mock, panel de pagos) + Ruta B (lote, agente de match, oferta y pago de la cooperativa, contra mock).
 
 ## Tools Used
 
@@ -36,7 +36,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 
 ### 7. Panel del caficultor (`src/app/caficultor/**`, `src/components/formulario-producto.tsx`)
 - IA: pregunta "¿Tienes INVIMA?", gestión de productos con foto (validación de tipo, tamaño y firma del archivo), panel de pedidos y pagos recibidos.
-- `src/app/caficultor/lote/page.tsx` y `src/app/cooperativa/page.tsx` son **marcadores** de la Ruta B (aún sin construir).
+
+### 7b. Ruta B: lote, agente de match, oferta y pago de la cooperativa (`src/lib/match.ts`, `src/lib/ruta-b.ts`, `src/lib/pagos-service.ts`, `src/app/caficultor/lote/**`, `src/app/cooperativa/**`, `src/components/formulario-lote.tsx`)
+- IA: agente determinista de puntaje (precio, cercanía, método, variedad, capacidad) con motivo en texto, **sin modelo de lenguaje** (decisión de Jennifer); formulario de lote, pantalla del top 3, creación de la oferta al elegir, panel de la cooperativa (aceptar, pagar, historial), pago de la oferta por el mismo módulo de pagos.
+- **Supuesto declarado:** la cercanía usa una tabla chica de municipios con coordenadas **aproximadas** escritas de memoria por la IA (no verificadas con una fuente oficial); un municipio que no está en la tabla da cercanía neutra.
+- Los pesos del puntaje (35/25/15/10/15) los eligió la IA; Jennifer decidió que sean solo reglas y que la oferta se cree al elegir. **Pendiente de revisión humana.**
 
 ### 8. Identidad visual y páginas (`src/app/globals.css`, `layout.tsx`, `page.tsx`, `src/components/cabecera.tsx`, `pie.tsx`, `src/app/acceso/**`)
 - IA: tokens de Terracierta (brief §5.1 y valores medidos en la landing viva), fuentes, landing, acceso. No se crearon logos ni ilustraciones.
@@ -85,6 +89,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | Secretos | Búsqueda en el bundle del navegador (`.next/static`) y en archivos versionables | La llave de servicio no aparece en el bundle; no hay llaves ni `.env` en el repo |
 | 2026-10-16 | Preparación para Vercel | `tsc`, `eslint`, `vitest run` tras cambiar `SITE_URL` | Tipos y lint sin errores; 25/25 pruebas (4 nuevas: localhost, valor manual, preview y producción de Vercel). **El despliegue real no se probó**: requiere las cuentas de Vercel y Supabase del equipo |
 | 2026-10-16 | Primer deploy en Vercel (falló) y corrección | Se reprodujo el fallo con `next build` sin `USE_MOCKS`; luego, tras `dynamic = "force-dynamic"` en el layout, build sin `USE_MOCKS`, build con `USE_MOCKS=true`, `tsc`, `eslint`, `vitest` | El error se reprodujo idéntico (`/cooperativa` prerenderizada ejecutaba el stub de `src/auth`). Tras la corrección ambos builds pasan con 17 rutas dinámicas; tipos y lint sin errores; 25/25 pruebas. **El redeploy en Vercel aún no se probó** |
+| 2026-10-16 | Ruta B: agente de match | `vitest` sobre `src/lib/match.ts` | 15 pruebas: 3 resultados ordenados, determinista (mismo orden de entrada o invertido), elegibilidad por método/variedad/capacidad, relleno con no elegibles, tildes y mayúsculas, municipio desconocido, puntajes entre 0 y 100. Con el lote de ejemplo (Caturra lavado 500 kg, Marsella) quedan: Aroma del Suroeste 88, Cumbres 87, Raíz Alta 59; Tierra Nueva queda afuera por no recibir Caturra |
+| 2026-10-16 | Ruta B: integración con la base | `npm run test:db` (13 pruebas) | Lote ajeno rechazado; cooperativa que no puede comprar o inexistente rechazada; **la oferta se crea solo al elegir** (precio y total del servidor); segunda oferta con una en curso rechazada; pagar sin aceptar 409; aceptar/pagar con otro perfil rechazado; pago con wallet pagadora de la cooperativa, receptora del caficultor y monto de la oferta; completado → oferta `pagada` y lote `vendido`; rechazo del pagador → oferta `fallida` y reintento posible; no se paga dos veces una oferta pagada. Los datos de prueba se borran solos |
+| 2026-10-16 | Ruta B en el navegador | Jairo carga lote → top 3 → elige Cumbres → cooperativa demo acepta → paga → billetera simulada → recibo → vista de Jairo | Todo el recorrido funciona: pago de $10.750.000 (500 kg × $21.500) de la wallet de la cooperativa a la de Jairo; oferta `pagada`, lote `vendido`, pago `completado` en la base; Jairo ve "Pagada ✦" y el recibo |
+| 2026-10-16 | Ruta B: acceso cruzado | `curl` con cookies de cada perfil | Marta no ve el lote de Jairo (404); cooperativa en `/caficultor/lote` → `/cooperativa`; Jairo en `/cooperativa` → `/caficultor`; sin sesión → `/acceso`; id basura → 404 |
+| 2026-10-16 | Verificación completa de la rama | `tsc`, `eslint`, `test:rls` (recrea la base con el seed nuevo), `test:db`, `next build` sin y con `USE_MOCKS` | Tipos y lint sin errores; RLS 35/35; 53/53 pruebas (40 unitarias + 13 de integración); ambos builds pasan |
 
 ### Lo que falló y lo que se corrigió
 
@@ -99,11 +108,14 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 7. **Error mío al probar:** un selector tocó el botón "Salir" del encabezado en vez del formulario; se repitió la prueba bien.
 8. **Docker Desktop estaba apagado**; se lanzó a mano y tardó varios minutos en responder.
 9. **Bloqueo de permisos:** no se pudo escribir `.env.example` (la regla del entorno veta archivos `.env*`). **Pendiente** que una persona del equipo lo cree con las variables de `README.md`.
+10. **Ruta B:** (a) una prueba mía fallaba por esperar minúscula en un texto que empieza en mayúscula; (b) el runner de pruebas (Node 20, sin `WebSocket` nativo) no podía crear el cliente de Supabase: se agregó un reemplazo vacío solo en la prueba, porque la app no usa realtime; (c) el botón del recibo de un pago de oferta decía "Seguir mirando café": ahora el destino y el texto salen del tipo de pago.
 
 ### Sin probar todavía
 
 - Edición de un producto ajeno **desde la interfaz** con un segundo caficultor con INVIMA (cubierto solo por el filtro `dueno_id` del código y por RLS en SQL).
-- Ruta B completa y pago de la cooperativa (aún no construidos).
+- Ruta B con **perfiles reales** (solo se probó con el login simulado) y con el pago real de Open Payments.
+- Doble pago de una oferta con el módulo **real**: un pago pendiente abandonado no se cancela; con el mock no hay riesgo, con dinero real hay que revisarlo al integrar.
+- Las coordenadas de los municipios del agente: aproximadas, sin contrastar con una fuente.
 - Integración real de pagos y login.
 - Accesibilidad con lector de pantalla y vista móvil real (solo se vio el ancho del panel del navegador).
 
@@ -115,6 +127,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`tienda-checkout.md`](./prompts/tienda-checkout.md) — verificación de la Ruta A.
 - [`git-y-repo.md`](./prompts/git-y-repo.md) — repo propio y publicación en GitHub.
 - [`despliegue-vercel.md`](./prompts/despliegue-vercel.md) — preparación para desplegar en Vercel.
+- [`ruta-b-agente.md`](./prompts/ruta-b-agente.md) — Ruta B: agente de match, oferta y pago de la cooperativa.
 
 ## Security
 

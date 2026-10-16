@@ -133,5 +133,21 @@ Push de los commits pendientes a `origin/main`; local y remoto coincidieron en `
 si hazlo pero recuerda si debe ser en el main o como mantenemos todo limpio y ordenado
 ```
 
-### Resultado breve
+### Resultado breve (entrada 4)
 El arreglo se hizo en la rama `fix/build-dinamico` con pull request hacia `main`, en vez de pushear directo a `main`. Se propuso la regla: `main` siempre desplegable, cambios por rama corta + PR (Vercel da una URL de preview por rama) y los compañeros en `feat/payments` y `feat/auth`.
+
+---
+
+## Entrada 5 — Merge del PR 1
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+Cuando el check del PR 1 esté verde, hacé el merge a main y borrá la rama fix/build-dinamico.
+```
+
+### Resultado breve
+Los 2 checks estaban en verde (incluido el despliegue de preview en Vercel). PR 1 fusionado en `main` (`7200071`), rama borrada en GitHub y en local.
