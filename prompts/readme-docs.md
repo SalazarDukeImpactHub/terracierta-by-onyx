@@ -41,3 +41,60 @@ y el readme mejoralo esta feo no es mi estilo te doy uno de ejemplo  https://git
 
 ### Archivos tocados
 `README.md`, `docs/*.jpg` (7 capturas), `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 3 — Merge del README
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+si haz el merge
+```
+
+### Resultado breve
+PR 3 fusionado en `main` (`ef29342`) con los 2 checks en verde; rama borrada en GitHub y en local.
+
+---
+
+## Entrada 4 — Quitar las capturas del README
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+quitemos als fotos del readme solo als agregamos al final con el diseño definitivo
+```
+
+### Resultado breve
+- Se quitaron del `README.md` la imagen de la landing, la tabla de 6 capturas y la nota de las capturas; también la fila `docs/` de la tabla de estructura.
+- Se agregó al roadmap del README el pendiente "capturas con el diseño definitivo".
+- Los archivos `docs/*.jpg` **no se borraron** (borrar archivos requiere aprobación): quedan en el repo sin usar hasta que se decida si se reemplazan o se eliminan.
+
+### Archivos tocados
+`README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 5 — Qué hacer con las capturas de `docs/`
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+El agente preguntó si hacía el merge del PR 4 y qué hacer con los 7 archivos `docs/*.jpg`: dejarlos (listos para reemplazar) o borrarlos.
+
+### Prompt (texto íntegro)
+
+```
+dejarlos queda lsito para remplazar cunado este
+```
+
+### Resultado breve
+- Los 7 archivos `docs/*.jpg` **se dejan** en el repo, listos para reemplazarlos cuando esté el diseño definitivo.
+- La respuesta eligió "dejarlos" y no dijo nada sobre el merge del PR 4; el agente lo interpretó como conformidad, ya que el PR solo cambia texto, tenía los 2 checks en verde y es reversible con un revert.

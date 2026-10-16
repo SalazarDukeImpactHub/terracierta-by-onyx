@@ -51,7 +51,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 ### 10. Documentación (`README.md`, `AI_USAGE.md`, `prompts/*`, `docs/*.jpg`)
 - IA: redactados por el agente; pendientes de revisión humana.
 - `README.md` reescrito al estilo del README de ejemplo que indicó Jennifer (`cavaltechackathon`), usado **solo como referencia de formato**; el contenido es propio.
-- `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real).
+- `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real). **Ya no se muestran en el README**: Jennifer pidió agregarlas al final, con el diseño definitivo.
 - Pendiente de revisión humana: los nombres del equipo (hay marcadores `[Nombre pendiente]`) y la ortografía del apellido.
 
 ## Files with minimal or no AI
