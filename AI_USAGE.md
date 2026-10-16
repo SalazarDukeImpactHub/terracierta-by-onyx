@@ -84,8 +84,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | XSS y fotos | Producto con `<b>` e `<img onerror>` en nombre y descripción; PNG real; archivo de texto disfrazado de PNG | El HTML se muestra como texto (0 elementos inyectados, el título de la página no cambió); la foto subió a Storage y se ve en la tienda; el archivo falso fue rechazado ("no parece una imagen válida") |
 | 2026-10-16 | Secretos | Búsqueda en el bundle del navegador (`.next/static`) y en archivos versionables | La llave de servicio no aparece en el bundle; no hay llaves ni `.env` en el repo |
 | 2026-10-16 | Preparación para Vercel | `tsc`, `eslint`, `vitest run` tras cambiar `SITE_URL` | Tipos y lint sin errores; 25/25 pruebas (4 nuevas: localhost, valor manual, preview y producción de Vercel). **El despliegue real no se probó**: requiere las cuentas de Vercel y Supabase del equipo |
+| 2026-10-16 | Primer deploy en Vercel (falló) y corrección | Se reprodujo el fallo con `next build` sin `USE_MOCKS`; luego, tras `dynamic = "force-dynamic"` en el layout, build sin `USE_MOCKS`, build con `USE_MOCKS=true`, `tsc`, `eslint`, `vitest` | El error se reprodujo idéntico (`/cooperativa` prerenderizada ejecutaba el stub de `src/auth`). Tras la corrección ambos builds pasan con 17 rutas dinámicas; tipos y lint sin errores; 25/25 pruebas. **El redeploy en Vercel aún no se probó** |
 
 ### Lo que falló y lo que se corrigió
+
+0. **Primer deploy en Vercel falló** ("Error occurred prerendering page /cooperativa"): sin `USE_MOCKS=true` en el entorno, el build ejecutó el stub de `src/auth`, que lanza error, al prerenderizar una página que depende de la sesión. Se marcó la app como dinámica (`src/app/layout.tsx`). Aparte, para ver la demo en Vercel hay que cargar `USE_MOCKS=true` y las variables de Supabase y redeployar.
 
 1. **Recursión infinita en RLS** (`lotes` ↔ `ofertas`): lo destapó `test:rls` en la primera corrida. Se corrigió con dos funciones `security definer` que cortan el ciclo; se recreó la base y las 35 verificaciones pasan.
 2. **Scaffold con Cache Components activado** (`cacheComponents`, `partialPrefetching`): obliga a envolver todo dato dinámico en Suspense. Se desactivó.
