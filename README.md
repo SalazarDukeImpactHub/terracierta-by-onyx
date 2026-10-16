@@ -17,37 +17,6 @@
 
 ---
 
-![Landing de Terracierta by Onyx](docs/landing.jpg)
-
-<table>
-<tr>
-<td width="50%"><img src="docs/tienda.jpg" alt="Tienda pública de un caficultor con su catálogo" /></td>
-<td width="50%"><img src="docs/billetera-simulada.jpg" alt="Pantalla de consentimiento del pago con la cotización exacta" /></td>
-</tr>
-<tr>
-<td align="center"><sub><b>Tienda pública</b><br/>Catálogo por caficultor, sin registro para comprar</sub></td>
-<td align="center"><sub><b>Consentimiento del pago</b><br/>El pagador ve la cotización y aprueba antes de pagar</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/recibo.jpg" alt="Recibo con los cuatro pasos del pago completados" /></td>
-<td width="50%"><img src="docs/panel-pagos.jpg" alt="Panel de pedidos y pagos recibidos del caficultor" /></td>
-</tr>
-<tr>
-<td align="center"><sub><b>Recibo del pago</b><br/>Solicitud → autorización → ejecución → finalización</sub></td>
-<td align="center"><sub><b>Panel de pagos</b><br/>Lo que el caficultor cobró, en su wallet</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/agente-top3.jpg" alt="Las tres cooperativas recomendadas con puntaje y motivo" /></td>
-<td width="50%"><img src="docs/cooperativa.jpg" alt="Panel de la cooperativa con la oferta por pagar" /></td>
-</tr>
-<tr>
-<td align="center"><sub><b>Agente de match</b><br/>Las 3 mejores cooperativas, con puntaje y motivo</sub></td>
-<td align="center"><sub><b>Panel de la cooperativa</b><br/>Aceptar la oferta y pagar por la plataforma</sub></td>
-</tr>
-</table>
-
-> 📸 Capturas tomadas de la app corriendo en local en **modo demostración** (pagos y acceso simulados, datos de ejemplo).
-
 ## 📑 Tabla de contenidos
 
 - [✨ Qué hace](#-qué-hace)
@@ -328,7 +297,6 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 | `src/lib/validacion.ts` | Esquemas Zod, wallet address, URLs seguras |
 | `supabase/` | Migraciones (tablas, RLS, vista pública, Storage), `seed.sql` y `tests/rls.sql` |
 | `scripts/` | `dev-local.mjs` y `test-db.mjs`: arrancan con las llaves locales, sin `.env` |
-| `docs/` | Capturas de este README |
 | `AI_USAGE.md` · `prompts/` | Política de IA del evento: herramientas, archivos y prompts |
 
 ---
@@ -377,6 +345,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar al integrar |
 | Agente: coordenadas de municipios | Aproximadas; el agente evolucionará (por ejemplo, un modelo que redacte el motivo) |
 | Supabase en la nube + URL pública en Vercel | Pendiente de crear y cargar (ver [Desplegar](#-desplegar-en-vercel)) |
+| Capturas de pantalla en el README | Se agregan **al final, con el diseño definitivo** |
 | Validación con alguien de campo | Pendiente: cómo cobra hoy el caficultor, cuánto tarda, si tiene Nequi |
 | Licencia del repositorio | Por definir por el equipo |
 
