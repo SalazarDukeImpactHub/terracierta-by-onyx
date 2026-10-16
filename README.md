@@ -71,6 +71,32 @@ Toda integración externa pasa por `src/adapters/`. `USE_MOCKS=true` usa los moc
 3. Acordar quién escribe `profiles.tiene_invima` (hoy lo hace la página con `declararInvima`).
 4. Correr la Ruta A completa y registrar en `AI_USAGE.md` qué se integró y qué se ajustó.
 
+## Desplegar en Vercel (para que todo el equipo vea los cambios)
+
+Vercel no puede llegar al Supabase de tu computador, así que hace falta un proyecto de Supabase en la nube. Lo hace una persona con acceso a las cuentas; **las llaves se escriben solo en los paneles, nunca en el repo ni en chats**.
+
+1. **Supabase en la nube:** crear un proyecto en supabase.com y, en *Project Settings → API*, tener a mano la URL, la `anon key` y la `service_role key`.
+2. **Cargar esquema y datos de ejemplo** (pide iniciar sesión y la contraseña de la base):
+   ```bash
+   npx supabase login
+   npx supabase link --project-ref <REF_DEL_PROYECTO>
+   npx supabase db push --include-seed
+   ```
+3. **Vercel:** *Add New → Project* → importar `SalazarDukeImpactHub/terracierta-by-onyx` (framework Next.js, carpeta raíz).
+4. **Variables de entorno** (*Settings → Environment Variables*, en Production y Preview):
+
+   | Variable | Valor |
+   |---|---|
+   | `USE_MOCKS` | `true` (hasta integrar los pagos y el login reales) |
+   | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto de Supabase |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon key` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | `service_role key` (marcarla como *Sensitive*) |
+
+   No hace falta `NEXT_PUBLIC_SITE_URL`: en Vercel la página usa la URL del despliegue (`src/lib/env.ts`).
+5. **Resultado:** cada push a `main` actualiza producción y cada rama o pull request genera su propia URL de preview.
+
+> Con `USE_MOCKS=true`, cualquiera que tenga la URL puede entrar como uno de los perfiles de ejemplo y editar datos de ejemplo. Dejá activa la *Deployment Protection* de Vercel para los previews y no difundas la URL pública. Al integrar los módulos reales, `USE_MOCKS=false`.
+
 ## Seguridad
 
 - Repo público: **sin llaves, tokens ni `.env`**. Las variables que hacen falta están en `.env.example` (solo nombres).

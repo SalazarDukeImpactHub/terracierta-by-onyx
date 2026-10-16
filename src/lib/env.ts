@@ -6,7 +6,22 @@
  */
 export const USE_MOCKS = process.env.USE_MOCKS === "true";
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+/**
+ * URL pública de esta página (se usa para armar la urlRetorno del pago). Orden:
+ *  1. NEXT_PUBLIC_SITE_URL, si se define a mano (dominio propio);
+ *  2. variables del sistema de Vercel: dominio de producción, o la URL de ESTE despliegue en previews;
+ *  3. localhost para desarrollo local.
+ * Sin (2), un despliegue en Vercel mandaría al pagador de vuelta a localhost.
+ */
+function resolverSiteUrl(): string {
+  const manual = process.env.NEXT_PUBLIC_SITE_URL;
+  if (manual) return manual.replace(/\/$/, "");
+  const host = process.env.VERCEL_ENV === "production" ? process.env.VERCEL_PROJECT_PRODUCTION_URL : process.env.VERCEL_URL;
+  if (host) return `https://${host}`;
+  return "http://localhost:3000";
+}
+
+export const SITE_URL = resolverSiteUrl();
 
 export function requerirEnv(nombre: string): string {
   const valor = process.env[nombre];
