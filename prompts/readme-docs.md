@@ -78,3 +78,23 @@ quitemos als fotos del readme solo als agregamos al final con el diseño definit
 
 ### Archivos tocados
 `README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 5 — Qué hacer con las capturas de `docs/`
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+El agente preguntó si hacía el merge del PR 4 y qué hacer con los 7 archivos `docs/*.jpg`: dejarlos (listos para reemplazar) o borrarlos.
+
+### Prompt (texto íntegro)
+
+```
+dejarlos queda lsito para remplazar cunado este
+```
+
+### Resultado breve
+- Los 7 archivos `docs/*.jpg` **se dejan** en el repo, listos para reemplazarlos cuando esté el diseño definitivo.
+- La respuesta eligió "dejarlos" y no dijo nada sobre el merge del PR 4; el agente lo interpretó como conformidad, ya que el PR solo cambia texto, tenía los 2 checks en verde y es reversible con un revert.
