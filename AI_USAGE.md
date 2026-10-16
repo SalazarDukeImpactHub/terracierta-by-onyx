@@ -48,8 +48,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 ### 9. Validación y seguridad (`src/lib/validacion.ts`, `validacion.test.ts`)
 - IA: esquemas zod, wallet address, URLs seguras, 21 pruebas.
 
-### 10. Documentación (`README.md`, `AI_USAGE.md`, `prompts/*`)
+### 10. Documentación (`README.md`, `AI_USAGE.md`, `prompts/*`, `docs/*.jpg`)
 - IA: redactados por el agente; pendientes de revisión humana.
+- `README.md` reescrito al estilo del README de ejemplo que indicó Jennifer (`cavaltechackathon`), usado **solo como referencia de formato**; el contenido es propio.
+- `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real).
+- Pendiente de revisión humana: los nombres del equipo (hay marcadores `[Nombre pendiente]`) y la ortografía del apellido.
 
 ## Files with minimal or no AI
 
@@ -128,6 +131,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`git-y-repo.md`](./prompts/git-y-repo.md) — repo propio y publicación en GitHub.
 - [`despliegue-vercel.md`](./prompts/despliegue-vercel.md) — preparación para desplegar en Vercel.
 - [`ruta-b-agente.md`](./prompts/ruta-b-agente.md) — Ruta B: agente de match, oferta y pago de la cooperativa.
+- [`readme-docs.md`](./prompts/readme-docs.md) — merge de la Ruta B y rediseño del README.
 
 ## Security
 
