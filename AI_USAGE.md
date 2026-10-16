@@ -109,6 +109,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`inicio.md`](./prompts/inicio.md) — mensaje inicial completo.
 - [`base-y-datos.md`](./prompts/base-y-datos.md) — aprobación del plan y arranque de la construcción.
 - [`tienda-checkout.md`](./prompts/tienda-checkout.md) — verificación de la Ruta A.
+- [`git-y-repo.md`](./prompts/git-y-repo.md) — repo propio y publicación en GitHub.
 
 ## Security
 
