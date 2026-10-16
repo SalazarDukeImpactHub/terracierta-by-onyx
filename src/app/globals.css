@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/*
+  Tokens de Terracierta (brief §5.1). Los tres marcados "landing" se tomaron
+  midiendo la landing viva (terracierta-landing.vercel.app): el botón usa un cobre
+  más oscuro porque el cobre #B0673C sobre crema da ~3,7:1 y no sirve para texto chico.
+*/
+:root {
+  --bosque: #334132;
+  --crema: #f3ede0;
+  --cobre: #b0673c;
+  --cereza: #9e3b2e;
+  --tinta: #2a3327;
+  --bosque-hondo: #232e22; /* landing: banda oscura */
+  --crema-2: #eae1ce; /* landing: sección alterna */
+  --cobre-oscuro: #8c4e2b; /* landing: botones (texto crema, contraste AA) */
+  --apagado: #5b6455; /* landing: texto secundario */
+  --linea: #d6cbb2;
+}
+
+@theme inline {
+  --color-bosque: var(--bosque);
+  --color-crema: var(--crema);
+  --color-cobre: var(--cobre);
+  --color-cereza: var(--cereza);
+  --color-tinta: var(--tinta);
+  --color-bosque-hondo: var(--bosque-hondo);
+  --color-crema-2: var(--crema-2);
+  --color-cobre-oscuro: var(--cobre-oscuro);
+  --color-apagado: var(--apagado);
+  --color-linea: var(--linea);
+  --font-titulo: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-cuerpo: var(--font-eb-garamond), Georgia, "Times New Roman", serif;
+}
+
+html {
+  background: var(--crema);
+}
+
+body {
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: var(--font-cuerpo);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-titulo {
+  font-variant-numeric: lining-nums; /* Cormorant usa cifras de texto: el "1" parecía una "I" */
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-titulo);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+::selection {
+  background: var(--cobre);
+  color: var(--crema);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cobre-oscuro);
+  outline-offset: 2px;
+}
+
+/* Etiqueta pequeña en versalitas espaciadas ("UNO · EL VIDEO") */
+.etiqueta {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+
+/* Botones: radio 2px, versalitas espaciadas, como la landing */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--cobre-oscuro);
+  border-radius: 2px;
+  background: var(--cobre-oscuro);
+  color: var(--crema);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn:hover {
+  background: var(--tinta);
+  border-color: var(--tinta);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-bosque {
+  background: var(--bosque);
+  border-color: var(--bosque);
+}
+.btn-bosque:hover {
+  background: var(--bosque-hondo);
+  border-color: var(--bosque-hondo);
+}
+.btn-borde {
+  background: transparent;
+  color: var(--tinta);
+  border-color: var(--tinta);
+}
+.btn-borde:hover {
+  background: var(--tinta);
+  color: var(--crema);
+}
+
+/* Campos de formulario */
+.campo {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--tinta);
+  border-radius: 2px;
+  background: #fbf8f1;
+  color: var(--tinta);
+  font: inherit;
+}
+.campo::placeholder {
+  color: var(--apagado);
+}
+
+/* Separador con rombo */
+.rombo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--cobre);
+  font-size: 0.8rem;
+}
+.rombo::before,
+.rombo::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--linea);
+}
+
+/* Viñetas con cruz */
+.cruces {
+  list-style: none;
+  padding: 0;
+}
+.cruces li {
+  position: relative;
+  padding-left: 1.6rem;
+  margin: 0.45rem 0;
+}
+.cruces li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  color: var(--cobre);
+}
+
+/* Cita en bloque */
+.cita {
+  border-left: 2px solid var(--cobre);
+  padding-left: 1.2rem;
+  font-family: var(--font-titulo);
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.35;
+}
