@@ -374,13 +374,17 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 
 ## 👥 Equipo
 
-- **Jennifer Salazar Duke** — dirección del proyecto, producto y revisión
-- **Caren Briyid Hoyos Estrada**
-- **Astrid Carolina Hoyos Estrada**
-- **Yamil Andre La Barrera López** — pagos con Open Payments (`src/payments`)
-- **Álvaro Henao González** — login y asignación de wallets (`src/auth`)
+| Integrante | Rol |
+|------------|-----|
+| **Jennifer Salazar Duke** | Dirección del proyecto, producto y revisión |
+| **Yamil Andre La Barrera López** | Pagos con Open Payments (`src/payments`) |
+| **Álvaro Henao González** | Login y asignación de wallets (`src/auth`) |
+| **Caren Briyid Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
+| **Astrid Carolina Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
 
-> Cada uno trabaja **solo en su carpeta** y en su propia rama (`feat/payments`, `feat/auth`), con *pull request* hacia `main`. El rol de Caren y Astrid se agrega aquí cuando se confirme.
+Lo técnico recae sobre todo en Yamil y Álvaro. Caren y Astrid llevan la **administración** y la **parte creativa**, aportan ideas y **revisan la app para detectar los errores que se le escapen al equipo técnico**.
+
+> Cada integrante técnico trabaja **solo en su carpeta** y en su propia rama (`feat/payments`, `feat/auth`), con *pull request* hacia `main`.
 
 ---
 
