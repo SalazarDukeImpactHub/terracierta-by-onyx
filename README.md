@@ -21,7 +21,7 @@
 
 **[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)**
 
-> ⚠️ **Estado actual: demostración.** Los pagos y el acceso están **simulados** (`USE_MOCKS=true`): ningún pago mueve dinero real. Los módulos reales de pagos (`src/payments`) y de cuentas (`src/auth`) son de los compañeros y están **en integración**; hoy en `src/payments` y `src/auth` solo hay puntos de enchufe (ver [Limitaciones y roadmap](#-limitaciones-y-roadmap)).
+> ✅ **Estado actual: funcional sobre la billetera de prueba de Interledger.** El acceso es **real** (cuentas y sesión en Supabase) y los pagos se **ejecutan de verdad** contra la **testnet de Interledger**: mueven **fondos de prueba**, no dinero real. Los mocks (`USE_MOCKS=true`) son un modo demostración **opcional**, apagado cuando la variable falta. Para que una cuenta pague necesita una wallet de prueba y su token cargados en la base (ver [Cuentas y wallets](#-cuentas-y-wallets)). Pendientes y riesgos conocidos: [Limitaciones y roadmap](#-limitaciones-y-roadmap).
 
 ---
 
@@ -32,6 +32,7 @@
 - [🧩 Arquitectura](#-arquitectura)
 - [🧰 Stack tecnológico](#-stack-tecnológico)
 - [💸 Cómo viaja el dinero](#-cómo-viaja-el-dinero)
+- [🔑 Cuentas y wallets](#-cuentas-y-wallets)
 - [🤖 Cómo decide el agente](#-cómo-decide-el-agente)
 - [🚀 Correr localmente](#-correr-localmente)
 - [🌐 Desplegar en Vercel](#-desplegar-en-vercel)
@@ -50,7 +51,7 @@
 
 Terracierta by Onyx lo resuelve en cuatro pasos:
 
-1. **Ingrese** con su cuenta (caficultor, cooperativa o comprador) y reciba su **wallet propia**: una dirección de cobro y de pago que cualquier billetera puede usar.
+1. **Ingrese** con su cuenta (caficultor, cooperativa o comprador). A cada cuenta se le asocia una **wallet de Interledger**: una dirección de cobro y de pago que cualquier billetera puede usar.
 2. **Su camino** depende de si tiene INVIMA, un dato que queda **registrado con su cuenta**: la página lo lee y no se lo vuelve a preguntar.
 3. **Ruta A, con INVIMA:** abra su tienda, publique sus productos y reciba el pago de cada comprador directo en su wallet.
 4. **Ruta B, sin INVIMA:** cargue su lote, elija entre las **3 mejores cooperativas** que le recomienda el agente, y la cooperativa le paga por la plataforma.
@@ -79,7 +80,11 @@ Tres entradas, según lo que busca cada quien:
 | 📦 **Oferta al elegir** | La oferta se crea **solo cuando el caficultor elige**; ver el top 3 no compromete a nadie |
 | 🏢 **Panel de la cooperativa** | Ofertas por responder, por pagar e historial. Reintento si el pago falla |
 | 📊 **Panel de pagos** | El caficultor ve lo cobrado, los pagos completados y los pendientes |
-| 🔌 **Adaptadores con mocks** | Pagos y login pasan por una capa con interruptor `USE_MOCKS`: la interfaz no cambia cuando llegan los módulos reales |
+| 🔐 **Acceso real** | Cuentas en Supabase (`usuarios`), contraseña guardada con hash y sesión en una cookie httpOnly respaldada por la tabla `sesiones` |
+| 💳 **Pagos con Interledger** | De wallet a wallet sobre la testnet; el estado se confirma contra los movimientos de la billetera |
+| 🛡️ **Canal post-cuántico** | Las llamadas de pago (`/api/pagos/*`) viajan cifradas con ML-KEM-768. La pasarela `/pago/pasarela` firma el recibo con Ed25519 + ML-DSA-65 |
+| 🧪 **Modo demostración opcional** | `USE_MOCKS=true` agrega cuentas de ejemplo y una billetera simulada para ensayar sin mover fondos |
+| 🔌 **Adaptadores** | Pagos y login pasan por una capa (`src/adapters`): la interfaz no habla directo con los módulos |
 | 🔒 **Seguridad por capas** | RLS en todas las tablas, validación en el servidor, escrituras sensibles solo desde el servidor |
 | 🧾 **Transparencia de IA** | Registro de herramientas, archivos y prompts, como pide la política del evento |
 
@@ -102,24 +107,25 @@ flowchart TB
   P -->|De wallet a wallet| W[(Wallet del caficultor)]
 ```
 
-La interfaz nunca habla directo con los módulos de los compañeros. Todo pasa por **adaptadores**:
+La interfaz nunca habla directo con los módulos de pagos y de cuentas. Todo pasa por **adaptadores**:
 
 ```mermaid
 flowchart TB
-  UI[Interfaz Next.js] --> AD{{src/adapters<br/>USE_MOCKS}}
-  AD -->|true| MK[Mocks<br/>pagos y login]
-  AD -->|false| PAY[src/payments<br/>módulo de pagos]
-  AD -->|false| AUTH[src/auth<br/>módulo de login]
-  UI --> DB[(Supabase<br/>Postgres, RLS y Storage)]
-  PAY -. llaves solo en el servidor .-> OP[Interledger]
+  UI[Interfaz Next.js] --> AD{{src/adapters}}
+  AD --> AUTH[src/auth<br/>cuentas y sesión]
+  AD -->|wallets de Interledger| PAY[src/payments<br/>pagos reales]
+  AD -. USE_MOCKS=true y otras wallets .-> MK[Mock de pagos<br/>solo demostración]
+  AUTH --> DB[(Supabase<br/>Postgres, RLS y Storage)]
+  UI --> DB
+  PAY -. llaves solo en el servidor .-> OP[Interledger testnet]
 ```
 
 **Decisiones clave:**
 
 - **El servidor decide el monto.** El navegador solo dice *qué producto y cuántas unidades*; el precio y la wallet receptora salen de la base. Nadie puede cambiar el cobro desde la consola.
-- **Interruptor seguro.** Los mocks se activan **solo** con `USE_MOCKS=true`. Si la variable falta, la app usa los módulos reales: un despliegue olvidado no simula pagos en silencio.
+- **Los mocks solo se activan a propósito.** Únicamente con `USE_MOCKS=true`. Si la variable falta, la app usa los módulos reales: un despliegue olvidado no simula pagos en silencio. Ojo con el sentido contrario: hoy un pago entre dos wallets de Interledger es **real aunque** `USE_MOCKS` sea `true` (lo decide el dominio de la wallet). El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador)* propone reemplazarlo por una configuración explícita.
 - **La seguridad la garantiza la base.** El RLS aísla a cada caficultor; las tablas de pedidos y pagos no tienen políticas de escritura para usuarios, solo las escribe el servidor.
-- **La plataforma no custodia dinero.** Muestra la cotización, pide el consentimiento y deja el recibo; el dinero va de wallet a wallet.
+- **La plataforma no custodia dinero.** El pago va de wallet a wallet. En la pasarela (SDK oficial) el titular autoriza en su billetera; en el checkout de la tienda el pago sale con la sesión de la billetera de prueba guardada para esa cuenta (ver [Cómo viaja el dinero](#-cómo-viaja-el-dinero)).
 - **El agente solo usa reglas.** Es explicable y no necesita llaves. Queda preparado para evolucionar (por ejemplo, que un modelo redacte el "por qué") sin cambiar el puntaje.
 - **Todos tienen cuenta y wallet para pagar o cobrar.** Caficultores, cooperativas **y compradores**. Mirar el café no necesita cuenta; pagar sí, y la wallet con la que se paga sale del perfil (nadie puede pagar con una wallet ajena).
 
@@ -127,12 +133,12 @@ flowchart TB
 
 | Función | Entrada | Salida | Qué hace |
 |---------|---------|--------|----------|
-| `registrarse` *(sign up)* | `correo`, `contrasena`, `rol`, `nombre`, `municipio`, `tieneInvima` | `{ ok, rol }` o `{ ok: false, error }` | **Solicita los datos**, crea la cuenta, **asigna la wallet**, guarda el perfil (el INVIMA solo si es caficultor) e inicia sesión |
+| `registrarse` *(sign up)* | `correo`, `contrasena`, `rol`, `nombre` (o `nombres` + `apellidos`), `tipo_documento`, `numero_documento`, `fecha_nacimiento`, `municipio`, `tieneInvima` | `{ ok, rol }` o `{ ok: false, error }` | Crea la cuenta y el perfil, guarda el INVIMA e inicia sesión. **No asigna wallet**: queda vacía hasta que se carga en la base (ver [Cuentas y wallets](#-cuentas-y-wallets)). Rechaza correo o documento repetidos |
 | `iniciarSesion` *(sign in)* | `correo`, `contrasena` | `{ ok, rol }` o `{ ok: false, error }` | Solo valida credenciales; **todo lo demás se detecta solo**. El error es genérico (no revela si el correo existe) |
 | `obtenerSesion` / `obtenerPerfil` | — | sesión o perfil con `wallet_address` y `tiene_invima` | La página solo **lee** el INVIMA; ninguna pantalla lo cambia |
 | `cerrarSesion` | — | — | — |
 
-`Rol = caficultor | cooperativa | comprador`. La página manda a `/acceso?siguiente=<ruta>` (o `/registro?...`) para volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
+`Rol = caficultor | cooperativa | comprador`. La página manda a `/acceso?siguiente=<ruta>` (o `/registro?...`) para volver al producto que se iba a pagar; `siguiente` solo admite rutas internas, validadas por `rutaSegura`.
 
 ---
 
@@ -146,7 +152,8 @@ flowchart TB
 | Lenguaje | **TypeScript** (strict) | Tipado en todo el proyecto |
 | Base de datos y Storage | **Supabase** (PostgreSQL + RLS) | Datos, seguridad por fila y fotos |
 | Validación | **Zod 4** | Entradas validadas en el servidor |
-| Pagos | **Interledger** | De wallet a wallet *(módulo real en integración)* |
+| Pagos | **Interledger** (Open Payments con SDK oficial y API de Test Wallet) | De wallet a wallet en la testnet |
+| Criptografía post-cuántica | **@noble/post-quantum** + **@noble/curves** | ML-KEM-768 para el canal, ML-DSA-65 + Ed25519 para recibos |
 | Pruebas | **Vitest 4** + SQL | Unitarias, integración y RLS |
 | Hosting y CI/CD | **Vercel** | Preview por rama y deploy en cada push a `main` |
 
@@ -159,16 +166,19 @@ Ruta A:  Comprador ── paga al comprar ──────────▶ Wall
 Ruta B:  Cooperativa ── paga al aceptar la oferta ▶ Wallet del caficultor
 ```
 
-Los seis pasos técnicos de un pago con Interledger, y qué hace cada uno hoy:
+Todo ocurre en la **testnet de Interledger**: el dinero es **de prueba**. Hoy hay **dos recorridos** de pago reales, que conviven:
 
-| # | Paso | Módulo real *(compañero de pagos)* | Mock actual |
-|:-:|------|:-----------------------------------:|:-----------:|
-| 1 | Descubrir la wallet del caficultor | Pendiente de integrar | Simulado |
-| 2 | Crear el pago entrante | Pendiente de integrar | Simulado |
-| 3 | Generar la cotización | Pendiente de integrar | Se muestra el monto exacto |
-| 4 | Obtener el consentimiento del pagador | Pendiente de integrar | Pantalla de billetera simulada |
-| 5 | Ejecutar el pago saliente | Pendiente de integrar | ~3 s y queda `completado` |
-| 6 | Confirmar el estado y emitir el recibo | Pendiente de integrar | Recibo `RCB-…` |
+| | Checkout de la tienda y ofertas | Pasarela (`/pago/pasarela`) |
+|---|---|---|
+| Código | `src/payments/index.ts` + `src/lib/interledger.ts` | `src/payments/openPayments.ts` (SDK oficial de Open Payments) |
+| Cómo paga | Entra a la Test Wallet con la sesión guardada de la cuenta pagadora, cotiza y envía el pago saliente | Cotiza, pide un permiso GNAP y **el titular lo autoriza en su wallet**; después crea el pago saliente |
+| Consentimiento | La sesión de billetera cargada para la cuenta | Explícito, del titular, en su wallet |
+| Confirmación | Busca el movimiento en la billetera (`COMPLETED` / `FAILED`) | Observa el envío y la recepción con el SDK; recibo con firma híbrida |
+| Topes de seguridad | 25 EUR por pago y 30 EUR de débito en la cotización (cuenta de prueba) | Monto recibido máximo configurable (`OPEN_PAYMENTS_MAX_RECEIVE`, 0,05 por defecto) |
+
+El checkout valida en el servidor el monto, la wallet receptora y el rol; las llamadas a `/api/pagos/*` viajan por el canal cifrado ML-KEM-768. Si una wallet no es de Interledger y `USE_MOCKS=true`, el pago cae al mock y la pantalla lo declara como simulado.
+
+> ⚠️ **Dos recorridos, un solo objetivo.** Tener dos rieles es una situación de integración, no un diseño final. El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador, sin aceptar)* analiza unificarlos en el SDK oficial. La guía de la pasarela está en [`docs/pasarela-hackathon.md`](./docs/pasarela-hackathon.md) y la demostración para el jurado en [`docs/demo-pqc-jurado.md`](./docs/demo-pqc-jurado.md).
 
 **Contrato que espera la página** (`src/adapters/types.ts`):
 
@@ -178,6 +188,16 @@ Los seis pasos técnicos de un pago con Interledger, y qué hace cada uno hoy:
 | `consultarPago` | `pagoId` | `estado` (`pendiente`, `completado`, `fallido`), `detalle` |
 
 La ruta de retorno es `/pago/retorno?tipo=…&ref=…&pago_id=…`. Si la billetera vuelve sin `pago_id`, se resuelve por `tipo` + `ref`.
+
+---
+
+## 🔑 Cuentas y wallets
+
+- **Registro (`/registro`):** crea la cuenta (`usuarios`) y el perfil (`profiles`) y abre la sesión. **No asigna wallet**: `profiles.wallet_address` queda vacía.
+- **Para que una cuenta pague o cobre con Interledger** hacen falta dos datos que hoy se **cargan a mano en la base**: la dirección de su wallet de prueba (`profiles.wallet_address`, de `interledger-test.dev`) y, para pagar desde ella, la sesión de la billetera (`usuarios.token`). El formulario de registro nunca escribe el token.
+- **Datos de ejemplo (`seed.sql`):** sus wallets usan el dominio reservado `wallet.example.test`. Son **marcadores**, no billeteras de Interledger: con ellas el pago no es real. Hay que reemplazarlas por wallets de prueba para operar.
+- **Sin wallet o con una wallet que no es de Interledger,** el pago real no se completa: con `USE_MOCKS=true` cae al mock y sin esa variable el pago no sale.
+- **Cuenta de respaldo:** si el token de una cuenta venció o no existe, el módulo intenta entrar con `INTERLEDGER_EMAIL` / `INTERLEDGER_PASSWORD` (una cuenta compartida). El ADR-001 propone retirar este mecanismo.
 
 ---
 
@@ -226,55 +246,65 @@ npx supabase start
 npm run dev:local
 ```
 
-> 💡 `dev:local` lee las llaves **locales** de `supabase status` y se las pasa solo al proceso de Next. **No hace falta crear ningún `.env`.**
+> 💡 `dev:local` lee las llaves **locales** de Supabase (`supabase status`) y se las pasa solo al proceso de Next. **No hace falta crear ningún `.env` para la base.** Los pagos reales sí necesitan las variables de Interledger (ver [Variables de entorno](#-variables-de-entorno)); sin ellas, ensaye con `USE_MOCKS=true`.
 
 Hay dos pantallas distintas, como en cualquier plataforma:
 
-- **`/registro` (sign up):** pide los datos de la persona (rol, nombre, municipio, correo y contraseña) y asigna su wallet. **Solo a los caficultores** les pregunta si tienen INVIMA, y ahí queda guardado. Las cooperativas están precargadas y no se registran solas.
+- **`/registro` (sign up):** pide los datos de la persona (rol, nombre, documento, fecha de nacimiento, municipio, correo y contraseña), crea la cuenta y abre la sesión. Los caficultores declaran su INVIMA. Las cooperativas están precargadas y no se registran solas. **No asigna wallet** (ver [Cuentas y wallets](#-cuentas-y-wallets)).
 - **`/acceso` (sign in):** pide solo **correo y contraseña**; el rol, el perfil, la wallet y el INVIMA se detectan solos. Nunca vuelve a preguntar el INVIMA.
 
-En modo demostración `/acceso` también lista cinco cuentas de ejemplo (caficultora con INVIMA, caficultor sin INVIMA, cooperativa demo y dos compradores, uno cuyo pago siempre falla) con la contraseña `demo1234`, p. ej. `marta@terracierta.demo`. Son datos inventados, no secretos. Las cuentas que cree en `/registro` en este modo no guardan la contraseña: es una simulación para recorrer la demo.
+Con `USE_MOCKS=true`, `/acceso` también lista cuentas de ejemplo con su correo y contraseña a la vista, y un botón de **entrada rápida**. Son datos inventados, no secretos, y **solo existen en modo demostración**. Las cuentas que cree en `/registro` sí se guardan, también en ese modo.
 
 ### 🧪 Probar la Ruta A (con INVIMA)
 
-1. **Tienda** → tienda de Marta Ospina → un producto → **Entrar para pagar** → elija **Comprador (cuenta demo)**. Vuelve al mismo producto, ya con su wallet: **Pagar**.
-2. En la billetera simulada, **Autorizar** (o **Rechazar**).
+1. **Tienda** → tienda de Marta Ospina → un producto → **Entrar para pagar** → entre como comprador. Vuelve al mismo producto, ya con su wallet: **Pagar**.
+2. **Modo demostración:** aparece la billetera simulada; **Autorizar** (o **Rechazar**). **Con wallets de Interledger cargadas:** no hay pantalla simulada, el pago se ejecuta contra la testnet y el retorno muestra su estado real.
 3. La pantalla de retorno muestra los cuatro pasos y el recibo; en **Mis compras** (`/comprador`) queda la compra.
 4. Entre como Marta → **Pedidos y pagos recibidos**.
-5. Para ver un pago fallido, entre como **Comprador cuyo pago falla (demo)**: su wallet contiene `fail` y el mock hace que su pago termine en "No se pudo completar".
+5. Para ver un pago fallido en modo demostración, entre como el comprador cuyo pago falla: su wallet contiene `fail` y el mock hace que termine en "No se pudo completar".
 
 ### 🧪 Probar la Ruta B (sin INVIMA)
 
 1. Entre como **Caficultor sin INVIMA** (Jairo, Marsella) → **Cargar mi lote** → por ejemplo lavado, Caturra, 500 kg, Marsella.
 2. El agente muestra las 3 cooperativas. **Elija Cumbres Cafeteras**: es la que tiene cuenta demo.
-3. Salga y entre como **Cooperativa (cuenta demo)** → **Aceptar oferta** → **Pagar con Interledger** → autorice.
+3. Salga y entre como **Cooperativa (cuenta demo)** → **Aceptar oferta** → **Pagar con Interledger**. En modo demostración se autoriza en la billetera simulada; con wallets reales el pago se ejecuta en la testnet.
 4. El recibo muestra el pago de la wallet de la cooperativa a la del caficultor; el lote pasa a *Vendido*.
 
 ### ✅ Pruebas
 
 ```bash
 npm run typecheck   # tipos
-npm test            # unitarias: validación, escape, agente de match, URL del sitio
-npm run test:db     # integración de la Ruta B contra la base local (necesita `supabase start`)
+npm test            # unitarias y de pagos: validación, agente de match, canal PQC, pasarela
+npm run test:db     # integración contra la base local (necesita `supabase start`)
 npm run test:rls    # pruebas de RLS contra la base local (recrea la base antes de correr)
 npm run db:reset    # recrea la base desde las migraciones y el seed
 ```
 
-Hoy: **115 pruebas** (86 unitarias y 29 de integración) y **46 verificaciones de RLS**.
+> ⚠️ **`npm test` aún no pasa limpio:** `jsdom` falta en `package.json` y 2 pruebas de pagos contradicen el código actual (ver [Limitaciones y roadmap](#-limitaciones-y-roadmap)). El resultado de cada corrida, con sus fallos, se registra en [`AI_USAGE.md`](./AI_USAGE.md); aquí no se repiten cifras que puedan quedar viejas.
 
 ### 🔑 Variables de entorno
 
-Solo las necesita si no usa `dev:local` (por ejemplo, para apuntar a un Supabase en la nube). **Nunca** las suba al repo.
+`dev:local` ya resuelve las de Supabase local. Las necesita escritas si apunta a un Supabase en la nube o si quiere pagos reales. **Nunca** las suba al repo; en Vercel se cargan en el panel.
 
-```env
-USE_MOCKS=true                              # pagos y login simulados (hasta integrar los reales)
-NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
-SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key   # solo servidor, nunca con prefijo NEXT_PUBLIC
-# NEXT_PUBLIC_SITE_URL=http://localhost:3000    # opcional: en Vercel se toma de la URL del despliegue
-```
+| Grupo | Variable | Para qué |
+|-------|----------|----------|
+| Modo | `USE_MOCKS` | `true` activa la demostración simulada. Si falta, no hay mocks |
+| Supabase | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto |
+| | `NEXT_PUBLIC_SUPABASE_ANON_KEY` *(o* `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`*)* | Llave pública |
+| | `SUPABASE_SERVICE_ROLE_KEY` *(o* `SUPABASE_SECRET_KEY`*)* | Llave de servidor. **Nunca** con prefijo `NEXT_PUBLIC` |
+| Sitio | `NEXT_PUBLIC_SITE_URL` | Opcional. En Vercel se toma de la URL del despliegue |
+| Checkout (Test Wallet) | `INTERLEDGER_API_URL` | Opcional; por defecto `https://api-wallet.interledger-test.dev` |
+| | `INTERLEDGER_EMAIL`, `INTERLEDGER_PASSWORD` | Cuenta de respaldo si una cuenta no tiene token vigente |
+| Pasarela (SDK oficial) | `OPEN_PAYMENTS_CLIENT_WALLET`, `OPEN_PAYMENTS_KEY_ID` | Wallet y llave del cliente de Open Payments |
+| | `OPEN_PAYMENTS_PRIVATE_KEY` *(o* `OPEN_PAYMENTS_PRIVATE_KEY_PATH`*)* | Llave privada. Solo servidor |
+| | `OPEN_PAYMENTS_SENDER_WALLET` | Wallet que paga en la demostración |
+| | `OPEN_PAYMENTS_MAX_RECEIVE`, `OPEN_PAYMENTS_MAX_DEBIT` | Topes del cobro |
+| | `OPEN_PAYMENTS_REDIRECT_ORIGIN` | Origen al que vuelve el titular tras autorizar |
+| | `PAYMENTS_RAIL` | Solo admite `open-payments` (el valor por defecto) |
+| | `PAYMENTS_EXECUTION_ENABLED` | `false` bloquea la ejecución y deja solo consultar el total |
+| | `PASARELA_DEMO_ENABLED` | Habilita la pasarela de demostración |
 
-Las llaves de Interledger las define el módulo de pagos y viven **solo en el servidor**.
+Las llaves de Interledger viven **solo en el servidor**.
 
 ---
 
@@ -289,11 +319,11 @@ Vercel no puede llegar al Supabase de su computador: hace falta un proyecto de *
    npx supabase link --project-ref <REF_DEL_PROYECTO>
    npx supabase db push --include-seed
    ```
-   > 💡 Si la CLI está iniciada con **otra cuenta** de Supabase y no ve su proyecto, no hace falta cambiar de cuenta: en el *SQL Editor* del dashboard pegue las 5 migraciones de `supabase/migrations/` (en orden) y luego `supabase/seed.sql`. Cada migración **nueva** se aplica igual, en orden, en el proyecto de la nube.
+   > 💡 Si la CLI está iniciada con **otra cuenta** de Supabase y no ve su proyecto, no hace falta cambiar de cuenta: en el *SQL Editor* del dashboard pegue las migraciones de `supabase/migrations/` (en orden) y luego `supabase/seed.sql`. Cada migración **nueva** se aplica igual, en orden, en el proyecto de la nube.
 
-   Para **comprobar** que quedó bien, ejecute `supabase/tests/cloud-verify.sql` en el *SQL Editor*: devuelve 15 filas con el valor esperado entre paréntesis (7 tablas con RLS, 11 políticas, 2 funciones, 5 perfiles, 4 cooperativas, 3 productos, el rol `comprador`, el bucket de fotos y los permisos de `anon`).
+   Para **comprobar** que quedó bien, ejecute `supabase/tests/cloud-verify.sql` en el *SQL Editor*: devuelve una fila por comprobación con el valor esperado entre paréntesis (tablas con RLS, políticas, funciones, perfiles del seed, el bucket de fotos y los permisos de `anon`). Si agregó migraciones después de esa prueba, revise que sus números sigan vigentes.
 
-   Y para comprobar el **comportamiento** del RLS (no solo que exista), ejecute `supabase/tests/rls.sql` en el *SQL Editor* con el seed limpio: 46 verificaciones con seis actores que terminan en `ROLLBACK`, así que no dejan datos. Si todo está bien, devuelve la fila `RLS: todas las pruebas pasaron`.
+   Y para comprobar el **comportamiento** del RLS (no solo que exista), ejecute `supabase/tests/rls.sql` en el *SQL Editor* con el seed limpio: las verificaciones terminan en `ROLLBACK`, así que no dejan datos. Si todo está bien, devuelve la fila `RLS: todas las pruebas pasaron`.
 
    **Scripts para la nube** (se generan desde las migraciones y el seed, así nunca quedan desactualizados; salen en `supabase/.temp/`, ignorada por git):
 
@@ -307,16 +337,17 @@ Vercel no puede llegar al Supabase de su computador: hace falta un proyecto de *
 
    | Variable | Valor |
    |----------|-------|
-   | `USE_MOCKS` | `true` (hasta integrar los pagos y el login reales) |
    | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto de Supabase |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon key` |
    | `SUPABASE_SERVICE_ROLE_KEY` | `service_role key` (márquela como *Sensitive*) |
+   | Variables de Interledger | Las de la [tabla de variables](#-variables-de-entorno), según use el checkout, la pasarela o ambos (las llaves, como *Sensitive*) |
+   | `USE_MOCKS` | **No la defina para pagos reales.** Póngala en `true` solo si quiere un despliegue de demostración simulada |
 
 5. **Redeploy.** Las variables nuevas no se aplican a despliegues ya hechos.
 
 Cada push a `main` actualiza producción y cada rama o *pull request* genera su propia URL de preview.
 
-> ⚠️ Con `USE_MOCKS=true`, cualquiera que tenga la URL puede entrar como uno de los perfiles de ejemplo y editar datos de ejemplo. Deje activa la *Deployment Protection* de Vercel en los previews y no difunda la URL pública. Al integrar los módulos reales: `USE_MOCKS=false`.
+> ⚠️ Con `USE_MOCKS=true`, cualquiera que tenga la URL puede entrar como uno de los perfiles de ejemplo (hay botón de entrada rápida) y editar datos de ejemplo. Deje activa la *Deployment Protection* de Vercel en los previews. Para un despliegue con pagos reales, quite la variable.
 
 **Flujo de trabajo del equipo:** `main` siempre desplegable · cada cambio en una rama corta (`feat/…`, `fix/…`, `docs/…`) con *pull request* · cada compañero toca solo su carpeta (`src/payments`, `src/auth`).
 
@@ -329,12 +360,14 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 
 | Carpeta / archivo | Qué contiene |
 |-------------------|--------------|
-| `src/app/` | Rutas: inicio, acceso (sign in), registro (sign up), caficultor, tienda, comprador, cooperativa, pago y API de pagos |
+| `src/app/` | Rutas: inicio, acceso (sign in), registro (sign up), caficultor, tienda, comprador, cooperativa, pago (retorno, pasarela, seguridad) y APIs de pagos y pasarela |
 | `src/components/` | Cabecera, pie, selector de rol del inicio, grano de la marca, formularios, recibo, fotos de producto |
 | `public/` | Logos de la marca (`brand/`: grano y sello, versión clara y oscura) y la foto del inicio (`fotos/`) |
 | `src/adapters/` | **Contratos** + mocks + selector `USE_MOCKS`. La interfaz solo habla con esta capa |
-| `src/payments/` | ⛔ **Stub** del módulo de pagos *(compañero de pagos)* |
-| `src/auth/` | ⛔ **Stub** del módulo de login y wallets *(compañero de login)* |
+| `src/payments/` | Módulo de pagos *(Yamil)*: checkout, pasarela con SDK oficial, canal y recibos post-cuánticos (`pqc/`) |
+| `src/auth/` | Módulo de cuentas *(Álvaro)*: registro, acceso y sesión; la lógica de sesión está en `src/lib/sesion.ts` |
+| `src/lib/interledger.ts` | Cliente de la API de Test Wallet: cotizar, enviar y confirmar pagos del checkout |
+| `docs/` | Pasarela, demostración para el jurado, ADR-001 (borrador), planes de integración e investigación de PQC |
 | `src/lib/match.ts` | Agente de match: puntaje, desglose y motivo |
 | `src/lib/ruta-b.ts` | Lote, elección de cooperativa, aceptar oferta |
 | `src/lib/roles.ts` | Home de cada rol y `rutaSegura` (a dónde volver tras entrar, solo rutas internas) |
@@ -351,7 +384,7 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas implementadas y verificadas:
 
 - **Monto y wallet receptora desde el servidor.** Una petición manipulada con `monto` y `walletReceptor` falsos salió con el precio de la base y la wallet real.
-- **Row Level Security en las 7 tablas.** Cada caficultor ve y edita solo lo suyo; el catálogo público lee solo `publicado = true`. **46 verificaciones en SQL** con seis actores distintos (sin sesión, caficultora, caficultor sin INVIMA, cooperativa y dos compradores).
+- **Row Level Security en las tablas de negocio.** Cada caficultor ve y edita solo lo suyo; el catálogo público lee solo `publicado = true`. Verificaciones en SQL (`supabase/tests/rls.sql`) con actores distintos: sin sesión, caficultores, cooperativa y compradores.
 - **Escrituras sensibles solo desde el servidor.** Pedidos, pagos y ofertas no tienen políticas de escritura para usuarios.
 - **Vista pública sin wallets.** La tienda se arma con una vista que expone solo `id`, `nombre` y `municipio`.
 - **Sin INVIMA no se abre tienda**, también a nivel de base de datos. Y el INVIMA **no se autodeclara desde la página**: el dato viene de la cuenta, así que un caficultor no puede darse acceso a la tienda con un clic.
@@ -359,10 +392,12 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 - **Datos escapados.** El HTML escrito en nombres y descripciones se muestra como texto; las URLs de foto solo aceptan `http(s)`.
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
 - **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro; un comprador solo ve sus compras.
-- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores y cooperativas; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora.
+- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora. Hoy el checkout admite compradores **y** cooperativas; esa política está en revisión (ADR-001, borrador).
+- **Canal cifrado post-cuántico.** Las llamadas de pago viajan con ML-KEM-768 + AES-256-GCM; la pasarela añade un token de un solo uso ligado a sesión y cotización, con vencimiento de cinco minutos. El cifrado protege el tramo navegador–servidor: **no autoriza** pagos ni vuelve post-cuántico a Interledger.
+- **Topes en la cuenta de prueba.** El checkout rechaza pagos de más de 25 EUR o cotizaciones que debiten más de 30 EUR.
 - **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan, también en `/acceso` y `/registro`.
-- **Sesión simulada firmada.** En modo demostración la cookie de sesión va firmada con un secreto del servidor: un id suelto, una firma inventada o la firma de otra cuenta se rechazan. Sigue siendo una simulación, no la autenticación real.
-- **Registro acotado.** El rol que mande el navegador no puede ser cooperativa; el INVIMA solo cuenta si el rol es caficultor; la contraseña exige 8 caracteres o más; el error de sign in es el mismo para correo desconocido y contraseña errónea.
+- **Sesión real en cookie httpOnly.** El id de sesión es aleatorio (64 hex), vive en la tabla `sesiones` con vencimiento a 7 días, la cookie es `httpOnly`, `sameSite=lax` y `secure` en producción. Un id con otro formato se descarta sin consultar la base.
+- **Contraseñas con hash** y el mismo error de sign in para correo desconocido y contraseña errónea. El registro rechaza correo o documento repetidos.
 - **Llaves solo en el servidor.** La llave de servicio no aparece en el bundle del navegador (verificado) ni en el repo.
 - **Sin custodia.** La plataforma nunca toca el dinero.
 
@@ -375,7 +410,7 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 Cumplimos la **Política de IA del evento**: todo está registrado mientras se trabaja, no al final.
 
 - **Herramienta:** *Claude Code* con el modelo *Claude Sonnet 5.5* escribió la página completa. **Jennifer Salazar Duke dirige y revisa cada decisión.**
-- **Qué no escribió la IA:** el servicio real de Interledger y el login real son de los compañeros; sus archivos se listan aparte.
+- **Qué no escribió la IA de Jennifer:** los módulos de pagos (`src/payments`) y de cuentas (`src/auth`) son de los compañeros; sus archivos se listan aparte.
 - **Verificación:** cada tarea se corrió y probó, y el resultado real (incluidos los fallos y sus correcciones) está en [`AI_USAGE.md`](./AI_USAGE.md).
 - **Prompts:** el texto íntegro de cada instrucción, por área, en [`prompts/`](./prompts/).
 - **Código previo:** no se copió código de otros proyectos. La tienda de Luli se definió como referencia de patrones y **no se abrió ni se copió nada**.
@@ -386,16 +421,21 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 
 | Pendiente | Estado |
 |-----------|--------|
-| Pagos reales con Interledger | Lo entrega el compañero de pagos en `src/payments` |
-| Autenticación real (sign in / sign up) y asignación de wallets | Lo entrega el compañero de login en `src/auth`: `iniciarSesion` y `registrarse` (la página ya tiene las pantallas `/acceso` y `/registro`) |
-| Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. `tiene_invima` lo **registra el sign up** (solo caficultores; la página solo lo lee) |
-| Rol `comprador` y wallet asignada en el login real | El compañero de login debe admitir `comprador` en `profiles.rol`, asignar wallet al registrarse y respetar `?siguiente=` (cambio de contrato) |
-| Moneda y unidades menores del monto | Por confirmar con el módulo de pagos (hoy: COP entero) |
-| Cooperativas sin cuenta | Solo la **cuenta demo** puede aceptar y pagar ofertas; las demás son precargadas |
-| Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar al integrar |
+| Dos recorridos de pago (checkout con la API de Test Wallet y pasarela con SDK oficial y GNAP) | Conviven. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador)* propone unificar en el SDK oficial; la decisión es del equipo |
+| Pago real sin consentimiento explícito en el checkout | El checkout paga con la sesión de billetera guardada de la cuenta (o la de respaldo `INTERLEDGER_EMAIL`); la pasarela sí pide la autorización del titular |
+| Asignación de wallets | El registro **no asigna** wallet ni token: se cargan a mano en la base. Falta definir cómo se asignan |
+| Datos de ejemplo con wallets marcador | `seed.sql` usa `wallet.example.test`: no son billeteras de Interledger |
+| `tiene_invima` duplicado | El registro lo guarda en `usuarios` y en `profiles`; falta definir la fuente única |
+| Moneda y unidades menores del monto | Los precios están en COP y la wallet de prueba cobra en EUR: se convierte con la tasa de la Test Wallet y se aplican topes |
+| Política de cooperativas | Hoy el checkout admite cooperativas como compradoras, sin pantalla de compras propia; qué cooperativas tienen cuenta está por decidir (ADR-001, borrador) |
+| Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar |
+| Estado de la pasarela en serverless | Según la documentación de la pasarela, sus grants y llaves viven en memoria de un proceso: en Vercel (serverless) el flujo completo puede no cerrarse. Falta validarlo con login real |
+| Pruebas | `jsdom` no está declarada en `package.json`. Además, 2 pruebas de `src/payments/index.test.ts` esperan que el checkout delegue al SDK sin cookies, y hoy delega a la API de Test Wallet con cookie (la misma tensión del ADR-001). El resto de los fallos de la última corrida local venían de dependencias sin instalar (`npm install`) |
+| Migraciones | Dos migraciones comparten el timestamp `20261017000000` (`comprador` y `usuarios`) |
 | Agente: coordenadas de municipios | Aproximadas; el agente evolucionará (por ejemplo, un modelo que redacte el motivo) |
-| Supabase en la nube + URL pública en Vercel | **Hecho** (con `USE_MOCKS=true`). Antes de presentar: `npm run cloud:reset` para dejar la demo limpia (ver [Desplegar](#-desplegar-en-vercel)) |
-| Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo: mientras los pagos y el acceso sean simulados, **hay que decirlo en la presentación** |
+| Supabase en la nube + URL pública en Vercel | **Hecho.** Antes de presentar, revise las variables del despliegue ([Desplegar](#-desplegar-en-vercel)). `npm run cloud:reset` borra datos: confirme qué tablas toca (hay tablas nuevas, como `usuarios` y `sesiones`) antes de correrlo |
+| Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo. Con pagos reales ya no aplica; **si se despliega con `USE_MOCKS=true`, hay que decir en la presentación que los pagos son simulados** |
+| Uso de IA de los compañeros | Falta declararlo en [`AI_USAGE.md`](./AI_USAGE.md) |
 | Foto del inicio | Falta confirmar su origen y licencia |
 | Capturas de pantalla en el README | Se agregan **al final, con el diseño definitivo** |
 | Validación con alguien de campo | Pendiente: cómo cobra hoy el caficultor, cuánto tarda, si tiene Nequi |
@@ -421,4 +461,4 @@ Lo técnico recae sobre todo en Yamil y Álvaro. Caren y Astrid llevan la **admi
 
 ## 💡 Sobre el hackatón
 
-Proyecto construido para el **Hackatón Open Payments · Medellín 2026** (Ruta N, 16 y 17 de octubre). La demo muestra el ciclo completo: **solicitud de pago → autorización → ejecución → finalización exitosa**, en las dos rutas: un caficultor con INVIMA que publica su café y recibe un pago directo, y otro sin INVIMA que carga su lote, elige una cooperativa y ve el cobro.
+Proyecto construido para el **Hackatón Open Payments · Medellín 2026** (Ruta N, 16 y 17 de octubre). La demo muestra el ciclo completo: **solicitud de pago → autorización → ejecución → finalización exitosa**, en las dos rutas: un caficultor con INVIMA que publica su café y recibe un pago directo, y otro sin INVIMA que carga su lote, elige una cooperativa y ve el cobro. Los pagos se ejecutan en la **testnet de Interledger**, con fondos de prueba.

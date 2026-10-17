@@ -183,3 +183,30 @@ todo esta verde y ok solo falta actualizar el readme que esta viejo que tenga un
 - **Supuesto declarado:** el README describe el estado de `main` (todo simulado); el trabajo de pagos y cuentas de los compañeros sigue en integración y por eso se avisa arriba, sin documentarlo como funcionando.
 - No se agregó la URL pública de la demo: el propio README pide no difundirla mientras los pagos sean simulados.
 - Archivos: `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — README al estado real (acceso real y pagos con la billetera de prueba)
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+no pero ya se actualizo en el git revisa que ya no estamos usando nada simulao si no funcional con la billetera test importante tener esto presente y claro
+```
+
+```
+perimero actualicemos el readme y despues continuamso con el deck
+```
+
+### Resultado breve
+- Se verificó `origin/main` (PR 36) y se actualizaron `README.md` y `README.en.md`: acceso real, pagos reales contra la testnet de Interledger (fondos de prueba), dos recorridos de pago, sección de cuentas y wallets, variables de entorno y limitaciones.
+- **Supuesto declarado:** "funcional" significa fondos de prueba en la testnet, no dinero real. No se ejecutó un pago ni se leyó la configuración de Vercel.
+- **Hallazgo declarado:** el registro no asigna wallet y el seed usa `wallet.example.test`; para pagar de verdad las cuentas necesitan wallet y token cargados a mano en la base.
+- Se quitaron las cifras de pruebas (115 y 46) por no poder reverificarlas; `npm test` no pasa limpio en la copia local.
+- No se tocó código.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
