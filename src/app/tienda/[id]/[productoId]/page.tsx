@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FormularioCheckout } from "@/components/formulario-checkout";
+import { auth } from "@/adapters/auth";
+import { FormularioCheckout, type SesionCheckout } from "@/components/formulario-checkout";
 import { FotoProducto } from "@/components/foto-producto";
 import { obtenerProducto, obtenerTienda } from "@/lib/catalogo";
 import { formatoCop } from "@/lib/validacion";
@@ -18,8 +19,19 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function DetalleProducto({ params }: { params: Params }) {
   const { id, productoId } = await params;
-  const [tienda, producto] = await Promise.all([obtenerTienda(id), obtenerProducto(id, productoId)]);
+  const [tienda, producto, perfil] = await Promise.all([
+    obtenerTienda(id),
+    obtenerProducto(id, productoId),
+    auth.obtenerPerfil().catch(() => null),
+  ]);
   if (!tienda || !producto) notFound();
+
+  // El catálogo es público; el pago exige cuenta de comprador y paga con la wallet de su perfil.
+  const sesion: SesionCheckout = !perfil
+    ? { tipo: "anonimo" }
+    : perfil.rol === "comprador"
+      ? { tipo: "comprador", nombre: perfil.nombre, wallet: perfil.wallet_address }
+      : { tipo: "otro-rol", nombre: perfil.nombre, rol: perfil.rol };
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">
@@ -40,7 +52,12 @@ export default async function DetalleProducto({ params }: { params: Params }) {
             ◆
           </div>
 
-          <FormularioCheckout productoId={producto.id} precioCop={producto.precio_cop} />
+          <FormularioCheckout
+            productoId={producto.id}
+            precioCop={producto.precio_cop}
+            sesion={sesion}
+            volverA={`/tienda/${tienda.id}/${producto.id}`}
+          />
         </div>
       </div>
     </section>

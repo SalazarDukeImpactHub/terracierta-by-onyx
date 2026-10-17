@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { auth } from "@/adapters/auth";
 import { salir } from "@/app/acceso/actions";
+import { rutaDeRol } from "@/lib/roles";
 
 export async function Cabecera() {
   const perfil = await auth.obtenerPerfil().catch(() => null);
-  const home = perfil?.rol === "cooperativa" ? "/cooperativa" : "/caficultor";
+  const home = perfil ? rutaDeRol(perfil.rol) : "/acceso";
 
   return (
     <header className="sticky top-0 z-30 border-b border-linea bg-crema/95 backdrop-blur">

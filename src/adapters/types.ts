@@ -39,7 +39,12 @@ export interface PagosAdapter {
 
 // ---------- 7.2 Login y wallets (lo entrega el compañero de login) ----------
 
-export type Rol = "caficultor" | "cooperativa";
+/**
+ * "comprador" es la persona que compra en la tienda. También inicia sesión: su wallet sale de su perfil
+ * (asignada al registrarse, igual que las de caficultores y cooperativas), no de un formulario.
+ * CAMBIO DE CONTRATO con el módulo de login: profiles.rol admite 'comprador' (migración 20261017000000).
+ */
+export type Rol = "caficultor" | "cooperativa" | "comprador";
 
 export interface Sesion {
   userId: string;

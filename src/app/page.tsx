@@ -11,7 +11,7 @@ const ROLES = [
   {
     numeral: "II",
     titulo: "Quiero comprar café",
-    texto: "Elegí café de una finca con nombre y pagale directo a su dueño. Sin registro: solo tu billetera.",
+    texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
     href: "/tienda",
     accion: "Ver la tienda",
   },

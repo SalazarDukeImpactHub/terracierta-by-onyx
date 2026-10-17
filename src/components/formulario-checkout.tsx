@@ -1,17 +1,69 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { cambiarDeCuenta } from "@/app/acceso/actions";
 import { formatoCop } from "@/lib/validacion";
 
+export type SesionCheckout =
+  | { tipo: "anonimo" }
+  | { tipo: "otro-rol"; nombre: string; rol: string }
+  | { tipo: "comprador"; nombre: string; wallet: string | null };
+
 /**
- * Checkout del comprador (sin registro): pide cantidad y su wallet address y llama a
- * /api/pagos/iniciar. El monto que se muestra es informativo; el servidor lo recalcula desde la base.
+ * Checkout. Pagar exige tener cuenta: la billetera con la que se paga sale del perfil del comprador (asignada al
+ * registrarse), no de un campo de texto. El catálogo sigue siendo público; la cuenta se pide solo acá.
+ * El total que se muestra es informativo: el servidor recalcula el monto desde la base.
  */
-export function FormularioCheckout({ productoId, precioCop }: { productoId: string; precioCop: number }) {
+export function FormularioCheckout({
+  productoId,
+  precioCop,
+  sesion,
+  volverA,
+}: {
+  productoId: string;
+  precioCop: number;
+  sesion: SesionCheckout;
+  volverA: string;
+}) {
+  const router = useRouter();
   const [cantidad, setCantidad] = useState(1);
-  const [wallet, setWallet] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const rutaAcceso = `/acceso?siguiente=${encodeURIComponent(volverA)}`;
+
+  if (sesion.tipo === "anonimo") {
+    return (
+      <div className="grid gap-4 border border-linea bg-crema-2 p-5">
+        <p className="font-titulo text-2xl">Para pagar, entrá con tu cuenta</p>
+        <p className="text-apagado">
+          Cada persona tiene su billetera. Entrando, tu pago sale de tu wallet y queda en tus compras. Mirar el café no
+          necesita cuenta.
+        </p>
+        <Link href={rutaAcceso} className="btn btn-bosque self-start">
+          Entrar para pagar
+        </Link>
+      </div>
+    );
+  }
+
+  if (sesion.tipo === "otro-rol") {
+    return (
+      <div className="grid gap-4 border border-linea bg-crema-2 p-5">
+        <p className="font-titulo text-2xl">Entraste como {sesion.nombre}</p>
+        <p className="text-apagado">
+          Tu cuenta es de <strong>{sesion.rol}</strong>. Para comprar café necesitás una cuenta de <strong>comprador</strong>.
+        </p>
+        <form action={cambiarDeCuenta}>
+          <input type="hidden" name="siguiente" value={volverA} />
+          <button type="submit" className="btn btn-borde">
+            Cambiar de cuenta
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   async function pagar(e: React.FormEvent) {
     e.preventDefault();
@@ -21,8 +73,12 @@ export function FormularioCheckout({ productoId, precioCop }: { productoId: stri
       const respuesta = await fetch("/api/pagos/iniciar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productoId, cantidad, walletComprador: wallet }),
+        body: JSON.stringify({ productoId, cantidad }),
       });
+      if (respuesta.status === 401) {
+        router.push(rutaAcceso); // la sesión venció: volver a entrar y regresar a este producto
+        return;
+      }
       const datos = (await respuesta.json()) as { redirectUrl?: string; error?: string };
       if (!respuesta.ok || !datos.redirectUrl) {
         setError(datos.error ?? "No pudimos iniciar el pago");
@@ -53,23 +109,14 @@ export function FormularioCheckout({ productoId, precioCop }: { productoId: stri
         />
       </div>
 
-      <div>
-        <label htmlFor="wallet" className="etiqueta">
-          Tu wallet address (la billetera desde la que pagás)
-        </label>
-        <input
-          id="wallet"
-          type="text"
-          inputMode="url"
-          autoComplete="off"
-          placeholder="https://billetera.com/tu-nombre  o  $billetera.com/tu-nombre"
-          value={wallet}
-          onChange={(e) => setWallet(e.target.value)}
-          className="campo mt-1"
-          aria-describedby="wallet-ayuda"
-          required
-        />
-        <p id="wallet-ayuda" className="mt-1 text-sm text-apagado">
+      <div className="border border-linea bg-crema-2 p-4">
+        <p className="etiqueta">Pagás desde tu wallet · {sesion.nombre}</p>
+        {sesion.wallet ? (
+          <p className="mt-1 break-all font-medium">{sesion.wallet}</p>
+        ) : (
+          <p className="mt-1 text-cereza">Tu cuenta todavía no tiene una wallet asignada.</p>
+        )}
+        <p className="mt-2 text-sm text-apagado">
           Vas a aprobar el pago en tu billetera antes de que se cobre. No guardamos claves.
         </p>
       </div>
@@ -84,7 +131,7 @@ export function FormularioCheckout({ productoId, precioCop }: { productoId: stri
         </p>
       )}
 
-      <button type="submit" className="btn btn-bosque self-start" disabled={enviando || wallet.trim().length === 0}>
+      <button type="submit" className="btn btn-bosque self-start" disabled={enviando || !sesion.wallet}>
         {enviando ? "Iniciando pago…" : "Pagar con Open Payments"}
       </button>
     </form>
