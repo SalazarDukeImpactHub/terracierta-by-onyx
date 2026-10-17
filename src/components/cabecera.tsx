@@ -16,7 +16,7 @@ export async function Cabecera() {
           <span>
             <span className="block font-titulo text-xl font-medium uppercase tracking-[0.28em]">Terracierta</span>
             <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.22em] text-apagado">
-              by Onyx · Marsella · Antioquia
+              by Onyx
             </span>
           </span>
         </Link>

@@ -1,10 +1,21 @@
 import Image from "next/image";
 
-/** Emblema de Terracierta (grano de café sobre la montaña). Archivo original en /public/brand. */
-export function Marca({ tamano = 40, className }: { tamano?: number; className?: string }) {
+/**
+ * Grano de café de Terracierta. `claro` es para fondos claros y `oscuro` para fondos oscuros (como el pie).
+ * Archivos originales en /public/brand.
+ */
+export function Marca({
+  tamano = 40,
+  tono = "claro",
+  className,
+}: {
+  tamano?: number;
+  tono?: "claro" | "oscuro";
+  className?: string;
+}) {
   return (
     <Image
-      src="/brand/terracierta-marca.svg"
+      src={`/brand/terracierta-grano-${tono}.svg`}
       alt=""
       aria-hidden="true"
       width={tamano}
