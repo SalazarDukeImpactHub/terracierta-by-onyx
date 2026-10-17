@@ -91,7 +91,10 @@ export default function Inicio() {
           <div>
             <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
             <h1 className="mt-4 max-w-3xl text-4xl text-white sm:mt-5 sm:text-6xl">
-              Que el caficultor cobre directo, <em className="text-cobre">con nombre propio.</em>
+              Que el caficultor cobre directo, <em className="tipeo">
+                <span className="tipeo-texto">con nombre propio.</span>
+                <span className="tipeo-cursor" aria-hidden="true" />
+              </em>
             </h1>
             <p className="mt-4 max-w-2xl text-base text-crema/85 sm:mt-6 sm:text-lg">
               Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
