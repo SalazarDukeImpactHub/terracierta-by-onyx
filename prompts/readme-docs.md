@@ -163,3 +163,23 @@ ya estan invitados a el repo que es ya voy a crear el env exammple y lso roles d
 
 ### Archivos tocados
 `README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — README al día, en inglés y sin la landing
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+todo esta verde y ok solo falta actualizar el readme que esta viejo que tenga uno en ingles y al final que habla de la landing eliminarlo no va con esto  Terracierta es un proyecto de café con nombre propio, que parte de Marsella. Conózcalo en terracierta-landing.vercel.app.
+```
+
+### Resultado breve
+- `README.md` actualizado y `README.en.md` nuevo (traducción completa), con un enlace de cambio de idioma arriba en cada uno.
+- Se eliminó el párrafo final de la landing. **Supuesto declarado:** también se quitó el enlace "Conozca Terracierta" de la parte de arriba, que apuntaba a la misma landing.
+- **Supuesto declarado:** el README describe el estado de `main` (todo simulado); el trabajo de pagos y cuentas de los compañeros sigue en integración y por eso se avisa arriba, sin documentarlo como funcionando.
+- No se agregó la URL pública de la demo: el propio README pide no difundirla mientras los pagos sean simulados.
+- Archivos: `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.

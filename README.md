@@ -4,6 +4,8 @@
 
 # ☕ Terracierta by Onyx — Café con nombre propio
 
+**🇪🇸 Español** · [🇬🇧 English](./README.en.md)
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
@@ -17,7 +19,9 @@
 
 > Plataforma web que le da a cada pequeño caficultor de **Antioquia y Marsella** una **wallet propia** para cobrar directo con **Interledger**: vendiendo en su tienda virtual (con INVIMA) o a la mejor cooperativa que le recomienda un agente (sin INVIMA).
 
-**[🌿 Conozca Terracierta](https://terracierta-landing.vercel.app/)** · **[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)**
+**[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)**
+
+> ⚠️ **Estado actual: demostración.** Los pagos y el acceso están **simulados** (`USE_MOCKS=true`): ningún pago mueve dinero real. Los módulos reales de pagos (`src/payments`) y de cuentas (`src/auth`) son de los compañeros y están **en integración**; hoy en `src/payments` y `src/auth` solo hay puntos de enchufe (ver [Limitaciones y roadmap](#-limitaciones-y-roadmap)).
 
 ---
 
@@ -65,6 +69,7 @@ Tres entradas, según lo que busca cada quien:
 
 | Función | Detalle |
 |---------|---------|
+| 🧭 **Entrada por rol** | El inicio deja elegir caficultor, comprador o cooperativa y muestra solo lo suyo, con su acción principal (para el caficultor, crear su cuenta) |
 | 🏪 **Tienda pública** | Catálogo y detalle por caficultor, fotos en Supabase Storage. Solo se ve lo publicado |
 | 🛒 **Checkout con cuenta** | Pagar exige iniciar sesión como comprador: **la wallet sale de su perfil**, no de un formulario. El catálogo sigue siendo público. **El monto y la wallet del caficultor los calcula el servidor** |
 | 🧾 **Mis compras** | El comprador ve su wallet, lo que pagó y el recibo de cada compra. Cada cuenta ve solo las suyas |
@@ -206,7 +211,7 @@ Una cooperativa **solo se puede elegir** si acepta el método y la variedad y ti
 
 ## 🚀 Correr localmente
 
-**Requisitos:** Node 20+ (se recomienda 22), [Docker Desktop](https://www.docker.com/products/docker-desktop/) abierto.
+**Requisitos:** **Node 22** (`@supabase/supabase-js` 2.118 ya lo pide; con Node 20 hay avisos y las pruebas de base de datos usan un reemplazo de `WebSocket`) y [Docker Desktop](https://www.docker.com/products/docker-desktop/) abierto.
 
 ```bash
 # 1. Clonar e instalar
@@ -284,7 +289,7 @@ Vercel no puede llegar al Supabase de su computador: hace falta un proyecto de *
    npx supabase link --project-ref <REF_DEL_PROYECTO>
    npx supabase db push --include-seed
    ```
-   > 💡 Si la CLI está iniciada con **otra cuenta** de Supabase y no ve su proyecto, no hace falta cambiar de cuenta: en el *SQL Editor* del dashboard pegue las 4 migraciones de `supabase/migrations/` (en orden) y luego `supabase/seed.sql`. Cada migración **nueva** se aplica igual, en orden, en el proyecto de la nube.
+   > 💡 Si la CLI está iniciada con **otra cuenta** de Supabase y no ve su proyecto, no hace falta cambiar de cuenta: en el *SQL Editor* del dashboard pegue las 5 migraciones de `supabase/migrations/` (en orden) y luego `supabase/seed.sql`. Cada migración **nueva** se aplica igual, en orden, en el proyecto de la nube.
 
    Para **comprobar** que quedó bien, ejecute `supabase/tests/cloud-verify.sql` en el *SQL Editor*: devuelve 15 filas con el valor esperado entre paréntesis (7 tablas con RLS, 11 políticas, 2 funciones, 5 perfiles, 4 cooperativas, 3 productos, el rol `comprador`, el bucket de fotos y los permisos de `anon`).
 
@@ -324,8 +329,9 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 
 | Carpeta / archivo | Qué contiene |
 |-------------------|--------------|
-| `src/app/` | Rutas: landing, acceso (sign in), registro (sign up), caficultor, tienda, comprador, cooperativa, pago y API de pagos |
-| `src/components/` | Cabecera, pie, formularios, recibo, fotos de producto |
+| `src/app/` | Rutas: inicio, acceso (sign in), registro (sign up), caficultor, tienda, comprador, cooperativa, pago y API de pagos |
+| `src/components/` | Cabecera, pie, selector de rol del inicio, grano de la marca, formularios, recibo, fotos de producto |
+| `public/` | Logos de la marca (`brand/`: grano y sello, versión clara y oscura) y la foto del inicio (`fotos/`) |
 | `src/adapters/` | **Contratos** + mocks + selector `USE_MOCKS`. La interfaz solo habla con esta capa |
 | `src/payments/` | ⛔ **Stub** del módulo de pagos *(compañero de pagos)* |
 | `src/auth/` | ⛔ **Stub** del módulo de login y wallets *(compañero de login)* |
@@ -335,7 +341,7 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 | `src/lib/pagos-service.ts` | Crear el pago desde datos de la base, sincronizar estado, pedidos y ofertas |
 | `src/lib/validacion.ts` | Esquemas Zod, wallet address, URLs seguras |
 | `supabase/` | Migraciones (tablas, RLS, vista pública, Storage), `seed.sql` y `tests/rls.sql` |
-| `scripts/` | `dev-local.mjs` y `test-db.mjs`: arrancan con las llaves locales, sin `.env` |
+| `scripts/` | `dev-local.mjs` y `test-db.mjs`: arrancan con las llaves locales, sin `.env`; `cloud-sql.mjs`: genera el SQL para la nube |
 | `AI_USAGE.md` · `prompts/` | Política de IA del evento: herramientas, archivos y prompts |
 
 ---
@@ -388,7 +394,9 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Cooperativas sin cuenta | Solo la **cuenta demo** puede aceptar y pagar ofertas; las demás son precargadas |
 | Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar al integrar |
 | Agente: coordenadas de municipios | Aproximadas; el agente evolucionará (por ejemplo, un modelo que redacte el motivo) |
-| Supabase en la nube + URL pública en Vercel | Pendiente de crear y cargar (ver [Desplegar](#-desplegar-en-vercel)) |
+| Supabase en la nube + URL pública en Vercel | **Hecho** (con `USE_MOCKS=true`). Antes de presentar: `npm run cloud:reset` para dejar la demo limpia (ver [Desplegar](#-desplegar-en-vercel)) |
+| Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo: mientras los pagos y el acceso sean simulados, **hay que decirlo en la presentación** |
+| Foto del inicio | Falta confirmar su origen y licencia |
 | Capturas de pantalla en el README | Se agregan **al final, con el diseño definitivo** |
 | Validación con alguien de campo | Pendiente: cómo cobra hoy el caficultor, cuánto tarda, si tiene Nequi |
 | Licencia del repositorio | Por definir por el equipo |
@@ -407,12 +415,10 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 
 Lo técnico recae sobre todo en Yamil y Álvaro. Caren y Astrid llevan la **administración** y la **parte creativa**, aportan ideas y **revisan la app para detectar los errores que se le escapen al equipo técnico**.
 
-> Cada integrante técnico trabaja **solo en su carpeta** y en su propia rama (`feat/payments`, `feat/auth`), con *pull request* hacia `main`.
+> Cada integrante técnico trabaja **solo en su carpeta** y en su propia rama, con *pull request* hacia `main`. La integración de los módulos reales va en PRs pequeños y encadenados, no en uno solo.
 
 ---
 
 ## 💡 Sobre el hackatón
 
 Proyecto construido para el **Hackatón Open Payments · Medellín 2026** (Ruta N, 16 y 17 de octubre). La demo muestra el ciclo completo: **solicitud de pago → autorización → ejecución → finalización exitosa**, en las dos rutas: un caficultor con INVIMA que publica su café y recibe un pago directo, y otro sin INVIMA que carga su lote, elige una cooperativa y ve el cobro.
-
-Terracierta es un proyecto de café con nombre propio, que parte de Marsella. Conózcalo en **[terracierta-landing.vercel.app](https://terracierta-landing.vercel.app/)**.
