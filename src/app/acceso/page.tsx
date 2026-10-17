@@ -3,11 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/adapters/auth";
 import { CONTRASENA_DEMO, PERFILES_DEMO } from "@/adapters/mocks/auth";
+import { entrarDemo } from "@/app/acceso/actions";
 import { FormularioAcceso } from "@/components/formulario-acceso";
 import { Marca } from "@/components/marca";
 import { USE_MOCKS } from "@/lib/env";
 import { rutaDeRol, rutaSegura } from "@/lib/roles";
-import { entrarDemo } from "./actions";
 
 export const metadata: Metadata = { title: "Iniciar sesión" };
 
@@ -18,7 +18,6 @@ export const metadata: Metadata = { title: "Iniciar sesión" };
 export default async function Acceso({ searchParams }: { searchParams: Promise<{ siguiente?: string }> }) {
   const { siguiente: crudo } = await searchParams;
   const siguiente = rutaSegura(crudo);
-
   const sesion = await auth.obtenerSesion().catch(() => null);
   if (sesion) redirect(siguiente ?? rutaDeRol(sesion.rol));
 
@@ -48,9 +47,9 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
         <div className="mt-10 border border-linea bg-crema-2 p-5">
           <p className="etiqueta !text-cereza">Modo demostración</p>
           <p className="mt-2 text-sm text-apagado">
-            El acceso real llega con el módulo de autenticación. Mientras tanto podés iniciar sesión con una cuenta de ejemplo
-            (contraseña <code className="font-semibold text-tinta">{CONTRASENA_DEMO}</code>) o entrar rápido con un clic. Las cuentas
-            que crees acá no guardan la contraseña, así que no se verifica.
+            También podés recorrer la demo con una cuenta de ejemplo (contraseña{" "}
+            <code className="font-semibold text-tinta">{CONTRASENA_DEMO}</code>
+            ). Tu cuenta real, la de correo y contraseña de arriba, sigue siendo la de la base de datos.
           </p>
 
           <ul className="mt-3 grid gap-1 text-sm">

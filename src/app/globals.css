@@ -18,6 +18,8 @@
   --cobre-oscuro: #8c4e2b; /* landing: botones (texto crema, contraste AA) */
   --apagado: #5b6455; /* landing: texto secundario */
   --linea: #d6cbb2;
+  --font-cormorant: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-eb-garamond: "EB Garamond", Georgia, "Times New Roman", serif;
 }
 
 @theme inline {
@@ -134,6 +136,24 @@ h4 {
 }
 .campo::placeholder {
   color: var(--apagado);
+}
+
+/* Opciones de un formulario: rol, INVIMA. La elegida se marca con :checked. */
+.opcion {
+  display: block;
+  cursor: pointer;
+  border: 1px solid var(--linea);
+  background: #fbf8f1;
+  padding: 0.9rem 1rem;
+}
+.opcion:hover {
+  border-color: var(--cobre);
+}
+.opcion:has(:checked),
+.opcion-activa {
+  border-color: var(--cobre-oscuro);
+  background: var(--crema);
+  box-shadow: inset 3px 0 0 var(--cobre-oscuro);
 }
 
 /* Separador con rombo */
