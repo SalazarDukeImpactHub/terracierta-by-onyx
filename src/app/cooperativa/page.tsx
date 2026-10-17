@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requerirRol } from "@/adapters/auth";
-import { BilleteraInterledger } from "@/components/billetera-interledger";
 import { ofertasRecibidas, type OfertaRecibida } from "@/lib/ruta-b";
 import { formatoCop } from "@/lib/validacion";
 import { aceptarOferta, pagarOferta } from "./actions";
@@ -35,7 +34,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           <form action={aceptarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
-              Aceptar oferta
+              Aceptar solicitud de venta
             </button>
           </form>
         )}
@@ -43,7 +42,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           <form action={pagarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
-              {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Interledger"}
+              {o.estado === "fallida" ? "Reintentar el pago" : "Pagar y completar la compra"}
             </button>
           </form>
         )}
@@ -89,8 +88,10 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
       <div className="mt-4 border border-linea bg-crema-2 p-4">
         <p className="etiqueta">Tu wallet para pagar</p>
         <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tenés una wallet asignada."}</p>
+        <p className="mt-2 text-sm text-apagado">
+          {perfil.token ? "La cookie de la billetera ya está guardada en esta cuenta." : "Esta cuenta todavía no tiene la cookie de la billetera."}
+        </p>
       </div>
-      <BilleteraInterledger usuarioId={perfil.id} token={perfil.token} />
       <p className="mt-6">
         <Link href="/tienda" className="btn">
           Comprar café en la tienda
@@ -105,7 +106,7 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
 
       <Seccion
         titulo="Por responder"
-        vacio="No tenés ofertas nuevas. Cuando un caficultor te elija, aparece acá."
+        vacio="No tenés solicitudes nuevas. Cuando un caficultor te elija, la solicitud de venta aparece acá."
         ofertas={ofertas.filter((o) => o.estado === "propuesta")}
       />
       <Seccion

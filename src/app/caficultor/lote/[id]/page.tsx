@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 const NUMERAL = ["I", "II", "III"];
 
 const ESTADO_OFERTA: Record<string, { texto: string; ayuda: string; clase: string }> = {
-  propuesta: { texto: "Oferta enviada", ayuda: "Esperando que la cooperativa la acepte.", clase: "text-apagado" },
-  aceptada: { texto: "Oferta aceptada ✦", ayuda: "La cooperativa aceptó. Falta que haga el pago.", clase: "text-bosque" },
+  propuesta: { texto: "Solicitud enviada", ayuda: "La cooperativa ya recibió esta solicitud de venta. Si la acepta, paga el lote y el dinero entra en tu billetera.", clase: "text-apagado" },
+  aceptada: { texto: "Solicitud aceptada ✦", ayuda: "La cooperativa aceptó la compra. Falta que pague el lote.", clase: "text-bosque" },
   pagada: { texto: "Pagada ✦", ayuda: "El pago llegó a tu wallet.", clase: "text-bosque" },
   fallida: { texto: "Pago fallido", ayuda: "El pago no se completó. La cooperativa puede reintentarlo.", clase: "text-cereza" },
 };
@@ -127,7 +127,7 @@ export default async function CooperativasParaMiLote({
                     <input type="hidden" name="loteId" value={lote.id} />
                     <input type="hidden" name="cooperativaId" value={r.cooperativaId} />
                     <button type="submit" className="btn">
-                      Elegir esta cooperativa
+                      Enviar solicitud de venta
                     </button>
                   </form>
                 ) : (
