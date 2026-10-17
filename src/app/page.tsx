@@ -1,16 +1,35 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SelectorRol, type OpcionRol } from "@/components/selector-rol";
 
-const ROLES = [
+interface RolInicio {
+  id: string;
+  etiqueta: string;
+  numeral: string;
+  titulo: string;
+  texto: string;
+  href: string;
+  accion: string;
+  registro: string | null;
+  /** En el selector del encabezado, el botón principal es crear la cuenta (quien llega acá casi siempre es nuevo). */
+  principalEsRegistro?: boolean;
+}
+
+const ROLES: RolInicio[] = [
   {
+    id: "caficultor",
+    etiqueta: "Caficultor",
     numeral: "I",
     titulo: "Soy caficultor",
     texto: "Al crear tu cuenta recibís tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
     href: "/acceso",
     accion: "Iniciar sesión",
     registro: "/registro?rol=caficultor",
+    principalEsRegistro: true,
   },
   {
+    id: "comprador",
+    etiqueta: "Comprador",
     numeral: "II",
     titulo: "Quiero comprar café",
     texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
@@ -19,6 +38,8 @@ const ROLES = [
     registro: "/registro?rol=comprador",
   },
   {
+    id: "cooperativa",
+    etiqueta: "Cooperativa",
     numeral: "III",
     titulo: "Soy cooperativa",
     texto: "Revisá las ofertas por lotes que te recomendamos y pagá desde la plataforma.",
@@ -27,6 +48,22 @@ const ROLES = [
     registro: null,
   },
 ];
+
+/** Arma lo que muestra el selector del encabezado a partir de la misma lista de roles que usan las tarjetas. */
+function paraSelector(r: RolInicio): OpcionRol {
+  const { id, etiqueta, titulo, texto } = r;
+  if (r.principalEsRegistro && r.registro) {
+    return { id, etiqueta, titulo, texto, principal: { texto: "Crear mi cuenta", href: r.registro }, secundaria: { texto: r.accion, href: r.href } };
+  }
+  return {
+    id,
+    etiqueta,
+    titulo,
+    texto,
+    principal: { texto: r.accion, href: r.href },
+    secundaria: r.registro ? { texto: "Crear cuenta", href: r.registro } : null,
+  };
+}
 
 const PASOS = [
   "El caficultor recibe una wallet propia: una dirección de cobro que cualquier billetera puede pagar.",
@@ -50,24 +87,17 @@ export default function Inicio() {
         />
         {/* Velo oscuro: deja el texto legible sobre la foto, más fuerte a la izquierda donde va el texto. */}
         <div className="absolute inset-0 -z-10 bg-cafe/65 lg:bg-transparent lg:bg-gradient-to-r lg:from-cafe/85 lg:via-cafe/45 lg:to-transparent" />
-        <div className="mx-auto flex min-h-[30rem] max-w-6xl items-center px-5 py-20 sm:min-h-[36rem] sm:py-28">
+        <div className="mx-auto flex min-h-[30rem] max-w-6xl items-center px-5 py-8 sm:min-h-[36rem] sm:py-28">
           <div>
             <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
-            <h1 className="mt-5 max-w-3xl text-5xl text-white sm:text-6xl">
+            <h1 className="mt-4 max-w-3xl text-4xl text-white sm:mt-5 sm:text-6xl">
               Que el caficultor cobre directo, <em className="text-cobre">con nombre propio.</em>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-crema/85">
+            <p className="mt-4 max-w-2xl text-base text-crema/85 sm:mt-6 sm:text-lg">
               Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
               su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/registro?rol=caficultor" className="btn">
-                Crear mi cuenta de caficultor
-              </Link>
-              <Link href="/tienda" className="btn btn-borde !border-crema !text-crema hover:!bg-crema hover:!text-tinta">
-                Ver la tienda
-              </Link>
-            </div>
+            <SelectorRol roles={ROLES.map(paraSelector)} />
           </div>
         </div>
       </section>

@@ -67,3 +67,42 @@ se ve raro no se ve alineado mejoremoslo  y a la foto quitemosle este logo  para
 - **Pie alineado:** el grano queda centrado con "TERRACIERTA / BY ONYX", como en el logo; el lema va debajo, alineado al borde del grano, y el texto de la derecha comparte la base.
 - **Supuesto declarado:** "no se ve alineado" se entendió como el pie (grano desalineado con el texto de su bloque) y el sello flotando a un costado en el inicio; si era otra cosa, hay que indicarlo.
 - Archivos: `src/app/page.tsx`, `src/components/pie.tsx`, `src/components/marca.tsx`.
+
+---
+
+## Entrada 4 — Alternativas al scroll y prototipo del selector de rol
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompts (texto íntegro)
+
+```
+que otra opcion a parte de scroll pued emejorar al experiencia de usuario evaluemos
+```
+
+```
+Sí, prototipá el selector de rol en el encabezado del inicio; no cambies nada más todavía.
+```
+
+### Resultado breve
+- El agente evaluó cuatro alternativas (selector de rol, pasos de un clic, barra de anclas, botón fijo de crear cuenta) y recomendó el selector.
+- Se prototipó el selector en el encabezado del inicio (`src/components/selector-rol.tsx`, `src/app/page.tsx`). Quedó sin commitear a la espera de revisión.
+- Pendientes de diseño anotados en `AI_USAGE.md` §8d (botón principal del caficultor, sección repetida más abajo).
+
+---
+
+## Entrada 5 — Botón principal del caficultor y publicación
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+Sí: en la pestaña del caficultor dejá 'Crear cuenta' como botón principal e 'Iniciar sesión' como enlace, y creá la rama feat/selector-rol con commits y PR.
+```
+
+### Resultado breve
+- Caficultor: "Crear mi cuenta" como botón principal e "Iniciar sesión" como enlace. Comprador y cooperativa sin cambios. Una función `paraSelector` arma lo que muestra el selector a partir de la misma lista que usan las tarjetas.
+- Rama `feat/selector-rol` con commits y PR.
