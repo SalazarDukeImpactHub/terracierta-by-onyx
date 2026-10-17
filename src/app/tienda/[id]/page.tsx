@@ -23,13 +23,8 @@ export default async function Tienda({ params }: { params: Promise<{ id: string 
       <Link href="/tienda" className="etiqueta hover:text-tinta">
         ← Todas las tiendas
       </Link>
-      <div className="mt-6 flex flex-wrap items-end gap-5">
-        <FotoProducto url={tienda.logo_url} alt="" className="h-24 w-24 border border-linea" />
-        <div>
-          <h1 className="text-5xl">{tienda.nombre}</h1>
-          <p className="etiqueta mt-1">{tienda.municipio}</p>
-        </div>
-      </div>
+      <h1 className="mt-3 text-5xl">{tienda.nombre}</h1>
+      <p className="etiqueta mt-1">{tienda.municipio}</p>
       <div className="rombo my-8" aria-hidden="true">
         ◆
       </div>

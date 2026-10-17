@@ -30,11 +30,6 @@ export default async function MisCompras() {
     <section className="mx-auto max-w-5xl px-5 py-14">
       <p className="etiqueta">Comprador · {perfil.municipio}</p>
       <h1 className="mt-2 text-4xl">Hola, {perfil.nombre}</h1>
-      {perfil.tipo_documento && perfil.numero_documento && (
-        <p className="mt-2 text-apagado">
-          {perfil.tipo_documento} {perfil.numero_documento}
-        </p>
-      )}
 
       <div className="mt-6 border border-linea bg-crema-2 p-5">
         <p className="etiqueta">Tu wallet para pagar</p>

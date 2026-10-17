@@ -2,7 +2,6 @@
 
 import { useActionState, useState } from "react";
 import { registrarseAccion, type EstadoFormulario } from "@/app/acceso/actions";
-import { TIPOS_DOCUMENTO } from "@/lib/validacion";
 
 type RolRegistro = "caficultor" | "comprador";
 
@@ -44,65 +43,10 @@ export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolR
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
-          <label htmlFor="nombres" className="etiqueta">
-            Nombres
+          <label htmlFor="nombre" className="etiqueta">
+            Nombre
           </label>
-          <input id="nombres" name="nombres" autoComplete="given-name" defaultValue={v.nombres} maxLength={60} required className="campo mt-1" />
-        </div>
-        <div>
-          <label htmlFor="apellidos" className="etiqueta">
-            Apellidos
-          </label>
-          <input id="apellidos" name="apellidos" autoComplete="family-name" defaultValue={v.apellidos} maxLength={60} required className="campo mt-1" />
-        </div>
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="tipo_documento" className="etiqueta">
-            Tipo de documento
-          </label>
-          <select id="tipo_documento" name="tipo_documento" defaultValue={v.tipo_documento || ""} required className="campo mt-1">
-            <option value="" disabled>
-              Elegí uno
-            </option>
-            {TIPOS_DOCUMENTO.map((tipo) => (
-              <option key={tipo.id} value={tipo.id}>
-                {tipo.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="numero_documento" className="etiqueta">
-            Número de documento
-          </label>
-          <input
-            id="numero_documento"
-            name="numero_documento"
-            defaultValue={v.numero_documento}
-            minLength={5}
-            maxLength={20}
-            required
-            className="campo mt-1"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="fecha_nacimiento" className="etiqueta">
-            Fecha de nacimiento
-          </label>
-          <input
-            id="fecha_nacimiento"
-            name="fecha_nacimiento"
-            type="date"
-            autoComplete="bday"
-            defaultValue={v.fecha_nacimiento}
-            required
-            className="campo mt-1"
-          />
+          <input id="nombre" name="nombre" autoComplete="name" defaultValue={v.nombre} maxLength={80} required className="campo mt-1" />
         </div>
         <div>
           <label htmlFor="municipio" className="etiqueta">
@@ -158,9 +102,7 @@ export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolR
         </div>
       </div>
 
-      <p className="text-sm text-apagado">
-        La cuenta queda guardada con tu documento y tu municipio. La billetera de Interledger se carga después, directo en tu usuario.
-      </p>
+      <p className="text-sm text-apagado">Al crear tu cuenta se te asigna tu billetera: con ella cobrás o pagás en Terracierta.</p>
 
       {estado.error && (
         <p role="alert" className="border border-cereza bg-cereza/10 px-3 py-2 text-cereza">

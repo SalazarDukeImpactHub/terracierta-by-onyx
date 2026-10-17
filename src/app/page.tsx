@@ -28,7 +28,7 @@ const ROLES: RolInicio[] = [
     id: "comprador",
     etiqueta: "Comprador",
     titulo: "Quiero comprar café",
-    texto: "Mirá el café de cada finca sin cuenta. Para pagar, creá tu cuenta de comprador y usá tu billetera.",
+    texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
     href: "/tienda",
     accion: "Ver la tienda",
     registro: "/registro?rol=comprador",

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { guardarProducto, type EstadoFormulario } from "@/app/caficultor/tienda/actions";
-import { CampoArchivo } from "@/components/campo-archivo";
 
 interface Valores {
   id?: string;
@@ -16,7 +15,7 @@ export function FormularioProducto({ valores = {} }: { valores?: Valores }) {
   const [estado, accion, pendiente] = useActionState<EstadoFormulario, FormData>(guardarProducto, {});
 
   return (
-    <form action={accion} className="grid max-w-xl gap-5 border border-linea bg-[#fbf8f1] p-6">
+    <form action={accion} className="grid max-w-xl gap-5">
       {valores.id && <input type="hidden" name="id" value={valores.id} />}
 
       <div>
@@ -56,7 +55,12 @@ export function FormularioProducto({ valores = {} }: { valores?: Valores }) {
         />
       </div>
 
-      <CampoArchivo id="foto" name="foto" accept="image/jpeg,image/png,image/webp" etiqueta="Elegir foto" ayuda="JPG, PNG o WebP · hasta 2 MB. Si no elegís una, se conserva la actual." />
+      <div>
+        <label htmlFor="foto" className="etiqueta">
+          Foto (JPG, PNG o WebP · hasta 2 MB)
+        </label>
+        <input id="foto" name="foto" type="file" accept="image/jpeg,image/png,image/webp" className="campo mt-1" />
+      </div>
 
       {estado.error && (
         <p role="alert" className="border border-cereza bg-cereza/10 px-3 py-2 text-cereza">

@@ -28,13 +28,3 @@ export function requerirEnv(nombre: string): string {
   if (!valor) throw new Error(`Falta la variable de entorno ${nombre} (ver .env.example)`);
   return valor;
 }
-
-/** Llave pública: la anon clásica o la publishable nueva del panel de Supabase. */
-export function clavePublicaSupabase(): string {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || requerirEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
-}
-
-/** Llave de servidor: service_role clásica o secret key nueva. Nunca va al navegador. */
-export function claveServidorSupabase(): string {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || requerirEnv("SUPABASE_SECRET_KEY");
-}

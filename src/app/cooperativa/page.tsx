@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requerirRol } from "@/adapters/auth";
-import { BilleteraInterledger } from "@/components/billetera-interledger";
 import { ofertasRecibidas, type OfertaRecibida } from "@/lib/ruta-b";
 import { formatoCop } from "@/lib/validacion";
 import { aceptarOferta, pagarOferta } from "./actions";
@@ -90,12 +89,6 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
         <p className="etiqueta">Tu wallet para pagar</p>
         <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tenés una wallet asignada."}</p>
       </div>
-      <BilleteraInterledger usuarioId={perfil.id} token={perfil.token} />
-      <p className="mt-6">
-        <Link href="/tienda" className="btn">
-          Comprar café en la tienda
-        </Link>
-      </p>
 
       {error && (
         <p role="alert" className="mt-6 border border-cereza bg-cereza/10 px-3 py-2 text-cereza">

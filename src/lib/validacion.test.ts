@@ -27,16 +27,7 @@ describe("esquemaInicioSesion (sign in)", () => {
 });
 
 describe("esquemaRegistro (sign up)", () => {
-  const base = {
-    nombres: "Ana",
-    apellidos: "Gómez",
-    tipo_documento: "CC",
-    numero_documento: "1020304050",
-    fecha_nacimiento: "1990-04-12",
-    municipio: "Marsella",
-    correo: "ana@example.test",
-    contrasena: "clave-segura-1",
-  };
+  const base = { nombre: "Ana Gómez", municipio: "Marsella", correo: "ana@example.test", contrasena: "clave-segura-1" };
 
   it("un caficultor DEBE contestar si tiene INVIMA", () => {
     const r = esquemaRegistro.safeParse({ ...base, rol: "caficultor" });
@@ -57,19 +48,16 @@ describe("esquemaRegistro (sign up)", () => {
     expect(esquemaRegistro.safeParse({ ...base, rol: "cooperativa" }).success).toBe(false);
     expect(esquemaRegistro.safeParse({ ...base, rol: "administrador" }).success).toBe(false);
   });
-  it("exige contraseña de 8+ caracteres, correo válido, nombres y municipio", () => {
+  it("exige contraseña de 8+ caracteres, correo válido y nombre y municipio", () => {
     expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", contrasena: "corta" }).success).toBe(false);
     expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", correo: "x" }).success).toBe(false);
-    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", nombres: "" }).success).toBe(false);
+    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", nombre: "" }).success).toBe(false);
     expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", municipio: " " }).success).toBe(false);
   });
-  it("normaliza el correo, arma el nombre completo y rechaza un documento inválido", () => {
-    const r = esquemaRegistro.parse({ ...base, rol: "comprador", correo: " ANA@Example.test ", nombres: "  Ana  " });
+  it("normaliza el correo y recorta los textos", () => {
+    const r = esquemaRegistro.parse({ ...base, rol: "comprador", correo: " ANA@Example.test ", nombre: "  Ana  " });
     expect(r.correo).toBe("ana@example.test");
-    expect(r.nombre).toBe("Ana Gómez");
-    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", tipo_documento: "DNI" }).success).toBe(false);
-    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", numero_documento: "12" }).success).toBe(false);
-    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", fecha_nacimiento: "2999-01-01" }).success).toBe(false);
+    expect(r.nombre).toBe("Ana");
   });
 });
 

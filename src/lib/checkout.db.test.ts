@@ -94,9 +94,10 @@ describe.skipIf(!HAY_DB)("Checkout con comprador (integración con la base local
     expect(pago).toEqual({ wallet_pagador: perfil[ANDRES].wallet_address, wallet_receptor: perfil[MARTA].wallet_address, monto: 38000 });
   });
 
-  it("el caficultor no compra su propio café: recibe 403 y no se crea nada", async () => {
+  it("solo una cuenta de comprador puede pagar: caficultor y cooperativa reciben 403 y no se crea nada", async () => {
     const antes = (await db.from("pedidos").select("id", { count: "exact", head: true })).count;
     expect(await pagos.iniciarPagoDePedido({ productoId: PRODUCTO, cantidad: 1 }, perfil[MARTA])).toMatchObject({ ok: false, status: 403 });
+    expect(await pagos.iniciarPagoDePedido({ productoId: PRODUCTO, cantidad: 1 }, perfil[COOPERATIVA])).toMatchObject({ ok: false, status: 403 });
     const despues = (await db.from("pedidos").select("id", { count: "exact", head: true })).count;
     expect(despues).toBe(antes);
   });
