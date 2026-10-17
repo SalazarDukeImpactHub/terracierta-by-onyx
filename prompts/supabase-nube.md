@@ -84,3 +84,90 @@ Los 12 chequeos coinciden con lo esperado: la base de Supabase en la nube quedó
 
 ### Archivos tocados
 `supabase/tests/cloud-verify.sql` (nuevo), `README.md`, `AI_USAGE.md`, `prompts/supabase-nube.md`.
+
+---
+
+## Entrada 5 — URL del proyecto para Vercel
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+dame el url con  el id listo para el public
+```
+
+### Resultado breve
+Se entregó `https://aquxsadhincsdveerbdh.supabase.co` para la variable pública `NEXT_PUBLIC_SUPABASE_URL` (sin barra final) y se comprobó que sus endpoints públicos responden (API 401, Auth 401, Storage 400, sin llaves). Las llaves no pasaron por el chat.
+
+---
+
+## Entrada 6 — Advertencia de Vercel (imagen)
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt
+Mensaje con **una imagen y sin texto**. El texto íntegro no está disponible; lo que mostraba la imagen, una advertencia de Vercel:
+
+```
+[imagen] Keep This Value Private — The NEXT_PUBLIC_ prefix exposes this value to the browser. Remove the prefix, or change the variable to Config if it's safe to expose. [botón: Change to Config]
+```
+
+### Resultado breve
+Se explicó qué hacer según la variable (la URL y la llave pública pueden ir como configuración; la llave privada nunca lleva `NEXT_PUBLIC_`) y cómo distinguir la llave pública de la privada. No se pegó ninguna llave.
+
+---
+
+## Entrada 7 — Error de Vercel por variables duplicadas
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+A variable with the name `USE_MOCKS` already exists for the target production on branch undefined. A variable with the name `SUPABASE_SERVICE_ROLE_KEY` already exists for the target production on branch undefined.
+```
+
+### Resultado breve
+Las variables ya existían solo para Production: se indicó **editarlas** (marcar Production y Preview) y revisar las 4 variables.
+
+---
+
+## Entrada 8 — URL de Vercel
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+https://terracierta-by-onyx-kxy5mtww0.vercel.app/
+```
+
+### Resultado breve
+- Esa URL (despliegue de *preview*) está protegida por el login de Vercel: no se pudo verificar desde fuera.
+- El dominio de producción `terracierta-by-onyx.vercel.app` es **público** y en ese momento daba error 500 en `/tienda`: servía un despliegue anterior, sin las variables nuevas. Se indicó redeployar el despliegue de Production.
+
+---
+
+## Entrada 9 — Revisión funcional
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+cuando este lsito el logging cambiamos el mocks si es necesario ya revise y la tienda sise ve marta  ahora que sigue revisemos que todo sea funcional
+```
+
+### Resultado breve
+- Verificación en solo lectura del dominio público: modo demostración activo, `/tienda` muestra a Marta con sus 2 productos publicados, el borrador da 404, las rutas protegidas redirigen a `/acceso`.
+- Se preparó la verificación de comportamiento en la nube: `rls.sql` ahora corre también en el SQL Editor (termina en `ROLLBACK`), y se agregaron `scripts/cloud-sql.mjs` (`cloud:setup` y `cloud:reset`) para cargar y reiniciar la demo.
+- Probado en local: `test:rls` 35 de 35, el script de carga en una base de prueba aparte (12 de 12 chequeos) y el de reinicio ensuciando los datos antes (quedan idénticos al seed).
+
+### Archivos tocados
+`supabase/tests/rls.sql`, `scripts/cloud-sql.mjs`, `package.json`, `README.md`, `AI_USAGE.md`, `prompts/supabase-nube.md`.
