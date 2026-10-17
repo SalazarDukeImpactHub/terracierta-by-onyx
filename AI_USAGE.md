@@ -97,6 +97,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | Ruta B en el navegador | Jairo carga lote → top 3 → elige Cumbres → cooperativa demo acepta → paga → billetera simulada → recibo → vista de Jairo | Todo el recorrido funciona: pago de $10.750.000 (500 kg × $21.500) de la wallet de la cooperativa a la de Jairo; oferta `pagada`, lote `vendido`, pago `completado` en la base; Jairo ve "Pagada ✦" y el recibo |
 | 2026-10-16 | Ruta B: acceso cruzado | `curl` con cookies de cada perfil | Marta no ve el lote de Jairo (404); cooperativa en `/caficultor/lote` → `/cooperativa`; Jairo en `/cooperativa` → `/caficultor`; sin sesión → `/acceso`; id basura → 404 |
 | 2026-10-16 | Verificación completa de la rama | `tsc`, `eslint`, `test:rls` (recrea la base con el seed nuevo), `test:db`, `next build` sin y con `USE_MOCKS` | Tipos y lint sin errores; RLS 35/35; 53/53 pruebas (40 unitarias + 13 de integración); ambos builds pasan |
+| 2026-10-16 | Supabase en la nube: carga y verificación | Jennifer ejecutó `cloud-setup.sql` (4 migraciones + seed en una transacción) y luego `supabase/tests/cloud-verify.sql` en el *SQL Editor* del proyecto nuevo | **Los 12 chequeos coinciden con lo esperado**: 7 tablas con RLS, 10 políticas, 2 funciones auxiliares, 3 perfiles, 4 cooperativas, 3 productos (2 publicados), 1 tienda pública, Jairo en Marsella, bucket `productos-fotos` público de 2 MB, `anon` sin escritura en `productos` y con lectura de la vista pública. **La ejecución la hizo una persona** (el agente no tiene acceso a esa cuenta de Supabase) |
 
 ### Lo que falló y lo que se corrigió
 
@@ -113,7 +114,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 9. **Bloqueo de permisos:** no se pudo escribir `.env.example` (la regla del entorno veta archivos `.env*`). **Pendiente** que una persona del equipo lo cree con las variables de `README.md`.
 10. **Ruta B:** (a) una prueba mía fallaba por esperar minúscula en un texto que empieza en mayúscula; (b) el runner de pruebas (Node 20, sin `WebSocket` nativo) no podía crear el cliente de Supabase: se agregó un reemplazo vacío solo en la prueba, porque la app no usa realtime; (c) el botón del recibo de un pago de oferta decía "Seguir mirando café": ahora el destino y el texto salen del tipo de pago.
 
+11. **Supabase en la nube:** la CLI de esta computadora tenía la sesión de **otra cuenta** de Supabase y no veía el proyecto nuevo (la API del proyecto sí respondía). En vez de forzar un cambio de cuenta o usar contraseñas, el agente armó un solo script SQL (migraciones + seed) y un script de verificación para el *SQL Editor*. No pudo probarlo antes en una base de prueba local porque Docker se apagó y la sesión se reinició; el SQL es el mismo que ya había pasado las pruebas locales y el resultado en la nube coincide con lo esperado.
+
 ### Sin probar todavía
+
+- **En la nube solo se verificó la estructura** (tablas, RLS, políticas, funciones, datos, bucket, permisos de `anon`). Las 35 pruebas de comportamiento de RLS (`test:rls`) y la Ruta A/B completas **no se han corrido contra Supabase en la nube**.
 
 - Edición de un producto ajeno **desde la interfaz** con un segundo caficultor con INVIMA (cubierto solo por el filtro `dueno_id` del código y por RLS en SQL).
 - Ruta B con **perfiles reales** (solo se probó con el login simulado) y con el pago real de Open Payments.
@@ -132,6 +137,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`despliegue-vercel.md`](./prompts/despliegue-vercel.md) — preparación para desplegar en Vercel.
 - [`ruta-b-agente.md`](./prompts/ruta-b-agente.md) — Ruta B: agente de match, oferta y pago de la cooperativa.
 - [`readme-docs.md`](./prompts/readme-docs.md) — merge de la Ruta B y rediseño del README.
+- [`supabase-nube.md`](./prompts/supabase-nube.md) — carga y verificación de Supabase en la nube.
 
 ## Security
 
