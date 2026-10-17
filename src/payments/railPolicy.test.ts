@@ -3,6 +3,10 @@ import { createGateway } from "./gateway";
 import { clientOpen, clientSeal } from "./pqc/channel";
 import { iniciarPago } from "./index";
 
+vi.mock("@/lib/supabase/admin", () => ({
+  clienteAdmin: () => ({ from: () => ({ select: () => ({ eq: async () => ({ data: [] }) }) }) }),
+}));
+
 const origin = "http://127.0.0.1:3100";
 const input = { action: "cotizar", amount: 0.05, receiver: "$ilp.interledger-test.dev/921a6da8", description: "Café" };
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
@@ -30,12 +34,13 @@ it("rechaza el riel retirado antes de contactar la API web, con y sin PQC", asyn
   expect(fetch).not.toHaveBeenCalled();
 });
 
-it("el contrato de checkout tampoco permite volver a ejecutar el puente con cookies", async () => {
-  vi.stubEnv("PAYMENTS_RAIL", "wallet-ui");
-  vi.stubEnv("WALLET_UI_COOKIE", "testnet.cookie=retired-session");
+// Riel oficial del checkout: cookie de la billetera de prueba (ADR-001). Sin sesión ni credenciales no se envía dinero.
+it("el checkout con cookie no contacta la API ni envía dinero si no puede entrar a la billetera", async () => {
+  vi.stubEnv("INTERLEDGER_EMAIL", "");
+  vi.stubEnv("INTERLEDGER_PASSWORD", "");
   const fetch = vi.fn(() => { throw new Error("No se permiten solicitudes externas"); });
   vi.stubGlobal("fetch", fetch);
-  await expect(iniciarPago({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: "wallet-comprador", urlRetorno: origin + "/pago/retorno" })).rejects.toMatchObject({ status: 503 });
+  await expect(iniciarPago({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: "wallet-comprador", urlRetorno: origin + "/pago/retorno" })).rejects.toMatchObject({ name: "PagoInterledgerError", message: expect.stringMatching(/entrar a la billetera/) });
   expect(fetch).not.toHaveBeenCalled();
 });
 

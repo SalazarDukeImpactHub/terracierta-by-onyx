@@ -87,3 +87,25 @@ revisemos que funciono y hacemos el pr
 ### Resultado breve
 - Se verificó producción en solo lectura y se registró el resultado. Se corrigió en `AI_USAGE.md` una suposición del agente sobre un producto de prueba que resultó falsa.
 - Se subió la rama y se abrió el PR solo con documentos.
+
+---
+
+## Entrada 8 — Arreglar tests y jsdom
+
+```
+Arreglá primero los 4 tests y jsdom en una rama nueva con PR; la foto después.
+```
+
+### Resultado breve
+- Se agregó `jsdom` y se instalaron las dependencias declaradas que faltaban. Los 4 tests restantes dependían de la decisión del ADR-001; se pidió elegir riel.
+
+---
+
+## Entrada 9 — Riel de cookie oficial
+
+```
+El riel oficial es el de cookie que corre hoy. Adaptá los 4 tests a ese riel y a la política real de cooperativas, y dejá el SDK/GNAP documentado como futuro en el ADR-001.
+```
+
+### Resultado breve
+- Los 4 tests se adaptaron al riel de cookie y a la política real (la cooperativa puede comprar y pagar ofertas). El ADR-001 registra la decisión, los riesgos aceptados y la condición para migrar al SDK/GNAP; **sigue en Borrador** hasta que Jennifer lo acepte.

@@ -50,7 +50,32 @@ tampoco lo valida con login real ("Pendiente de validación real").
    - `5aa6b81`: **siete** cooperativas con perfil, wallet de ejemplo (`wallet.example.test`) y cuenta simulada; el seed y una verificación de RLS
      pasan de "4 cooperativas" a "7" **[verificado]**. **[No verificado]** que `test:rls` y `test:db` sigan pasando con ese seed.
 
-## Decisión (propuesta)
+## Decisión de Jennifer (2026-10-17, dada en el chat)
+
+> Este bloque registra lo que Jennifer decidió. **El ADR sigue en *Borrador***: pasarlo a *Aceptado* requiere que ella lo confirme (AGENTS.md §6).
+
+1. **Riel oficial hoy: el de cookie (riel B)**, el que ya corre en `main` y en producción (`src/lib/interledger.ts`, `src/payments/index.ts`).
+2. **El SDK oficial + GNAP (riel A) queda como camino futuro**, no retirado: `src/payments/openPayments.ts`, `sdkAdapter.ts`, `settlement.ts`, `gateway.ts` y la pasarela `/pago/pasarela` se conservan, pero **no son el riel del checkout**. Mientras tanto, la pasarela sigue desactivada en producción (`/api/pasarela/key` responde 503).
+3. **Política de cooperativas = la del código actual [verificado]**: pueden pagar **ofertas** y también **comprar productos** de la tienda (`pagos-service.ts` y `checkoutHandlers.ts` aceptan `comprador` o `cooperativa`); el caficultor no puede iniciar pagos. Los tests se ajustaron a esto (PR 41).
+4. **Cooperativas con cuenta:** las siete quedan como datos de ejemplo, como estaba cargado en la base.
+
+### Qué cambia en los tests (PR 41)
+- `src/payments/index.test.ts`: ahora prueba el riel de cookie (mock de `@/lib/interledger`), no el SDK.
+- `src/payments/railPolicy.test.ts`: el contrato del checkout comprueba que, sin poder entrar a la billetera, **no se llama a la API ni se envía dinero**.
+- `src/payments/checkout.integration.test.ts`: la cooperativa puede iniciar su oferta y también comprar; el comprador no puede iniciar una oferta.
+- Los tests de la pasarela (`gateway`, `openPayments`, PQC) siguen cubriendo el riel A tal cual.
+
+### Riesgos que se aceptan con el riel de cookie (siguen abiertos)
+- Sin consentimiento del titular: se usa la cookie de `usuarios.token` o, si falta, la cuenta compartida `INTERLEDGER_EMAIL`.
+- **[Según Yamil]** llamar a `/quotes` por la API web movió fondos de prueba; el límite de 25 EUR y el control de 30 EUR de `pagarEntreBilleteras` son la única protección.
+- `adapters/payments.ts` decide el pago real por el **dominio de la wallet**; con `USE_MOCKS=true` puede pagar de verdad. Conviene una bandera explícita.
+- Cookies de wallet guardadas en la base (`usuarios.token`): la tabla no es legible desde el navegador (RLS sin políticas).
+- Hay comentarios y mensajes en `settlement.ts` que dicen que el riel de cookie está "retirado": describen la pasarela, no el checkout, y pueden confundir.
+
+### Condición de migración al riel A
+Se pasa al SDK/GNAP cuando: (a) el estado de grants y llaves PQC esté **persistido** (hoy vive en memoria, incompatible con Vercel serverless), (b) exista una wallet receptora en COP o un contrato de conversión, y (c) el flujo complete un pago real con login real. Hasta entonces, no se toca.
+
+## Propuesta original del agente (superada por la decisión de arriba)
 
 1. **Un solo riel de pagos reales: el SDK oficial de Open Payments con GNAP y consentimiento del titular (riel A).** El riel con cookie (B) sale del flujo de
    pagos: se elimina `src/lib/interledger.ts` del camino de `iniciarPago`, se deja de guardar cookies de wallet en `usuarios.token` y se retira el
@@ -67,7 +92,7 @@ tampoco lo valida con login real ("Pendiente de validación real").
 | Alternativa | Por qué se descartó |
 |---|---|
 | Dejar ambos rieles y elegir por `PAYMENTS_RAIL` o por el dominio de la wallet | Doble superficie de pago real; el PR 33 ya los mezcla y el comportamiento depende de un nombre de dominio. Un error de configuración mueve dinero. |
-| **Riel B (cookie de Test Wallet) como único riel** | No hay consentimiento del titular; usa una cuenta compartida; guarda cookies de wallet en la base; usa un endpoint que, según Yamil, movió fondos al cotizar; paga real con `USE_MOCKS=true`. Contradice la promesa del producto ("de wallet a wallet, con consentimiento"). |
+| **Riel B (cookie de Test Wallet) como único riel** *(elegida por Jennifer para hoy; ver "Decisión de Jennifer")* | No hay consentimiento del titular; usa una cuenta compartida; guarda cookies de wallet en la base; usa un endpoint que, según Yamil, movió fondos al cotizar; paga real con `USE_MOCKS=true`. Contradice la promesa del producto ("de wallet a wallet, con consentimiento"). |
 | Solo mocks para la entrega (sin riel real) | Es la **contingencia** (ver el plan), no una decisión de fondo: sirve para entregar hoy, pero el brief pide el ciclo con Open Payments. Compatible con la propuesta 1. |
 | Permitir que las cooperativas compren productos (política del PR 33) | Es un cambio de modelo no pedido: sin pantalla de compras, sin prueba que lo respalde y contradice una prueba existente. Si se quiere, merece su propio ADR. |
 
