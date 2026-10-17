@@ -23,9 +23,9 @@ export default async function EditarProducto({ params }: { params: Promise<{ id:
   if (!producto) notFound();
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-14">
+    <section>
       <p className="etiqueta">Mi tienda</p>
-      <h1 className="mt-2 mb-8 text-4xl">Editar producto</h1>
+      <h1 className="mt-1 mb-8 text-4xl">Editar producto</h1>
       <FormularioProducto valores={producto} />
     </section>
   );

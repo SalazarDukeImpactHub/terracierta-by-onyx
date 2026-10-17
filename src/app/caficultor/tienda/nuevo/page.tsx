@@ -10,9 +10,9 @@ export default async function NuevoProducto() {
   if (!perfil.tiene_invima) redirect("/caficultor");
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-14">
+    <section>
       <p className="etiqueta">Mi tienda</p>
-      <h1 className="mt-2 mb-8 text-4xl">Nuevo producto</h1>
+      <h1 className="mt-1 mb-8 text-4xl">Nuevo producto</h1>
       <FormularioProducto />
     </section>
   );

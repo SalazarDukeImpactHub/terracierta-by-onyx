@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requerirRol } from "@/adapters/auth";
 import type { Perfil } from "@/adapters/types";
+import { FotoProducto } from "@/components/foto-producto";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { formatoCop } from "@/lib/validacion";
 
@@ -9,146 +10,201 @@ export const metadata: Metadata = { title: "Mi cuenta" };
 export const dynamic = "force-dynamic";
 
 const ESTADO_LOTE: Record<string, string> = {
-  registrado: "Sin oferta todavía",
-  con_ofertas: "Con oferta en curso",
-  vendido: "Vendido ✦",
+  registrado: "Sin oferta",
+  con_ofertas: "Oferta en curso",
+  vendido: "Vendido",
 };
 
-/**
- * Inicio del caficultor. El INVIMA ya se conoce al ingresar (viene en el perfil, registrado con la cuenta),
- * así que NO se pregunta: la pantalla muestra el camino que corresponde y sus accesos directos.
- */
+const ESTADO_PEDIDO: Record<string, string> = {
+  pagado: "Pagado",
+  pendiente: "Pendiente",
+  fallido: "Fallido",
+};
+
 export default async function InicioCaficultor() {
   const perfil = await requerirRol("caficultor");
-
-  return (
-    <section className="mx-auto max-w-4xl px-5 py-14">
-      <p className="etiqueta">Caficultor · {perfil.municipio}</p>
-      <h1 className="mt-2 text-4xl">Hola, {perfil.nombre}</h1>
-
-      <div className="mt-6 border border-linea bg-crema-2 p-5">
-        <p className="etiqueta">Tu wallet para cobrar</p>
-        {perfil.wallet_address ? (
-          <p className="mt-1 break-all font-medium">{perfil.wallet_address}</p>
-        ) : (
-          <p className="mt-1 text-apagado">Todavía no tenés una wallet asignada.</p>
-        )}
-      </div>
-
-      <div className="rombo my-10" aria-hidden="true">
-        ◆
-      </div>
-
-      <p className="etiqueta">Tu camino para cobrar</p>
-      {perfil.tiene_invima ? <CaminoConInvima perfil={perfil} /> : <CaminoSinInvima perfil={perfil} />}
-
-      <p className="mt-8 text-sm text-apagado">
-        Tu situación con el INVIMA se registró con tu cuenta. Si ese dato no es correcto, avisale al equipo de Terracierta.
-      </p>
-    </section>
-  );
+  return perfil.tiene_invima ? <ResumenTienda perfil={perfil} /> : <ResumenLote perfil={perfil} />;
 }
 
-/** Ruta A: tiene INVIMA -> su tienda. */
-async function CaminoConInvima({ perfil }: { perfil: Perfil }) {
+async function ResumenTienda({ perfil }: { perfil: Perfil }) {
   const db = clienteAdmin();
-  const [{ data: productos }, { data: pedidos }] = await Promise.all([
+  const [{ data: ficha }, { data: productos }, { data: resumen }, { data: pedidos }] = await Promise.all([
+    db.from("profiles").select("tienda_nombre, tienda_logo_url").eq("id", perfil.id).maybeSingle(),
     db.from("productos").select("id, publicado").eq("dueno_id", perfil.id),
-    db.from("pedidos").select("monto, estado, productos!inner(dueno_id)").eq("productos.dueno_id", perfil.id),
+    db.from("pedidos").select("monto, estado, comprador_id, productos!inner(dueno_id)").eq("productos.dueno_id", perfil.id),
+    db
+      .from("pedidos")
+      .select("id, cantidad, monto, estado, creado_en, comprador_id, productos!inner(nombre, dueno_id)")
+      .eq("productos.dueno_id", perfil.id)
+      .order("creado_en", { ascending: false })
+      .limit(4),
   ]);
 
   const total = productos?.length ?? 0;
   const publicados = (productos ?? []).filter((p) => p.publicado).length;
-  const pagados = (pedidos ?? []).filter((p) => p.estado === "pagado");
+  const pagados = (resumen ?? []).filter((p) => p.estado === "pagado");
   const cobrado = pagados.reduce((s, p) => s + p.monto, 0);
+  const clientes = new Set(pagados.map((p) => p.comprador_id).filter(Boolean)).size;
+  const nombres = await nombresPorId((pedidos ?? []).map((p) => p.comprador_id).filter((id): id is string => Boolean(id)));
+  const tiendaLista = Boolean(ficha?.tienda_nombre && ficha.tienda_logo_url);
 
   return (
-    <>
-      <h2 className="mt-1 text-3xl">
-        Con INVIMA: vendés en tu tienda <span className="text-cobre">✦</span>
-      </h2>
-      <p className="mt-2 max-w-2xl text-apagado">
-        Publicá tus productos y cada comprador te paga directo a tu wallet.
-      </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">
-            {publicados}
-            <span className="text-2xl text-crema/70"> / {total}</span>
-          </p>
-          <p className="mt-1 text-sm text-crema/80">productos publicados</p>
-        </div>
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">{pagados.length}</p>
-          <p className="mt-1 text-sm text-crema/80">pagos completados</p>
-        </div>
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">{formatoCop(cobrado)}</p>
-          <p className="mt-1 text-sm text-crema/80">cobrado en tu wallet</p>
-        </div>
+    <div className="grid gap-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Cifra href="/caficultor/pedidos" valor={formatoCop(cobrado)} texto="cobrado" />
+        <Cifra href="/caficultor/pedidos" valor={String(pagados.length)} texto="ventas pagadas" />
+        <Cifra href="/caficultor/tienda" valor={`${publicados}/${total}`} texto="productos publicados" />
+        <Cifra href="/caficultor/pedidos" valor={String(clientes)} texto="clientes" />
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/caficultor/tienda" className="btn">
-          Ir a mi tienda
-        </Link>
-        <Link href="/caficultor/pedidos" className="btn btn-borde">
-          Pedidos y pagos recibidos
-        </Link>
-        {publicados > 0 && (
-          <Link href={`/tienda/${perfil.id}`} className="btn btn-borde">
-            Ver mi tienda pública
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="border border-linea bg-[#fbf8f1] p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="etiqueta">Tu tienda</p>
+              <h1 className="mt-1 text-3xl">{ficha?.tienda_nombre || "Todavía sin nombre"}</h1>
+              <p className="mt-2 text-sm text-apagado">
+                {tiendaLista
+                  ? "El nombre y el logo ya están listos. Publicá productos para que te compren."
+                  : "Definí el nombre y el logo para poder publicar."}
+              </p>
+            </div>
+            <FotoProducto
+              url={ficha?.tienda_logo_url ?? null}
+              alt={ficha?.tienda_nombre || "Logo de la tienda"}
+              className="h-16 w-16 shrink-0 border border-linea"
+            />
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/caficultor/tienda" className="btn">
+              Gestionar tienda
+            </Link>
+            {publicados > 0 && (
+              <Link href={`/tienda/${perfil.id}`} className="btn btn-borde">
+                Ver catálogo
+              </Link>
+            )}
+          </div>
+        </section>
+
+        <section className="border border-linea bg-[#fbf8f1] p-6">
+          <p className="etiqueta">Cobro</p>
+          <h2 className="mt-1 text-3xl">Billetera</h2>
+          {perfil.wallet_address ? (
+            <p className="mt-3 break-all text-sm">{perfil.wallet_address}</p>
+          ) : (
+            <p className="mt-3 text-sm text-apagado">Todavía no tenés una billetera asignada.</p>
+          )}
+          <p className="mt-3 text-sm text-apagado">El dinero de cada venta entra directo acá. Terracierta no lo guarda.</p>
+        </section>
+      </div>
+
+      <section>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-3xl">Últimas ventas</h2>
+          <Link href="/caficultor/pedidos" className="text-sm text-cobre-oscuro underline">
+            Ver todas
           </Link>
+        </div>
+        {(pedidos ?? []).length === 0 ? (
+          <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">
+            Cuando alguien compre en tu tienda, la venta aparece acá con el nombre del cliente.
+          </p>
+        ) : (
+          <ul className="mt-4 divide-y divide-linea border border-linea bg-[#fbf8f1]">
+            {(pedidos ?? []).map((p) => {
+              const producto = (p.productos as unknown as { nombre: string }).nombre;
+              const cliente = (p.comprador_id && nombres.get(p.comprador_id)) || "Cliente";
+              return (
+                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                  <div>
+                    <p className="font-medium">
+                      {cliente}
+                      <span className="text-apagado"> · {p.cantidad} × {producto}</span>
+                    </p>
+                    <p className="text-sm text-apagado">{fechaCorta(p.creado_en)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-titulo text-2xl text-cobre-oscuro">{formatoCop(p.monto)}</p>
+                    <p className={`text-sm ${p.estado === "pagado" ? "text-bosque" : p.estado === "fallido" ? "text-cereza" : "text-apagado"}`}>
+                      {ESTADO_PEDIDO[p.estado] ?? p.estado}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
-      </div>
-    </>
+      </section>
+    </div>
   );
 }
 
-/** Ruta B: sin INVIMA -> vender el lote a una cooperativa. */
-async function CaminoSinInvima({ perfil }: { perfil: Perfil }) {
+async function ResumenLote({ perfil }: { perfil: Perfil }) {
   const { data: lotes } = await clienteAdmin()
     .from("lotes")
     .select("id, metodo, variedad, kg, municipio, estado")
     .eq("caficultor_id", perfil.id)
     .order("creado_en", { ascending: false })
-    .limit(3);
+    .limit(4);
 
   return (
-    <>
-      <h2 className="mt-1 text-3xl">Sin INVIMA: vendés tu lote a una cooperativa</h2>
-      <p className="mt-2 max-w-2xl text-apagado">
-        Cargá tu lote y te mostramos las 3 cooperativas que mejor te calzan. Elegís una y ella te paga directo a tu wallet.
-      </p>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/caficultor/lote" className="btn">
-          Cargar mi lote
-        </Link>
-      </div>
-
-      <h3 className="mt-10 text-2xl">Mis lotes</h3>
-      {(lotes ?? []).length === 0 ? (
-        <p className="mt-3 border border-linea bg-crema-2 p-5 text-apagado">
-          Todavía no cargaste ningún lote. Empezá con el botón de arriba.
+    <div className="grid gap-8">
+      <section className="border border-linea bg-[#fbf8f1] p-6">
+        <p className="etiqueta">Tu camino</p>
+        <h1 className="mt-1 text-3xl">Vendé el lote a una cooperativa</h1>
+        <p className="mt-2 max-w-2xl text-apagado">
+          Cargá el café que tenés. Te mostramos las 3 cooperativas que mejor calzan, cuál es la mejor y por qué.
         </p>
-      ) : (
-        <ul className="mt-3 grid gap-3">
-          {(lotes ?? []).map((l) => (
-            <li key={l.id}>
-              <Link href={`/caficultor/lote/${l.id}`} className="block border border-linea bg-crema-2 p-4 hover:border-tinta">
-                <p className="font-titulo text-xl">
-                  {l.kg} kg · {l.variedad} {l.metodo}
-                </p>
-                <p className="etiqueta mt-1">
-                  {l.municipio} · {ESTADO_LOTE[l.estado] ?? l.estado}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
+        <Link href="/caficultor/lote" className="btn mt-6">
+          Cargar un lote
+        </Link>
+      </section>
+
+      <section>
+        <h2 className="text-3xl">Lotes recientes</h2>
+        {(lotes ?? []).length === 0 ? (
+          <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">Todavía no cargaste ningún lote.</p>
+        ) : (
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {(lotes ?? []).map((l) => (
+              <li key={l.id}>
+                <Link href={`/caficultor/lote/${l.id}`} className="block border border-linea bg-[#fbf8f1] p-5 transition-colors hover:border-cobre">
+                  <p className="font-titulo text-2xl">
+                    {l.kg} kg · {l.variedad}
+                  </p>
+                  <p className="mt-1 text-sm capitalize text-apagado">
+                    {l.metodo} · {l.municipio}
+                  </p>
+                  <p className="etiqueta mt-3 !text-cobre-oscuro">{ESTADO_LOTE[l.estado] ?? l.estado}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
   );
+}
+
+function Cifra({ href, valor, texto }: { href: string; valor: string; texto: string }) {
+  return (
+    <Link href={href} className="border border-linea bg-[#fbf8f1] p-5 transition-colors hover:border-cobre">
+      <p className="font-titulo text-3xl text-cobre-oscuro">{valor}</p>
+      <p className="mt-1 text-sm text-apagado">{texto}</p>
+    </Link>
+  );
+}
+
+async function nombresPorId(ids: string[]) {
+  const unicos = [...new Set(ids)];
+  const mapa = new Map<string, string>();
+  if (unicos.length === 0) return mapa;
+  const { data } = await clienteAdmin().from("profiles").select("id, nombre").in("id", unicos);
+  for (const fila of data ?? []) mapa.set(fila.id, fila.nombre);
+  return mapa;
+}
+
+function fechaCorta(iso: string) {
+  return new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Bogota" }).format(new Date(iso));
 }
