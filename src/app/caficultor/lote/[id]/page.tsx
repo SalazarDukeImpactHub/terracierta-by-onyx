@@ -88,9 +88,9 @@ export default async function CooperativasParaMiLote({
           <div className="rombo my-10" aria-hidden="true">
             ◆
           </div>
-          <h2 className="text-3xl">Las 3 cooperativas que mejor te calzan</h2>
+          <h2 className="text-3xl">Las 3 cooperativas que mejor se ajustan a tus necesidades</h2>
           <p className="mt-2 max-w-2xl text-apagado">
-            Puntuamos por precio, cercanía, si reciben tu método y variedad, y si tienen capacidad para tus kilos. Elegí una y le
+            Puntuamos por precio, cercanía, si reciben tu método y variedad, y si tienen capacidad para tus kilos. Elige una y le
             enviamos la oferta.
           </p>
 

@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatoCop } from "@/lib/validacion";
+import { consultarCheckoutProtegido, CheckoutError } from "@/payments/checkoutClient";
+import { faseDelPago } from "@/payments/paymentProgress";
+import { FlujoPago } from "./flujo-pago";
 
 interface Vista {
   pagoId: string;
@@ -11,22 +14,9 @@ interface Vista {
   monto: number;
   walletReceptor: string;
   concepto: string;
-  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean };
-}
-
-const PASOS = ["Solicitud", "Autorización", "Ejecución", "Finalización"];
-
-/** Índice del paso en curso (0-3). Si el módulo real no informa `paso`, pendiente = esperando autorización. */
-function pasoActual(v: Vista): number {
-  if (v.estado === "completado") return 4;
-  switch (v.detalle.paso) {
-    case "ejecucion":
-      return 2;
-    case "finalizacion":
-      return 3;
-    default:
-      return 1;
-  }
+  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean; canalPqc?: boolean };
+  canalVerificado?: boolean;
+  reciboVerificado?: boolean;
 }
 
 export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: string }) {
@@ -36,19 +26,24 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
   useEffect(() => {
     let activo = true;
     let temporizador: ReturnType<typeof setTimeout> | undefined;
+    let erroresTransitorios = 0;
 
     async function consultar() {
       try {
-        const r = await fetch(`/api/pagos/${encodeURIComponent(pagoId)}`, { cache: "no-store" });
-        if (!r.ok) throw new Error("No encontramos este pago");
-        const datos = (await r.json()) as Vista;
+        const datos = await consultarCheckoutProtegido(pagoId);
         if (!activo) return;
         setVista(datos);
+        erroresTransitorios = 0;
         setError(null);
         if (datos.estado === "pendiente") temporizador = setTimeout(consultar, 1500);
       } catch (e) {
         if (!activo) return;
         setError(e instanceof Error ? e.message : "Error al consultar el pago");
+        // Solo se reintenta la consulta; nunca el inicio ni la ejecución del pago.
+        if (!(e instanceof CheckoutError) || [400, 429].includes(e.status) || e.status >= 500) {
+          erroresTransitorios++;
+          temporizador = setTimeout(consultar, Math.min(60000, 3000 * 2 ** Math.min(erroresTransitorios, 5)));
+        }
       }
     }
     consultar();
@@ -67,31 +62,11 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
   }
   if (!vista) return <p className="text-apagado">Consultando el estado del pago…</p>;
 
-  const actual = pasoActual(vista);
   const fallo = vista.estado === "fallido";
 
   return (
     <div>
-      <ol className="grid gap-3 sm:grid-cols-4" aria-label="Avance del pago">
-        {PASOS.map((nombre, i) => {
-          const hecho = i < actual;
-          const enCurso = i === actual && vista.estado === "pendiente";
-          const roto = fallo && i === Math.min(actual, 3);
-          return (
-            <li
-              key={nombre}
-              aria-current={enCurso ? "step" : undefined}
-              className={`border p-3 ${
-                roto ? "border-cereza text-cereza" : hecho ? "border-bosque bg-bosque text-crema" : enCurso ? "border-cobre-oscuro" : "border-linea text-apagado"
-              }`}
-            >
-              <span className="font-titulo text-2xl">{["I", "II", "III", "IV"][i]}</span>
-              <span className="block text-[0.72rem] font-semibold uppercase tracking-[0.16em]">{nombre}</span>
-              <span className="text-xs">{roto ? "Falló" : hecho ? "Listo" : enCurso ? "En curso…" : "Pendiente"}</span>
-            </li>
-          );
-        })}
-      </ol>
+      <FlujoPago fase={faseDelPago(vista)} simulado={vista.detalle.simulado} />
 
       <div className="mt-8 border border-linea bg-crema-2 p-6">
         {vista.estado === "completado" && (
@@ -142,6 +117,8 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
         {vista.detalle.simulado && (
           <p className="mt-5 text-sm text-apagado">Pago simulado (modo demostración): no se movió dinero real.</p>
         )}
+        {vista.canalVerificado && <p className="mt-5 text-sm text-apagado">Consulta protegida con postcuántica.</p>}
+        {vista.reciboVerificado && <p className="mt-2 text-sm text-bosque">Comprobante verificado con Ed25519 y ML-DSA-65.</p>}
       </div>
 
       <Link href={vista.tipo === "oferta" ? "/cooperativa" : volverA} className="btn btn-borde mt-6">

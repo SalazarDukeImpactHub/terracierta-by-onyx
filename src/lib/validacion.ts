@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Wallet address de Open Payments: URL https (https://host/ruta) o payment pointer ($host/ruta).
- * Se normaliza el payment pointer a https. Validar acá evita guardar basura o URLs peligrosas
+ * Se normaliza el payment pointer a https. Validar aquí evita guardar basura o URLs peligrosas
  * (javascript:, data:, etc.).
  */
 export const walletAddress = z
@@ -31,7 +31,7 @@ export const esquemaProducto = z.object({
   nombre: textoLimpio(3, 80, "El nombre"),
   descripcion: z.string().trim().max(600, "La descripción admite hasta 600 caracteres").default(""),
   precio_cop: z.coerce
-    .number({ error: "Poné un precio en pesos" })
+    .number({ error: "Ingresa un precio en pesos" })
     .int("El precio va en pesos enteros")
     .min(1000, "El precio mínimo es $1.000")
     .max(100_000_000, "El precio es demasiado alto"),
@@ -44,7 +44,7 @@ export const esquemaCheckout = z.object({
 });
 
 export const esquemaLote = z.object({
-  metodo: z.enum(["lavado", "honey", "natural"], { error: "Elegí el método" }),
+  metodo: z.enum(["lavado", "honey", "natural"], { error: "Elige el método" }),
   variedad: textoLimpio(2, 60, "La variedad"),
   kg: z.coerce.number().int().min(1, "Mínimo 1 kg").max(100_000, "Cantidad demasiado alta"),
   municipio: textoLimpio(2, 60, "El municipio"),

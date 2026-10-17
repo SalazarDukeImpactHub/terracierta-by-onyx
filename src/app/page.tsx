@@ -4,21 +4,21 @@ const ROLES = [
   {
     numeral: "I",
     titulo: "Soy caficultor",
-    texto: "Recibí tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
+    texto: "Recibe tu wallet propia. Con INVIMA, abre tu tienda; sin INVIMA, mira a qué cooperativa venderle tu lote.",
     href: "/acceso",
     accion: "Entrar",
   },
   {
     numeral: "II",
     titulo: "Quiero comprar café",
-    texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
+    texto: "Mira el café de cada finca sin cuenta. Para pagar entras con tu cuenta: pagas desde tu billetera, directo a su dueño.",
     href: "/tienda",
     accion: "Ver la tienda",
   },
   {
     numeral: "III",
     titulo: "Soy cooperativa",
-    texto: "Revisá las ofertas por lotes que te recomendamos y pagá desde la plataforma.",
+    texto: "Revisa las ofertas por lotes que te recomendamos y paga desde la plataforma.",
     href: "/acceso",
     accion: "Entrar",
   },
@@ -26,7 +26,7 @@ const ROLES = [
 
 const PASOS = [
   "El caficultor recibe una wallet propia: una dirección de cobro que cualquier billetera puede pagar.",
-  "Con INVIMA publica su tienda; sin INVIMA carga su lote y le mostramos las 3 cooperativas que mejor le calzan.",
+  "Con INVIMA publica su tienda; sin INVIMA carga su lote y le mostramos las 3 cooperativas que mejor se ajustan a sus necesidades.",
   "El pagador ve la cotización exacta y aprueba antes de pagar. El dinero va de wallet a wallet.",
   "Queda el recibo y un historial de ingresos propio.",
 ];
@@ -41,7 +41,7 @@ export default function Inicio() {
             Que el caficultor cobre directo, <em className="text-cobre">con nombre propio.</em>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-crema/85">
-            Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
+            Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Aquí cada uno tiene
             su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
@@ -56,7 +56,7 @@ export default function Inicio() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-16">
-        <p className="etiqueta">Uno · Elegí tu entrada</p>
+        <p className="etiqueta">Uno · Elige tu entrada</p>
         <h2 className="mt-2 text-4xl">¿Desde dónde llegás?</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {ROLES.map((r) => (

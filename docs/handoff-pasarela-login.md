@@ -1,127 +1,162 @@
-# Handoff: pasarela Open Payments y login
+# Handoff: integrar login con la pasarela PQC
 
-Para la IA que integra el trabajo de login con pagos. Rama de entrega: `feat/pqc-quotes-send`. Base de esta entrega: `68ab3e0`. Consultar el commit final con `git log -1`. No sustituir módulos completos al resolver conflictos; preservar el trabajo de login del compañero.
+Actualizado el 17 de octubre de 2026. Alcance: pagos y evidencia de seguridad. El compañero entrega login, registro, sesión y asociación de wallets. **No crear otro login ni sustituir sus pantallas.** Esta entrega tiene cambios locales sin publicar: un merge de una rama remota no los transporta hasta que el responsable prepare y publique el commit autorizado. Este documento no autoriza commit, push ni despliegue.
 
-## Estado y alcance
+## Integración para la IA de login
 
-Pasarela independiente en `/pago/pasarela`, puerto local 3100. SDK oficial `@interledger/open-payments@7.4.0`, autorización GNAP, protección PQC de navegador a TerraCierta y comprobantes con dos firmas. No implementa login. `src/auth` y `src/adapters/types.ts` se conservan.
+1. Obtener el commit de entrega confirmado por el responsable; resolver conflictos conservando el login del compañero y los controles de pagos. No seleccionar versiones completas de archivos para resolverlos por conveniencia.
+2. Usar Node **26** para reproducir el entorno verificado y la comprobación nativa PQC. Ejecutar `npm ci` con el `package-lock.json` entregado. No instalar paquetes de este documento por separado ni regenerar versiones sin necesidad.
+3. Implementar las funciones existentes de `src/auth/index.ts`, manteniendo `src/adapters/types.ts`: `obtenerSesion`, `obtenerPerfil`, `cerrarSesion`. Validar la identidad y cargar rol/wallet en servidor. Devolver `null` ante sesión ausente o inválida.
+4. Conservar los tres roles literales y la migración compatible con `comprador`. Validar que sesión y perfil pertenecen a la misma persona. Una wallet ausente impide pagar; nunca usar otra wallet como valor por defecto comercial.
+5. Mantener los clientes de `src/payments/checkoutClient.ts` en pedidos, ofertas y estado. No enviar JSON claro al checkout ni añadir acciones que eviten el canal cifrado.
+6. Configurar moneda, origen, credenciales de cliente y límites antes de activar el riel real. Los precios comerciales son **COP enteros**; la prueba autónoma EUR no constituye una conversión.
+7. Validar primero con SDK/servicios simulados y la matriz de aceptación de este documento. Después probar una operación testnet de extremo a extremo con autorización manual del titular y observar ambas wallets.
+8. Registrar el resultado y los pendientes de producción. Un login integrado no aporta persistencia de grants, claves ni seguimiento del SDK.
 
-La demo no representa el precio del catálogo: 0,05 EUR es un importe técnico configurado. Se observó una cotización de 1,05 EUR de débito por 0,05 EUR recibidos. La diferencia de 1 EUR la devuelve el proveedor; no es una comisión creada por TerraCierta. No se concilió todavía el movimiento real ni la tarifa administrativa desplegada. Ver `investigacion-pagos-pqc.md`.
+No se considera completa la integración hasta verificar estas ocho condiciones con el módulo real de login. Actualmente `src/auth/index.ts` sigue siendo un stub; este documento no describe trabajo privado del compañero aún no integrado.
 
-Estado de integración: listo para conectar el contrato de login y probarlo; no se afirma que el checkout comercial o un pago real completo estén validados. Quedan pendientes moneda, estado durable y aceptación manual del titular.
+## Dependencias y preparación
 
-## Archivos y responsabilidades
+El manifiesto/lockfile incluyen `@interledger/open-payments@7.4.0`, `@noble/post-quantum@0.7.1`, `@noble/curves@2.4.0`, Vitest y las dependencias del proyecto. Las regresiones de navegador usan `jsdom` y `@types/jsdom` como dependencias de desarrollo. **No hacen falta un servidor cuántico, una cuenta IBM ni una wallet adicional para ejecutar la suite.**
 
-- `src/payments/index.ts`: implementa `iniciarPago` y `consultarPago`.
-- `src/payments/sdkAdapter.ts`: checkout del catálogo, sesión de retorno y selección de wallet pagadora desde `input.walletPagador`.
-- `src/payments/openPayments.ts`: descubrimiento, incoming, quote, grants, validación GNAP y outgoing. Rechaza importes recibidos distintos de lo solicitado.
-- `src/payments/gateway.ts`: demo autónoma, confirmación de un uso y estado por sesión.
-- `src/payments/gatewayClient.ts`: canal del navegador y verificación de cotización/comprobante.
-- `src/payments/pqc/`: ML-KEM-768, HKDF-SHA-256/AES-256-GCM, Ed25519 + ML-DSA-65.
-- `src/payments/amounts.ts`: diferencia entre débito y recepción solo para la misma moneda y escala, con enteros exactos.
-- `src/app/pago/pasarela/`: pantalla sencilla; separar vendedor, adicional de wallet y total.
-- `src/app/api/pasarela/retorno/route.ts`: retorno compartido; `checkoutState` usa adaptador de checkout, `state` usa gateway de demo.
-- `src/lib/pagos-service.ts` y `src/adapters/payments.ts`: integración existente de tienda/DB. No se modificaron en esta entrega.
-
-## Conectar login
-
-1. Implementar el contrato existente de `src/auth/index.ts`: sesión y perfil validados en servidor. El perfil incluye `wallet_address` y rol comprador; preservar rutas internas seguras de retorno.
-2. Mantener `iniciarPagoDePedido` como punto de entrada del checkout: importe y vendedor salen de la base, comprador de su perfil. No aceptar wallet pagadora, receptora ni precio arbitrarios del navegador.
-3. El `walletPagador` del contrato ahora se pasa al riel oficial como wallet del titular que debe aprobar. La configuración `OPEN_PAYMENTS_SENDER_WALLET` solo es el valor temporal de la demo autónoma; no debe sustituir la wallet del perfil en checkout.
-4. `OPEN_PAYMENTS_CLIENT_WALLET` y su llave identifican al cliente TerraCierta. No son la wallet del comprador ni una autorización para gastar: el comprador concede su propio grant GNAP limitado a débito y receptor.
-5. Login de TerraCierta y consentimiento de Test Wallet son procesos separados. No reenviar a pagos cookies ni contraseña de Test Wallet. No trasladar el endpoint web `/quotes`: fue retirado porque el usuario reportó movimiento de fondos al llamarlo.
-6. Activar `USE_MOCKS=false` solo cuando ambos módulos reales estén configurados. Actualmente este interruptor es compartido por auth/pagos; no confundir simulación con prueba externa.
-
-## Contrato público (sin cambios)
-
-```ts
-iniciarPago({
-  tipo: 'pedido' | 'oferta',
-  referenciaId: string,
-  montoCop: number, // entero de pesos colombianos; no céntimos EUR
-  walletReceptor: string,
-  walletPagador: string,
-  urlRetorno: string,
-}): Promise<{ pagoId: string; redirectUrl: string | null; estado: EstadoPago }>
-consultarPago(pagoId: string): Promise<{ estado: EstadoPago; detalle: Record<string, unknown> }>
-```
-
-El checkout necesita wallet receptora COP para representar `montoCop` directamente. Con la wallet de demo EUR se rechaza la operación antes del consentimiento. No solucionar esto cambiando la etiqueta de moneda ni multiplicando por una tasa inventada. Alternativas: wallet receptora COP soportada, o contrato de precios/conversión explícito acordado con el equipo. El proveedor puede convertir la moneda del comprador al cotizar, si soporta ese par; la moneda recibida debe corresponder al precio acordado.
-
-## Flujo y garantías
-
-1. Crear incoming por el importe solicitado para el vendedor; cotejar valor, moneda y escala devueltos.
-2. Crear quote oficial; cotejar la recepción exacta y limitar el débito total mediante `OPEN_PAYMENTS_MAX_DEBIT`.
-3. Mostrar cantidades antes de confirmar. No reducir el monto del vendedor para caber en el límite ni ocultar un adicional.
-4. Solicitar grant saliente limitado al débito y al incoming. El titular aprueba en su wallet.
-5. Verificar nonce cliente/servidor, referencia de interacción y URI de autorización con SHA-256; aceptar Base64 de Rafiki y Base64URL canónicos. Verificar sesión y estado. No omitir la comprobación del hash.
-6. Crear outgoing una sola vez. La demo valida el GET y finaliza con un POST desde su pantalla; el checkout finaliza durante el callback tras validar GNAP. No precargar ni repetir este callback como si fuera una consulta.
-7. Consultar outgoing e incoming. Emitir comprobante híbrido únicamente cuando la recepción está completada por el importe requerido y el envío es positivo, consistente y sin fallo.
-
-`debitAmount` puede incluir tarifas; `sentAmount` puede excluirlas. No exigir igualdad entre ambos, ni comparar monedas diferentes por resta.
-
-Las cookies `tc_pasarela` y `tc_checkout_gnap` son propias, HttpOnly/SameSite=Lax. No son credenciales bancarias. Para probar el retorno debe conservarse navegador y origen exacto (127.0.0.1 y localhost son orígenes diferentes).
-
-## Configuración privada
-
-Copiar `.env.example` y completar variables **solo en servidor**:
-
-- `PAYMENTS_RAIL=open-payments`.
-- `OPEN_PAYMENTS_CLIENT_WALLET`, `OPEN_PAYMENTS_KEY_ID`, `OPEN_PAYMENTS_PRIVATE_KEY_PATH` (local) o `OPEN_PAYMENTS_PRIVATE_KEY` (secret manager).
-- `OPEN_PAYMENTS_SENDER_WALLET`: únicamente wallet temporal de demo.
-- `OPEN_PAYMENTS_REDIRECT_ORIGIN` y `NEXT_PUBLIC_SITE_URL`: mismo origen; local `http://127.0.0.1:3100`.
-- `OPEN_PAYMENTS_MAX_RECEIVE` y `OPEN_PAYMENTS_MAX_DEBIT`: unidades mayores; límites independientes. Los límites de prueba actuales no sirven para pedidos de miles de COP.
-- `PAYMENTS_EXECUTION_ENABLED=false`: bloquea autorización/ejecución, permite cotizar.
-- `PASARELA_DEMO_ENABLED=false`: impide exponer la demo pública en producción por defecto.
-
-La llave y cookies locales no viajan en Git. En otro equipo hay que configurar credenciales propias; no copiar `.env.local`, Downloads ni valores del chat al repositorio. Conservar `serverExternalPackages: ['@interledger/open-payments']` en Next: el SDK carga especificaciones YAML en runtime.
-
-## Pruebas y pendientes reales
+El lockfile actual de `jsdom@30.1.3` requiere Node `^22.22.2 || ^24.15.0 || >=26.0.0`; el mínimo de Next por sí solo no basta para esa dependencia. Se ha trabajado con Node 26. El verificador independiente también necesita soporte nativo ML-KEM/ML-DSA en Node/OpenSSL y un CLI OpenSSL compatible; ver [evidencia y reproducción](demo-pqc-jurado.md).
 
 ```sh
+node --version
 npm ci
 npm test
 npm run typecheck
-npx eslint src/payments src/app/pago/pasarela src/app/api/pasarela
+npm run lint
 npm run build
 npm audit --omit=dev
 npm run dev -- --hostname 127.0.0.1 --port 3100
+```
+
+Ejecutar el build fuera del servidor de demostración activo: comparte `.next` con desarrollo. **No reiniciar durante una autorización pendiente**, porque el seguimiento de SDK/grants está en memoria. En otro terminal, con desarrollo ya iniciado:
+
+```sh
 LOCAL_PASARELA_ORIGIN=http://127.0.0.1:3100 npx vitest run src/payments/local-channel.test.ts
 ```
 
-La última prueba solo usa key/echo, sin cotizaciones ni pagos externos. Las pruebas del SDK usan simulaciones locales y cubren sesiones equivocadas, hash alterado, replay, confirmación anticipada, concurrencia, sobreprecio fuera del límite, monedas incompatibles, importes cambiados, proveedor con comisiones y pérdida de estado.
+Esta última prueba solo llama a key/echo locales; no cotiza ni envía fondos. Revisar también `npm audit` completo: el árbol de herramientas de desarrollo tiene avisos distintos de los paquetes de producción; documentarlos y resolver con una actualización compatible disponible, sin forzar una versión arbitraria para silenciar el informe. Para la simulación didáctica de Shor, opcional y separada de la app, seguir `scripts/quantum/requirements.txt` y [la guía de demo](demo-pqc-jurado.md). No instalar Python/Qiskit como dependencia del login.
 
-Prueba de aceptación del equipo: comprador real autenticado → precio de DB y moneda acordada → wallet correcta → cotización visible → aprobación manual → envío único → recepción comprobada → pedido completado. Registrar IDs del outgoing/incoming y movimientos de ambas wallets sin secretos. No se ha completado todavía esta validación con login real.
+## Contrato de identidad y responsabilidades
 
-Persistencia pendiente: estado, grants y llaves PQC están en memoria de un proceso. Un reinicio puede perder seguimiento y cambiar llaves; el pago se reporta pendiente/incierto, nunca fallido por ausencia del registro. No desplegar con varias réplicas/serverless sin persistir estado y coordinar idempotencia. Una firma del comprobante certifica la observación de TerraCierta, no una firma bancaria ni una garantía postcuántica de todo Interledger.
+El punto de conexión comercial es `auth.obtenerPerfil()` desde `src/adapters/auth.ts`. Sus controladores inyectables son `createCheckoutHandlers({ perfil, iniciarPedido, iniciarOferta, consultar }, channel)`; las pruebas sustituyen dependencias sin añadir un bypass público.
 
-## Integración Git por la IA del compañero
-
-En una rama de integración con su trabajo ya guardado:
-
-```sh
-git fetch origin
-git merge origin/feat/pqc-quotes-send
+```ts
+// Contrato existente en src/adapters/types.ts
+interface Sesion { userId: string; rol: 'caficultor' | 'cooperativa' | 'comprador' }
+interface Perfil {
+  id: string;
+  rol: 'caficultor' | 'cooperativa' | 'comprador';
+  nombre: string;
+  municipio: string;
+  tiene_invima: boolean;
+  wallet_address: string | null;
+}
 ```
 
-Resolver conflictos preservando login, rutas y los contratos. Revisar especialmente `package.json`, lockfile, `.env.example`, `next.config.ts`, cabecera/pie y documentación compartida. No reemplazar el lockfile a mano: resolver el manifiesto y regenerar con npm si hace falta. Ejecutar las pruebas anteriores después de resolver. No usar `reset --hard`, `push --force` ni compartir secretos para arreglar conflictos.
+`id` debe ser estable y corresponder a `Sesion.userId` y a las referencias comerciales de DB. `tiene_invima` es una condición del caficultor, no un cuarto rol. El login debe mantener la asociación de wallet con la identidad validada y revocar la sesión al cerrar. El módulo de pagos no asigna wallets durante el registro.
 
-No se fusiona main automáticamente desde la rama de pagos. Las ramas remotas de otros compañeros se dejan para la IA que coordina la integración.
+| Rol validado | Recorrido comercial | Validaciones de pagos |
+| --- | --- | --- |
+| `comprador` | Compra desde tienda/checkout | Producto publicado y cantidad; precio y vendedor de DB; wallet pagadora del perfil; consentimiento GNAP |
+| `cooperativa` | Paga una oferta propia aceptada | Propiedad y estado; lote/caficultor correspondiente; importe y wallets de DB; consentimiento GNAP |
+| `caficultor` | Consulta sus cobros | Wallet participante comprobada en servidor; no se añade aprobación por recibir |
 
-## Propuestas de Open Payments
+La selección visual de rol nunca concede permisos. No aceptar `rol`, `usuarioId`, precio o wallets del navegador como autoridad. Conservar `src/lib/roles.ts → rutaSegura` al usar `/acceso?siguiente=<ruta interna>`; rechazar retornos externos.
 
-Prioridad de integración: cobro por pedido con recepción fija, wallet del perfil, consentimiento limitado y seguimiento/comprobante. Siguiente etapa: cotización entre monedas soportadas con precio vendedor preservado; verificación de titularidad de wallet para el registro; grants revocables y de privilegio mínimo. Después: reparto vendedor/plataforma transparente y suscripciones de café con límites e intervalos explícitos. Los repartos requieren varios pagos y manejo de resultados parciales; no prometer atomicidad. Una devolución también requiere otro pago autorizado, no revertir localmente un estado.
+`USE_MOCKS=true` selecciona **ambos** adaptadores: auth y pagos. `tc_demo_perfil` es una selección de fixtures de `src/adapters/mocks/auth.ts`, no autenticación. Cambiar a `USE_MOCKS=false` solo tras integrar/configurar ambos módulos reales. No mezclar sesiones de demo con fondos externos mediante excepciones a los controladores.
 
-Fuentes: [flujo](https://openpayments.dev/concepts/op-flow/), [cotizaciones](https://openpayments.dev/sdk/quote-create/), [repartos](https://openpayments.dev/guides/split-payments/), [recurrencia](https://openpayments.dev/guides/recurring-subscription-incoming-amount/).
+## Rutas y transporte que debe conservar el integrador
 
-## Diseño futuro: pago rápido y aprobación desde reloj
+| Ruta | Contrato |
+| --- | --- |
+| `GET /api/pagos/key` | Exige perfil autenticado; entrega exclusivamente llaves públicas |
+| `POST /api/pagos/iniciar` | Sobre PQC; contenido lógico `{ productoId, cantidad }`; solo comprador |
+| `POST /api/pagos/oferta` | Sobre PQC; contenido lógico `{ ofertaId }`; solo cooperativa |
+| `POST /api/pagos/{id}` | Sobre PQC; contenido lógico `{}`; exige wallet participante |
+| `GET /api/pagos/{id}` | Responde 405; la consulta protegida es POST |
+| `GET /api/pasarela/retorno?checkoutState=...` | Retorno comercial GNAP; verifica cookie/estado/hash y reserva de DB antes de enviar; **no es una consulta** |
+| `GET /api/pasarela/retorno?state=...` | Retorno de la prueba autónoma; valida consentimiento y vuelve a su pantalla |
 
-No implementado en esta rama. La cookie persistente de TerraCierta no sustituye un grant ni demuestra aprobación del titular. El SDK no utiliza la cookie de sesión de Test Wallet.
+Usar `iniciarCheckoutProtegido`, `iniciarOfertaProtegida` y `consultarCheckoutProtegido` de `checkoutClient.ts`. Inicio y consulta comerciales requieren cifrado; el escudo didáctico no puede apagarlos. `checkoutHandlers.ts` verifica rol; `pagos-service.ts` obtiene importes/wallets y valida participantes. Antes de enviar, `checkoutReservation.ts` coteja referencia, estado, importe y wallets contra DB. La oferta usa reserva condicional para impedir dos autorizaciones utilizables sobre la misma versión.
 
-Open Payments documenta [grants para pagos futuros](https://openpayments.dev/guides/outgoing-grant-future-payments/): el titular puede autorizar previamente un presupuesto/intervalo y la app puede operar dentro del permiso concedido. Para una versión rápida, conservar el token solo en servidor, comprobar límites efectivos, revocación y consentimiento, y acotar destinatarios cuando el caso lo permita. No reutilizar un grant de un solo incoming para otro pedido ni saltar el consentimiento mediante el endpoint web `/quotes`.
+El contexto de servidor registra `canalPqc`; el navegador no puede afirmarlo mediante un booleano. Para marcar un pago real completado, se comprueban recepción, envío y comprobante con **ambas** firmas, Ed25519 y ML-DSA-65, vinculadas a importe, receptor, ID y contexto.
 
-Una app watchOS podría enviar la aprobación al iPhone conectado mediante [Watch Connectivity](https://developer.apple.com/documentation/watchconnectivity). El reloj sin internet propio no equivale a un sistema completamente desconectado: el iPhone necesita conexión para enviar la autorización al servidor. Sin conexión de ningún dispositivo, una aprobación local se mantiene pendiente y puede vencer; no se muestra como autorizada por el proveedor o pagada.
+Una sesión TerraCierta identifica a la persona en la aplicación. **GNAP concede permiso al titular para gastar desde su wallet**; el login no sustituye ese consentimiento. `OPEN_PAYMENTS_CLIENT_WALLET` y su llave identifican al cliente TerraCierta; no son la wallet pagadora del comprador ni un permiso ilimitado.
 
-Una aprobación de dispositivo debe vincularse a pedido, importe vendedor, máximo de débito, moneda, destinatario, nonce, vencimiento e identidad del dispositivo; el servidor verifica firma, sesión, consumo único y estado. Esto es una comprobación de la app, no un reemplazo automático del consentimiento GNAP: para que la wallet acepte directamente el reloj se requiere soporte de su proveedor/IdP.
+El riel actual solo admite wallets y recursos HTTPS de `*.interledger-test.dev` mediante `testnetUrl`; asociar wallets de esa testnet para la aceptación. Incorporar otro proveedor requiere revisar descubrimiento y restricciones de red, no eliminar la validación.
 
-Ida/vuelta: el canal implementado cifra solicitud y respuesta con claves distintas y contexto autenticado, y valida cotización/comprobante. El retorno GNAP verifica hash, sesión y estado, seguido de observación del pago por API. Los futuros canales reloj–teléfono y teléfono–backend necesitarían su propio diseño de autenticación y validación; no heredan PQC por reutilizar una cookie.
+No reenviar contraseñas/cookies bancarias al SDK. El endpoint privado de la web `/quotes` fue retirado del flujo; no incorporarlo para omitir aprobación. Las cookies propias `tc_pasarela` y `tc_checkout_gnap` vinculan estado/retorno; no son autenticación bancaria ni reemplazan `auth.obtenerPerfil()`. Mantener navegador y origen exactos durante el retorno: `localhost` y `127.0.0.1` son distintos.
+
+## Configuración: nombres exactos, sin secretos
+
+Copiar `.env.example` a una configuración privada y completar solo en servidor:
+
+| Variables | Uso |
+| --- | --- |
+| `USE_MOCKS` | `true` simula login y pagos; `false` usa los módulos reales |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Configuración pública del cliente Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Exclusivamente servidor; nunca `NEXT_PUBLIC_` |
+| `PAYMENTS_RAIL=open-payments` | SDK oficial; el adaptador web con cookies no se admite |
+| `OPEN_PAYMENTS_CLIENT_WALLET`, `OPEN_PAYMENTS_KEY_ID` | Identidad pública del cliente registrada con su llave |
+| `OPEN_PAYMENTS_PRIVATE_KEY_PATH` o `OPEN_PAYMENTS_PRIVATE_KEY` | Llave privada desde archivo local o gestor de secretos; no copiar al repo |
+| `OPEN_PAYMENTS_SENDER_WALLET` | Solo pagador temporal de la prueba autónoma; no sustituye la wallet del perfil |
+| `OPEN_PAYMENTS_REDIRECT_ORIGIN`, `NEXT_PUBLIC_SITE_URL` | Mismo origen exacto; local `http://127.0.0.1:3100` |
+| `OPEN_PAYMENTS_MAX_RECEIVE`, `OPEN_PAYMENTS_MAX_DEBIT` | Límites independientes en unidades mayores; el débito incluye el adicional del proveedor |
+| `PAYMENTS_EXECUTION_ENABLED=false` | Permite cotizar y bloquea autorización/ejecución; recomendado al configurar por primera vez |
+| `PASARELA_DEMO_ENABLED=false` | Mantiene deshabilitada la API de demo en producción por defecto |
+
+`.env.example` trae `PAYMENTS_EXECUTION_ENABLED=true`: establecer explícitamente `false` en el entorno de integración antes de explorar. Habilitar ejecución solo para la prueba acordada del titular. No copiar `.env.local`, llaves de Downloads ni cookies del chat entre máquinas. Preservar `serverExternalPackages: ['@interledger/open-payments']` de `next.config.ts` y el loader Tailwind limitado a `globals.css`; los CSS Modules necesitan su procesamiento nativo.
+
+**Bloqueo comercial de moneda/límite:** `montoCop` representa pesos colombianos enteros y el SDK exige que la wallet receptora reciba COP. Los límites de ejemplo `0.05` no permiten pedidos comerciales de miles de COP. Acordar wallet receptora COP soportada y límites explícitos apropiados, o un contrato de precio/conversión validado por el equipo. No cambiar una etiqueta EUR a COP ni inventar una tasa. Una wallet pagadora de otra moneda puede necesitar conversión cotizada por el proveedor; lo recibido debe coincidir con el precio acordado.
+
+La prueba EUR de 0,05 es independiente del catálogo. Se observó débito 1,05 y recepción 0,05; el adicional viene de la cotización del proveedor. No presentarlo como comisión cobrada por TerraCierta ni como tarifa conciliada sin verificar los movimientos de ambas wallets. Ver `investigacion-pagos-pqc.md`.
+
+## Presentación y evidencia PQC
+
+`/pago/pasarela` presenta tres roles y acceso al recorrido comercial del perfil. Sin perfil, comprador/cooperativa pueden ver un formulario autónomo compacto expresamente identificado con la wallet de prueba del servidor; no equivale a cuenta comercial. El caficultor solo consulta. La vista técnica conserva `?prueba=1` y el retorno `?autorizacion=...`.
+
+`/pago/seguridad` concentra el laboratorio. Sus claves efímeras tienen tamaños reales; el ataque de firma concede deliberadamente la clave clásica del laboratorio para falsificar un receptor. El verificador clásico acepta la firma nueva y la política de ambas firmas la rechaza. **No es una recuperación real por Shor de Ed25519.** La simulación pequeña de Shor se etiqueta por separado y no demuestra romper una clave de producción. El juego no modifica permisos ni protección de pagos.
+
+La prueba autónoma conserva un checkpoint en `sessionStorage` antes de finalizar un retorno. Tras perder una respuesta o recargar, ese checkpoint permite solo consultar; una autorización vencida antes del envío o un intento irrecuperable muestra revisión de wallet y bloquea otro inicio. Cerrar la revisión exige declaración explícita de conciliación y no cancela ni devuelve fondos. Esto no sustituye la persistencia de servidor ni cubre borrar el almacenamiento del navegador. Las regresiones DOM usan SDK simulado y StrictMode.
+
+`CanalPqcDemo` compara el mismo mensaje sintético por ECDH P-256 y por ML-KEM-768, con HKDF/AES-256-GCM en ambas direcciones y cambios de bit rechazados en solicitud/respuesta. El compromiso clásico entrega deliberadamente una clave efímera del laboratorio; no ejecuta Shor. La clave ECDH concedida no abre el mensaje PQC, pero ese rechazo no demuestra por sí solo resistencia cuántica. Ambos extremos se simulan en el navegador, sin tráfico financiero; el interruptor cambia únicamente la vista del experimento.
+
+`comprobarPqc` llama exclusivamente a `/api/pasarela/key` y `/api/pasarela/echo`: nonce sintético, ida/vuelta cifrada y modificación rechazada. Echo es público, no consume referencias anti-replay financieras ni constituye comprobante de pago. La [guía de Burp](verificacion-burp-pqc.md) limita las alteraciones a esas rutas locales. **No reenviar cobrar, iniciar, oferta o retornos reales** para probar replay.
+
+`node scripts/verify-pqc-native.mjs` aporta nueve controles de interoperabilidad/integridad con Node/OpenSSL y evidencia dos límites: un bundle autofirmado completo puede sustituirse si se sustituye su distribución de confianza, y nuevas llaves no verifican recibos históricos sin conservar las anteriores. No son riesgos resueltos. Ver [demo](demo-pqc-jurado.md) e [investigación de simuladores](investigacion-simuladores-cuanticos.md).
+
+## Aceptación con el login real
+
+**Prueba autónoma real completada el 17 de octubre de 2026:** el titular aceptó manualmente GNAP en Test Wallet; la pantalla pasó de pendiente a completado tras una consulta y mostró comprobante protegido verificado, envío y recepción comprobados con Open Payments. Importe técnico: débito 1,05 EUR y recepción 0,05 EUR. Burp MCP confirmó la secuencia local 06:37:54/06:37:59 UTC → POST `cobrar` 202/202; 06:38:22 → retorno 303; 06:38:24 → POST `cobrar` 202; 06:38:35 → consulta 201. Los cuerpos permanecieron cifrados. El estado HTTP por sí solo no prueba el número de outgoing remotos ni sustituye conciliar movimientos de wallet. Esta prueba valida el formulario autónomo y su retorno: **el checkout comercial con login real y precios COP sigue pendiente de aceptación**.
+
+| Caso | Resultado requerido |
+| --- | --- |
+| Sin sesión, expirada o revocada | Llaves comerciales/inicio/consulta no habilitan operaciones |
+| Comprador paga producto | Identidad y wallet propias; precio/vendedor de DB; consentimiento del titular |
+| Cooperativa paga oferta propia | Propiedad/estado verificados; importe y caficultor correctos |
+| Rol incorrecto, oferta ajena, wallet ausente | Rechazo antes de ejecutar fondos |
+| Caficultor consulta su cobro | Consulta como participante; no obtiene funciones de pagador |
+| Cualquier rol consulta pago ajeno | No obtiene detalles ni sincroniza una operación ajena |
+| Alterar rol/precio/wallet en HTTP | No altera autoridad ni compra; sobre alterado se rechaza |
+| Cerrar/cambiar cuenta | Las siguientes peticiones usan identidad vigente; no retienen acceso de la cuenta anterior |
+| Autorizar después de cerrar/cambiar cuenta | El retorno exige perfil vigente, rol, wallet y propietario de DB correctos; rechazo antes de validar GNAP/enviar |
+| Dos solicitudes/callbacks concurrentes | No habilitan doble envío; resultado incierto conserva bloqueo de inicio |
+| Cotización vencida, recarga, red interrumpida o reinicio | Mensaje visible y recuperación solo de consulta cuando exista incertidumbre; nunca reenvío automático |
+| Pago recibido completo | Importe/destino coinciden; envío y recepción observados; ambas firmas verificadas |
+
+El callback comercial vuelve a consultar `auth.obtenerPerfil()` y compara rol, wallet y propietario de DB antes de continuar GNAP/enviar. Las pruebas con dependencias simuladas comprueban cierre/cambio de cuenta y que no se llama a autorización ni a envío en esos casos. Repetir con la sesión real del compañero. Rechazar el retorno en TerraCierta no equivale a revocar automáticamente un grant concedido en el proveedor.
+
+Las pruebas actuales inyectan SDK, perfil y servicios/DB; validan el comportamiento de pagos, no el login real ni la conexión a Supabase. La aceptación final requiere comprador real → precio/moneda de DB → wallet correcta → aprobación manual → envío único → recepción confirmada → pedido completado. Conservar únicamente IDs y cantidades públicas como evidencia; ningún token o cookie.
+
+## Límites pendientes para producción
+
+- Grants, seguimiento del SDK, referencias de replay y claves PQC están en memoria de un proceso. Reinicios y varias réplicas requieren persistencia coordinada, idempotencia durable y conciliación. Un mensaje de recuperación visible no implementa esa infraestructura.
+- No hay Vault/HSM, ejecutor aislado ni historial durable de llaves. La distribución inicial de llaves sigue dependiendo del origen/HTTPS; el bundle autofirmado no aporta una raíz independiente.
+- El canal ML-KEM-768/HKDF/AES-256-GCM protege navegador → TerraCierta. No convierte el riel Interledger, el proveedor o todos los enlaces externos en postcuánticos. La app local HTTP no constituye una medición TLS.
+- Una firma certifica la observación de TerraCierta; no es firma bancaria. Interoperabilidad no equivale a auditoría criptográfica, certificación FIPS ni cumplimiento PCI DSS. PQC no repara autenticación, XSS, pérdida de estado ni errores de negocio.
+
+No anunciar disponibilidad de producción hasta resolver esos puntos según el despliegue elegido. Esta entrega permite integrar login y demostrar protección PQC con sus límites expresos.

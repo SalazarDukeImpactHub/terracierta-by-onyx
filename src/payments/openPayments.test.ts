@@ -12,7 +12,7 @@ const input = { amount: 0.05, receiver: "$ilp.interledger-test.dev/921a6da8", de
 
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-function fixture(assetCode = "EUR", value = "5") {
+function fixture(assetCode = "EUR", value = "5", payerWallet = sender, recipientWallet = receiver) {
   const amount = { value, assetCode, assetScale: 2 };
   const grants: Record<string, unknown>[] = [];
   let outgoingCount = 0;
@@ -24,12 +24,12 @@ function fixture(assetCode = "EUR", value = "5") {
       continue: vi.fn(async () => mockGrant()),
     },
     incomingPayment: {
-      create: async () => mockIncomingPayment({ id: "https://ilp.interledger-test.dev/incoming/1", walletAddress: receiver, incomingAmount: amount, receivedAmount: { ...amount, value: "0" }, completed: false }),
-      get: async () => mockIncomingPayment({ walletAddress: receiver, incomingAmount: amount, receivedAmount: amount, completed: true }),
+      create: async () => mockIncomingPayment({ id: "https://ilp.interledger-test.dev/incoming/1", walletAddress: recipientWallet, incomingAmount: amount, receivedAmount: { ...amount, value: "0" }, completed: false }),
+      get: async () => mockIncomingPayment({ walletAddress: recipientWallet, incomingAmount: amount, receivedAmount: amount, completed: true }),
     },
-    quote: { create: async () => mockQuote({ id: "https://ilp.interledger-test.dev/quotes/1", walletAddress: sender, debitAmount: amount, receiveAmount: amount, expiresAt: new Date(Date.now() + 300000).toISOString() }) },
+    quote: { create: async () => mockQuote({ id: "https://ilp.interledger-test.dev/quotes/1", walletAddress: payerWallet, debitAmount: amount, receiveAmount: amount, expiresAt: new Date(Date.now() + 300000).toISOString() }) },
     outgoingPayment: {
-      create: async () => { outgoingCount++; return mockOutgoingPayment({ id: "https://ilp.interledger-test.dev/outgoing/1", walletAddress: sender, debitAmount: amount, receiveAmount: amount, sentAmount: { ...amount, value: "0" }, failed: false }); },
+      create: async () => { outgoingCount++; return mockOutgoingPayment({ id: "https://ilp.interledger-test.dev/outgoing/1", walletAddress: payerWallet, debitAmount: amount, receiveAmount: amount, sentAmount: { ...amount, value: "0" }, failed: false }); },
       get: async () => { outgoingComplete = true; return mockOutgoingPayment({ id: "https://ilp.interledger-test.dev/outgoing/1", debitAmount: amount, receiveAmount: amount, sentAmount: amount, failed: false }); },
     },
   } as unknown as AuthenticatedClient;
@@ -129,7 +129,7 @@ it("el contrato iniciar/consultar conserva la autorización y guarda el recibo h
   vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000");
   vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
   const prepare = vi.fn((input, payerWallet?: string) => createOpenPaymentsRail(f.client, payerWallet ?? sender).prepare(input));
-  const adapter = createSdkAdapter(prepare);
+  const adapter = createSdkAdapter(prepare, async () => {});
   vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", "http://127.0.0.1:3100");
   const output = await adapter.start({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: sender, urlRetorno: "http://127.0.0.1:3100/pago/retorno" }, "sesion-checkout");
   expect(prepare).toHaveBeenCalledWith(expect.objectContaining({ amount: 15000, expectedReceiveAssetCode: "COP" }), sender);
@@ -309,4 +309,172 @@ it('rechaza una wallet de comprador inválida antes de solicitar autorización',
   const prepare = vi.fn();
   await expect(createSdkAdapter(prepare).start({ tipo: 'pedido', referenciaId: '1', montoCop: 15000, walletReceptor: receiver, walletPagador: 'https://evil.example/buyer', urlRetorno: 'http://127.0.0.1:3100/pago/retorno' }, 'session')).rejects.toThrow(/testnet/);
   expect(prepare).not.toHaveBeenCalled();
+});
+
+it.each([
+  { tipo: "pedido" as const, rol: "comprador" as const, ruta: "/api/pagos/iniciar" },
+  { tipo: "oferta" as const, rol: "cooperativa" as const, ruta: "/api/pagos/oferta" },
+])("el checkout $tipo/$rol conserva PQC, consentimiento y recibo compartido con el caficultor (SDK/DB simulados)", async ({ tipo, rol, ruta }) => {
+  const { createSdkAdapter, checkoutCookie } = await import("./sdkAdapter");
+  const { createCheckoutChannel } = await import("./checkoutChannel");
+  const { createCheckoutHandlers } = await import("./checkoutHandlers");
+  const { createCheckoutClient } = await import("./checkoutClient");
+  const { verifyReceipt } = await import("./pqc/hybridReceipt");
+  const payerWallet = `https://ilp.interledger-test.dev/payer-${crypto.randomUUID()}`;
+  const recipientWallet = `https://ilp.interledger-test.dev/recipient-${crypto.randomUUID()}`;
+  const referenciaId = crypto.randomUUID();
+  const f = fixture("COP", "1500000", payerWallet, recipientWallet);
+  const origin = "http://127.0.0.1:3100";
+  vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", origin);
+  vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000");
+  vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
+  vi.stubEnv("PASARELA_DEMO_ENABLED", "false");
+  const payer = { id: crypto.randomUUID(), rol, nombre: "Pagador de prueba", municipio: "Marsella", tiene_invima: false, wallet_address: payerWallet };
+  let perfil: import("@/adapters/types").Perfil = payer;
+  // El SDK remoto, la entrada de DB y la reserva se inyectan: no se envían fondos
+  // testnet ni se acredita aquí la integración del login o la política real de DB.
+  const adapter = createSdkAdapter((input, wallet) => createOpenPaymentsRail(f.client, wallet!).prepare(input), async () => {});
+  const start = (wallet: string) => adapter.start({ tipo, referenciaId, montoCop: 15000, walletReceptor: recipientWallet, walletPagador: wallet, urlRetorno: origin + "/pago/retorno" }, "checkout-session");
+  const handlers = createCheckoutHandlers({
+    perfil: async () => perfil,
+    iniciarPedido: async (input, buyer) => {
+      expect(tipo).toBe("pedido");
+      expect(input).toEqual({ productoId: referenciaId, cantidad: 1 });
+      const result = await start(buyer.wallet_address!);
+      return { ok: true, pagoId: result.pagoId, redirectUrl: result.redirectUrl! };
+    },
+    iniciarOferta: async (id, payerId) => {
+      expect(tipo).toBe("oferta");
+      expect(id).toBe(referenciaId);
+      expect(payerId).toBe(payer.id);
+      const result = await start(payerWallet);
+      return { ok: true, pagoId: result.pagoId, redirectUrl: result.redirectUrl! };
+    },
+    consultar: async (id, wallet) => {
+      if (wallet !== payerWallet && wallet !== recipientWallet) return null;
+      const result = await adapter.consultar(id);
+      return { pagoId: id, tipo, estado: result.estado, monto: 15000, walletReceptor: recipientWallet, concepto: "Café", detalle: result.detalle };
+    },
+  }, createCheckoutChannel());
+  const responses: { path: string; body: unknown; status: number }[] = [];
+  let trustedKeys: import("./pqc/hybridReceipt").PublicKeys | undefined;
+  const client = createCheckoutClient(async (url, init = {}) => {
+    const path = String(url);
+    const req = new Request(origin + path, { ...init, headers: { ...init.headers, Origin: origin } });
+    const response = path === "/api/pagos/key" ? await handlers.key(req)
+      : path === "/api/pagos/iniciar" ? await handlers.iniciar(req)
+      : path === "/api/pagos/oferta" ? await handlers.oferta(req)
+      : await handlers.estado(req, path.split("/").at(-1)!);
+    const body = await response.clone().json();
+    if (path === "/api/pagos/key") trustedKeys = body.signature.publicKeys;
+    if (init.method === "POST") responses.push({ path, body, status: response.status });
+    return response;
+  });
+  const started = tipo === "pedido"
+    ? await client.iniciarPedido({ productoId: referenciaId, cantidad: 1 })
+    : await client.iniciarOferta(referenciaId);
+  expect(responses[0].path).toBe(ruta);
+  expect(started).toMatchObject({ canalPqc: true, redirectUrl: "https://wallet.interledger-test.dev/consent/1" });
+  expect(f.outgoingCount()).toBe(0);
+  const pending = await client.consultar(started.pagoId);
+  expect(pending).toMatchObject({ estado: "pendiente", reciboVerificado: false, detalle: { canalPqc: true, paso: "autorizacion" } });
+  expect(pending.detalle).not.toHaveProperty("reciboPqc");
+  expect(f.outgoingCount()).toBe(0);
+  const grant = f.grants[2] as { interact: { finish: { uri: string; nonce: string } } };
+  const callback = new URL(grant.interact.finish.uri);
+  callback.searchParams.set("interact_ref", "checkout-protected");
+  callback.searchParams.set("hash", createHash("sha256").update([grant.interact.finish.nonce, "server-nonce", "checkout-protected", authServer].join("\n")).digest("base64"));
+  const returned = () => new Request(callback, { headers: { Cookie: `${checkoutCookie}=checkout-session` } });
+  expect((await adapter.callback(returned())).status).toBe(303);
+  expect(f.outgoingCount()).toBe(1);
+  expect((await adapter.callback(returned())).status).toBe(403);
+  expect(f.outgoingCount()).toBe(1);
+  const verified = await client.consultar(started.pagoId);
+  expect(verified).toMatchObject({ tipo, estado: "completado", canalVerificado: true, reciboVerificado: true, detalle: { canalPqc: true } });
+  const receipt = verified.detalle.reciboPqc as import("./pqc/hybridReceipt").HybridReceipt<Record<string, unknown>>;
+  expect(receipt.payload).toMatchObject({ pagoId: started.pagoId, canalPqc: true, amount: 15000, receiver: recipientWallet });
+  expect(verifyReceipt(receipt, trustedKeys!)).toEqual({ ed25519: true, mlDsa65: true, valid: true });
+
+  perfil = { ...payer, id: crypto.randomUUID(), rol: "caficultor", wallet_address: recipientWallet };
+  const recipient = await client.consultar(started.pagoId);
+  expect(recipient).toMatchObject({ estado: "completado", canalVerificado: true, reciboVerificado: true });
+  expect(recipient.detalle.reciboPqc).toEqual(receipt);
+  expect(verifyReceipt(recipient.detalle.reciboPqc as typeof receipt, trustedKeys!)).toEqual({ ed25519: true, mlDsa65: true, valid: true });
+  await expect(client.iniciarPedido({ productoId: referenciaId, cantidad: 1 })).rejects.toMatchObject({ status: 403 });
+  await expect(client.iniciarOferta(referenciaId)).rejects.toMatchObject({ status: 403 });
+  perfil = { ...perfil, id: crypto.randomUUID(), wallet_address: `https://ilp.interledger-test.dev/other-${crypto.randomUUID()}` };
+  await expect(client.consultar(started.pagoId)).rejects.toMatchObject({ status: 404 });
+  expect(responses.at(-1)?.status).toBe(404);
+  for (const response of responses) expect(response.body).toHaveProperty("ciphertext");
+  expect(f.outgoingCount()).toBe(1);
+});
+
+it("una autorización que perdió la reserva de DB no ejecuta el pago aunque el titular apruebe", async () => {
+  const { createSdkAdapter, checkoutCookie } = await import("./sdkAdapter");
+  const { PaymentError } = await import("./settlement");
+  const f = fixture("COP", "1500000");
+  vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000"); vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
+  vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", "http://127.0.0.1:3100");
+  const guard = vi.fn(async () => { throw new PaymentError("El pago ya no está activo.", 409); });
+  const adapter = createSdkAdapter((input) => createOpenPaymentsRail(f.client, sender).prepare(input), guard);
+  const started = await adapter.start({ tipo: "oferta", referenciaId: "oferta-1", montoCop: 15000, walletReceptor: receiver, walletPagador: sender, urlRetorno: "http://127.0.0.1:3100/pago/retorno" }, "sesion");
+  const grant = f.grants[2] as { interact: { finish: { nonce: string; uri: string } } };
+  const callback = new URL(grant.interact.finish.uri);
+  callback.searchParams.set("interact_ref", "stale-reservation");
+  callback.searchParams.set("hash", createHash("sha256").update([grant.interact.finish.nonce, "server-nonce", "stale-reservation", authServer].join("\n")).digest("base64"));
+  expect((await adapter.callback(new Request(callback, { headers: { Cookie: `${checkoutCookie}=sesion` } }))).status).toBe(409);
+  expect(guard).toHaveBeenCalledWith(expect.objectContaining({ referenciaId: "oferta-1" }), started.pagoId);
+  expect(f.client.grant.continue).not.toHaveBeenCalled();
+  expect(f.outgoingCount()).toBe(0);
+});
+
+it("un fallo transitorio de DB antes del envío permite volver a verificar el mismo retorno sin duplicar pagos", async () => {
+  const { createSdkAdapter, checkoutCookie } = await import("./sdkAdapter");
+  const f = fixture("COP", "1500000");
+  vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000"); vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
+  vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", "http://127.0.0.1:3100");
+  const guard = vi.fn().mockRejectedValueOnce(new Error("DB temporalmente no disponible")).mockResolvedValue(undefined);
+  const adapter = createSdkAdapter((input) => createOpenPaymentsRail(f.client, sender).prepare(input), guard);
+  await adapter.start({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: receiver, walletPagador: sender, urlRetorno: "http://127.0.0.1:3100/pago/retorno" }, "sesion");
+  const grant = f.grants[2] as { interact: { finish: { nonce: string; uri: string } } };
+  const callback = new URL(grant.interact.finish.uri);
+  callback.searchParams.set("interact_ref", "retry-guard");
+  callback.searchParams.set("hash", createHash("sha256").update([grant.interact.finish.nonce, "server-nonce", "retry-guard", authServer].join("\n")).digest("base64"));
+  const request = () => new Request(callback, { headers: { Cookie: `${checkoutCookie}=sesion` } });
+  expect((await adapter.callback(request())).status).toBe(502);
+  expect(f.outgoingCount()).toBe(0);
+  expect((await adapter.callback(request())).status).toBe(303);
+  expect(f.outgoingCount()).toBe(1);
+  expect((await adapter.callback(request())).status).toBe(403);
+  expect(f.outgoingCount()).toBe(1);
+});
+
+it("reclama el retorno antes de esperar la validación para rechazar callbacks concurrentes", async () => {
+  const { createSdkAdapter, checkoutCookie } = await import("./sdkAdapter");
+  const f = fixture("COP", "1500000");
+  vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000"); vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
+  vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", "http://127.0.0.1:3100");
+  let release!: () => void;
+  let entered!: () => void;
+  const paused = new Promise<void>((resolve) => { release = resolve; });
+  const checking = new Promise<void>((resolve) => { entered = resolve; });
+  const guard = vi.fn(async () => { if (guard.mock.calls.length === 1) { entered(); await paused; } });
+  const adapter = createSdkAdapter((input) => createOpenPaymentsRail(f.client, sender).prepare(input), guard);
+  await adapter.start({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: receiver, walletPagador: sender, urlRetorno: "http://127.0.0.1:3100/pago/retorno" }, "sesion");
+  const grant = f.grants[2] as { interact: { finish: { nonce: string; uri: string } } };
+  const callback = new URL(grant.interact.finish.uri);
+  callback.searchParams.set("interact_ref", "concurrent-return");
+  callback.searchParams.set("hash", createHash("sha256").update([grant.interact.finish.nonce, "server-nonce", "concurrent-return", authServer].join("\n")).digest("base64"));
+  const request = () => new Request(callback, { headers: { Cookie: `${checkoutCookie}=sesion` } });
+  const first = adapter.callback(request());
+  await checking;
+  try {
+    expect((await adapter.callback(request())).status).toBe(403);
+    expect(guard).toHaveBeenCalledTimes(1);
+    expect(f.client.grant.continue).not.toHaveBeenCalled();
+    expect(f.outgoingCount()).toBe(0);
+  } finally { release(); }
+  expect((await first).status).toBe(303);
+  expect(f.client.grant.continue).toHaveBeenCalledTimes(1);
+  expect(f.outgoingCount()).toBe(1);
 });

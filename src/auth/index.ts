@@ -24,13 +24,13 @@
 import type { Perfil, Sesion } from "@/adapters/types";
 
 export async function obtenerSesion(): Promise<Sesion | null> {
-  throw new Error("src/auth no está implementado todavía: activá USE_MOCKS=true o integrá el módulo real.");
+  throw new Error("src/auth no está implementado todavía: activa USE_MOCKS=true o integra el módulo real.");
 }
 
 export async function obtenerPerfil(): Promise<Perfil | null> {
-  throw new Error("src/auth no está implementado todavía: activá USE_MOCKS=true o integrá el módulo real.");
+  throw new Error("src/auth no está implementado todavía: activa USE_MOCKS=true o integra el módulo real.");
 }
 
 export async function cerrarSesion(): Promise<void> {
-  throw new Error("src/auth no está implementado todavía: activá USE_MOCKS=true o integrá el módulo real.");
+  throw new Error("src/auth no está implementado todavía: activa USE_MOCKS=true o integra el módulo real.");
 }

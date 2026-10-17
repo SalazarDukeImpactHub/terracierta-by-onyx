@@ -65,7 +65,7 @@ export default async function MiTienda() {
       </ul>
 
       {(productos ?? []).length === 0 && (
-        <p className="mt-8 border border-linea bg-crema-2 p-6 text-apagado">Todavía no tenés productos. Creá el primero.</p>
+        <p className="mt-8 border border-linea bg-crema-2 p-6 text-apagado">Todavía no tienes productos. Crea el primero.</p>
       )}
     </section>
   );

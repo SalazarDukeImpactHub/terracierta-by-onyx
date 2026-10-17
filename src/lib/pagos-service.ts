@@ -3,6 +3,7 @@ import type { EstadoPago, Perfil, TipoPago } from "@/adapters/types";
 import { SITE_URL } from "@/lib/env";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { esquemaCheckout, primerError } from "@/lib/validacion";
+import type { HybridReceipt } from "@/payments/pqc/hybridReceipt";
 
 /**
  * Lógica de pagos de la PÁGINA (no del compañero): arma el pago a partir de datos confirmados
@@ -24,7 +25,7 @@ export async function iniciarPagoDePedido(
   comprador: Pick<Perfil, "id" | "rol" | "wallet_address">,
 ): Promise<ResultadoInicio> {
   if (comprador.rol !== "comprador") {
-    return { ok: false, error: "Para comprar necesitás entrar con una cuenta de comprador", status: 403 };
+    return { ok: false, error: "Para comprar necesitas entrar con una cuenta de comprador", status: 403 };
   }
   const walletComprador = comprador.wallet_address;
   if (!walletComprador) {
@@ -52,7 +53,7 @@ export async function iniciarPagoDePedido(
     return { ok: false, error: "Esta tienda todavía no puede recibir pagos", status: 409 };
   }
   if (vendedor.wallet_address === walletComprador) {
-    return { ok: false, error: "No podés pagarte a vos mismo", status: 400 };
+    return { ok: false, error: "No puedes pagarte a ti mismo", status: 400 };
   }
 
   const monto = producto.precio_cop * cantidad;
@@ -83,13 +84,17 @@ export async function iniciarPagoDeOferta(ofertaId: string, perfilCooperativaId:
   const db = clienteAdmin();
   const { data: oferta } = await db
     .from("ofertas")
-    .select("id, estado, total, cooperativas!inner(perfil_id), lotes!inner(caficultor_id)")
+    .select("id, estado, total, pago_id, cooperativas!inner(perfil_id), lotes!inner(caficultor_id)")
     .eq("id", ofertaId)
     .eq("cooperativas.perfil_id", perfilCooperativaId) // solo ofertas de su cooperativa
     .maybeSingle();
   if (!oferta) return { ok: false, error: "No encontramos esa oferta", status: 404 };
   if (oferta.estado !== "aceptada" && oferta.estado !== "fallida") {
     return { ok: false, error: oferta.estado === "pagada" ? "Esta oferta ya está pagada" : "Primero hay que aceptar la oferta", status: 409 };
+  }
+  if (oferta.pago_id) {
+    const { data: previo } = await db.from("pagos").select("estado").eq("id", oferta.pago_id).maybeSingle();
+    if (!previo || previo.estado !== "fallido") return { ok: false, error: "Esta oferta ya tiene un pago pendiente o completado. Consulta su estado antes de volver a pagar.", status: 409 };
   }
 
   const caficultorId = (oferta.lotes as unknown as { caficultor_id: string }).caficultor_id;
@@ -106,6 +111,7 @@ export async function iniciarPagoDeOferta(ofertaId: string, perfilCooperativaId:
     montoCop: oferta.total,
     walletReceptor: receptor.wallet_address,
     walletPagador: pagador.wallet_address,
+    pagoAnterior: oferta.pago_id ?? null,
     urlRetorno: `${SITE_URL}/pago/retorno?tipo=oferta&ref=${oferta.id}`,
   });
 }
@@ -117,6 +123,7 @@ async function iniciarYRegistrar(input: {
   walletReceptor: string;
   walletPagador: string;
   urlRetorno: string;
+  pagoAnterior?: string | null;
 }): Promise<ResultadoInicio> {
   const db = clienteAdmin();
   const tablaReferencia = input.tipo === "pedido" ? "pedidos" : "ofertas";
@@ -127,8 +134,8 @@ async function iniciarYRegistrar(input: {
     resultado = await pagos.iniciarPago(input);
   } catch (e) {
     console.error("[pagos] iniciarPago falló:", e instanceof Error ? e.message : e);
-    await db.from(tablaReferencia).update({ estado: estadoFallido }).eq("id", input.referenciaId);
-    return { ok: false, error: "No pudimos iniciar el pago. Probá de nuevo en un momento.", status: 502 };
+    if (input.tipo === "pedido") await db.from(tablaReferencia).update({ estado: estadoFallido }).eq("id", input.referenciaId);
+    return { ok: false, error: "No pudimos iniciar el pago. Intenta de nuevo en un momento.", status: 502 };
   }
 
   const { error } = await db.from("pagos").insert({
@@ -142,10 +149,28 @@ async function iniciarYRegistrar(input: {
   });
   if (error) return { ok: false, error: "No pudimos registrar el pago", status: 500 };
 
-  await db.from(tablaReferencia).update({ pago_id: resultado.pagoId }).eq("id", input.referenciaId);
+  if (input.tipo === "oferta") {
+    // Compare-and-set en Postgres: dos peticiones que leyeron la misma versión
+    // no pueden entregar dos URLs de autorización para la misma oferta.
+    if (!await reservarPagoDeOferta(input.referenciaId, input.pagoAnterior ?? null, resultado.pagoId)) {
+      await db.from("pagos").update({ estado: "fallido" }).eq("id", resultado.pagoId);
+      return { ok: false, error: "Otra petición ya inició el pago de esta oferta. Consulta su estado.", status: 409 };
+    }
+  } else {
+    const { error: referenciaError } = await db.from(tablaReferencia).update({ pago_id: resultado.pagoId }).eq("id", input.referenciaId);
+    if (referenciaError) return { ok: false, error: "No se pudo vincular el pago. Revisa tus compras antes de repetirlo.", status: 500 };
+  }
 
   const destino = resultado.redirectUrl ?? `${input.urlRetorno}&pago_id=${encodeURIComponent(resultado.pagoId)}`;
   return { ok: true, pagoId: resultado.pagoId, redirectUrl: destino };
+}
+
+/** Reserva optimista durable sin cambiar esquema ni aceptar un estado desde el cliente. */
+export async function reservarPagoDeOferta(ofertaId: string, anterior: string | null, nuevo: string): Promise<boolean> {
+  let query = clienteAdmin().from("ofertas").update({ pago_id: nuevo }).eq("id", ofertaId).in("estado", ["aceptada", "fallida"]);
+  query = anterior === null ? query.is("pago_id", null) : query.eq("pago_id", anterior);
+  const { data, error } = await query.select("id").maybeSingle();
+  return !error && !!data;
 }
 
 export interface VistaPago {
@@ -155,17 +180,19 @@ export interface VistaPago {
   monto: number;
   walletReceptor: string;
   concepto: string;
-  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean };
+  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean; canalPqc?: boolean; reciboPqc?: HybridReceipt | null };
 }
 
 /**
  * Consulta el estado al módulo de pagos y, si cambió de pendiente a final, actualiza `pagos` y la
  * referencia (pedido u oferta). Es idempotente: la transición solo se aplica una vez.
  */
-export async function sincronizarPago(pagoId: string): Promise<VistaPago | null> {
+export async function sincronizarPago(pagoId: string, walletPermitida?: string): Promise<VistaPago | null> {
   const db = clienteAdmin();
   const { data: pago } = await db.from("pagos").select("*").eq("id", pagoId).maybeSingle();
   if (!pago) return null;
+  // El cliente admin omite RLS: la ruta comercial debe autorizar antes de consultar al riel.
+  if (walletPermitida !== undefined && ![pago.wallet_pagador, pago.wallet_receptor].includes(walletPermitida)) return null;
 
   let estado = pago.estado as EstadoPago;
   let detalle = (pago.detalle_json ?? {}) as Record<string, unknown>;
@@ -202,6 +229,8 @@ export async function sincronizarPago(pagoId: string): Promise<VistaPago | null>
       recibo: detalle.recibo as string | undefined,
       motivo: detalle.motivo as string | undefined,
       simulado: detalle.simulado as boolean | undefined,
+      canalPqc: detalle.canalPqc as boolean | undefined,
+      reciboPqc: detalle.reciboPqc as HybridReceipt | null | undefined,
     },
   };
 }

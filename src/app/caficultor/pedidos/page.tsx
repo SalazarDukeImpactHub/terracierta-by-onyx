@@ -53,7 +53,7 @@ export default async function PedidosYPagos() {
 
       {pedidos.length === 0 ? (
         <p className="mt-8 border border-linea bg-crema-2 p-6 text-apagado">
-          Todavía no recibiste pedidos. Cuando alguien compre en tu tienda, aparece acá.
+          Todavía no recibiste pedidos. Cuando alguien compre en tu tienda, aparece aquí.
         </p>
       ) : (
         <div className="mt-8 overflow-x-auto border border-linea">

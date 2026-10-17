@@ -35,6 +35,13 @@ async function protectedQuote(gateway: ReturnType<typeof createGateway>, bundle:
   expect(response.status).toBe(202);
   return await clientOpen(sealed, await response.json()) as { confirmationToken: string; quoteId: string; reciboPqc: null };
 }
+async function protectedCommand(gateway: ReturnType<typeof createGateway>, bundle: PublicBundle, command: object) {
+  const sealed = await clientSeal(bundle, command, path);
+  const response = await gateway.charge(post(path, sealed.envelope), true);
+  const encrypted = await response.json();
+  expect(encrypted.ciphertext).toEqual(expect.any(String));
+  return { status: response.status, body: await clientOpen(sealed, encrypted) };
+}
 
 describe("pasarela protegida y simulación sin red", () => {
   it("key y echo solo establecen el canal; la preparación no genera pago ni recibo final", async () => {
@@ -121,6 +128,72 @@ describe("pasarela protegida y simulación sin red", () => {
     const quote = await (await gateway.charge(post(clearPath, clearCommand(input)), false)).json();
     vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6 * 60000);
     expect((await gateway.charge(post(clearPath, clearCommand({ action: "confirmar", confirmationToken: quote.confirmationToken })), false)).status).toBe(409);
+  });
+
+  it("identifica una confirmación vencida con error cifrado sin ejecutar el pago", async () => {
+    const confirm = vi.fn();
+    const { gateway, bundle } = await setup(createGateway(async (charge) => ({ ...await prepararSimulacion(charge), confirm })));
+    const quote = await protectedQuote(gateway, bundle);
+    vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6 * 60000);
+    const response = await protectedCommand(gateway, bundle, { action: "finalizar", confirmationToken: quote.confirmationToken });
+    expect(response).toMatchObject({ status: 409, body: { code: "CONFIRMATION_UNAVAILABLE" } });
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("no recupera ni ejecuta un token anterior después de perder el estado del proceso", async () => {
+    const confirm = vi.fn();
+    const prepare = async (charge: Parameters<typeof prepararSimulacion>[0]) => ({ ...await prepararSimulacion(charge), confirm });
+    const first = await setup(createGateway(prepare));
+    const quote = await protectedQuote(first.gateway, first.bundle);
+    const restarted = createGateway(prepare);
+    const sessionExpired = await protectedCommand(restarted, first.bundle, { action: "finalizar", confirmationToken: quote.confirmationToken });
+    expect(sessionExpired).toMatchObject({ status: 401, body: { code: "SESSION_EXPIRED" } });
+    const { bundle } = await setup(restarted);
+    const missing = await protectedCommand(restarted, bundle, { action: "consultar", confirmationToken: quote.confirmationToken });
+    expect(missing).toMatchObject({ status: 409, body: { code: "CONFIRMATION_UNAVAILABLE" } });
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("consultar durante el envío es de solo lectura y no duplica la ejecución", async () => {
+    let release!: () => void;
+    let entered!: () => void;
+    const paused = new Promise<void>((resolve) => { release = resolve; });
+    const started = new Promise<void>((resolve) => { entered = resolve; });
+    const confirm = vi.fn(async () => { entered(); await paused; return { ...prepared.quote, estado: "completado" as const }; });
+    const prepared = await prepararSimulacion(input);
+    const { gateway, bundle } = await setup(createGateway(async () => ({ ...prepared, confirm })));
+    const quote = await protectedQuote(gateway, bundle);
+    const sending = protectedCommand(gateway, bundle, { action: "confirmar", confirmationToken: quote.confirmationToken });
+    await started;
+    try {
+      expect(await protectedCommand(gateway, bundle, { action: "consultar", confirmationToken: quote.confirmationToken })).toMatchObject({ status: 202, body: { estado: "pendiente" } });
+      expect(confirm).toHaveBeenCalledTimes(1);
+    } finally { release(); }
+    expect(await sending).toMatchObject({ status: 201, body: { estado: "completado" } });
+    expect(confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("consultar antes del envío no ejecuta; el retorno autorizado solo se finaliza una vez", async () => {
+    let callback = "";
+    const prepared = await prepararSimulacion(input);
+    const confirm = vi.fn(prepared.confirm);
+    const { gateway, bundle } = await setup(createGateway(async () => ({
+      ...prepared, confirm,
+      authorize: async (url: string) => { callback = url; return { redirectUrl: "https://wallet.interledger-test.dev/grant-interactions" }; },
+      authorizeReturn: vi.fn(async () => {}),
+    })));
+    const quote = await protectedQuote(gateway, bundle);
+    const command = (action: string) => protectedCommand(gateway, bundle, { action, confirmationToken: quote.confirmationToken });
+    expect(await command("consultar")).toMatchObject({ status: 409, body: { code: "PAYMENT_NOT_SENT" } });
+    expect(await command("confirmar")).toMatchObject({ status: 202, body: { paso: "autorizacion" } });
+    expect(await command("consultar")).toMatchObject({ status: 409, body: { code: "PAYMENT_NOT_SENT" } });
+    expect((await gateway.callback(new Request(callback, { headers: { Cookie: sessionCookie } }))).status).toBe(303);
+    expect(await command("consultar")).toMatchObject({ status: 409, body: { code: "PAYMENT_NOT_SENT" } });
+    expect(confirm).not.toHaveBeenCalled();
+    expect(await command("finalizar")).toMatchObject({ status: 201, body: { estado: "completado" } });
+    expect(await command("consultar")).toMatchObject({ status: 201, body: { estado: "completado" } });
+    expect(await command("finalizar")).toMatchObject({ status: 409, body: { code: "INVALID_PHASE" } });
+    expect(confirm).toHaveBeenCalledTimes(1);
   });
 
   it("el interruptor de ejecución permite preparar, pero bloquea confirmar", async () => {

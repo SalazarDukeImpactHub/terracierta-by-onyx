@@ -30,7 +30,7 @@ export default async function MiLote() {
       </Link>
       <h1 className="mt-3 text-4xl">Cargar mi lote</h1>
       <p className="mt-2 max-w-2xl text-apagado">
-        Contanos qué café tenés y te mostramos las 3 cooperativas que mejor te calzan. Vos elegís; la cooperativa te paga directo a
+        Cuéntanos qué café tienes y te mostramos las 3 cooperativas que mejor se ajustan a tus necesidades. Tú eliges; la cooperativa te paga directo a
         tu wallet.
       </p>
 

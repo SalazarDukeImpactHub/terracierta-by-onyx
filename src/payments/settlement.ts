@@ -16,7 +16,7 @@ export type Settlement = {
 };
 
 export class PaymentError extends Error {
-  constructor(message: string, public readonly status = 502) { super(message); }
+  constructor(message: string, public readonly status = 502, public readonly code?: string) { super(message); }
 }
 
 export function limiteCobro(): number {

@@ -108,7 +108,7 @@ export function createGateway(prepareCharge: (input: ChargeInput) => Promise<Pre
   function requireSession(request: Request) {
     const value = cookie(request);
     const id = digest(value);
-    if (!value || !sessions.has(id)) throw new PaymentError("La sesión de la pasarela venció. Comprueba el canal de nuevo.", 401);
+    if (!value || !sessions.has(id)) throw new PaymentError("La sesión de la pasarela venció. Comprueba el canal de nuevo.", 401, "SESSION_EXPIRED");
     return id;
   }
   function claim(requestId: string) {
@@ -118,7 +118,7 @@ export function createGateway(prepareCharge: (input: ChargeInput) => Promise<Pre
   }
   function find(token: string, session: string, protectedMode: boolean) {
     const record = pending.get(digest(token));
-    if (!record || record.session !== session || record.protectedMode !== protectedMode || record.expiresAt <= Date.now()) throw new PaymentError("La confirmación no es válida para esta sesión, modo o cotización, o ya venció.", 409);
+    if (!record || record.session !== session || record.protectedMode !== protectedMode || record.expiresAt <= Date.now()) throw new PaymentError("La confirmación no es válida para esta sesión, modo o cotización, o ya venció.", 409, "CONFIRMATION_UNAVAILABLE");
     return record;
   }
   function signedResult(record: PendingCharge, result: Settlement, requestId: string) {
@@ -219,11 +219,16 @@ export function createGateway(prepareCharge: (input: ChargeInput) => Promise<Pre
             record.result = await record.prepared.confirm();
             record.phase = "sent";
             response = signedResult(record, record.result, requestId);
+          } else if (command.action === "consultar" && record.phase === "sending") {
+            // Observar un envío en curso nunca vuelve a ejecutar la confirmación.
+            response = signedResult(record, record.result ?? record.prepared.quote, requestId);
           } else if (command.action === "consultar" && ["sent", "uncertain"].includes(record.phase)) {
             if (record.result?.estado !== "completado" && record.prepared.poll) record.result = await record.prepared.poll();
             response = signedResult(record, record.result ?? record.prepared.quote, requestId);
+          } else if (command.action === "consultar") {
+            throw new PaymentError("Este pago todavía no fue enviado. La consulta no ejecuta pagos.", 409, "PAYMENT_NOT_SENT");
           } else {
-            throw new PaymentError("Falta el consentimiento verificado o esta cotización ya fue enviada.", 409);
+            throw new PaymentError("Falta el consentimiento verificado o esta cotización ya fue enviada.", 409, "INVALID_PHASE");
           }
           status = record.result?.estado === "completado" ? 201 : 202;
         }
@@ -232,7 +237,8 @@ export function createGateway(prepareCharge: (input: ChargeInput) => Promise<Pre
       } catch (error) {
         const e = publicError(error);
         if (activeRecord?.phase === "sending") activeRecord.phase = "uncertain";
-        return json(encryptReply ? await encryptReply({ error: e.message }) : { error: e.message }, e.status);
+        const body = { error: e.message, ...(e.code ? { code: e.code } : {}) };
+        return json(encryptReply ? await encryptReply(body) : body, e.status);
       }
     },
     async callback(request: Request) {

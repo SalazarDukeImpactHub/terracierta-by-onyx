@@ -7,6 +7,10 @@ type BaseResult = Settlement & ChargeInput & { requestId: string; issuedAt: stri
 export type PreparedResult = BaseResult & { confirmationToken: string; confirmationId: string; expiresAt: string; canConfirm: boolean; quoteProof: HybridReceipt | null; cotizacionVerificada: boolean };
 export type ChargeResult = BaseResult & { reciboVerificado: boolean; redirectUrl?: string; authorizationId?: string };
 
+export class GatewayRequestError extends Error {
+  constructor(message: string, public readonly status: number, public readonly code?: string) { super(message); }
+}
+
 async function post(path: string, value: unknown) {
   return fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(value), cache: "no-store", credentials: "same-origin" });
 }
@@ -32,7 +36,10 @@ async function transport(value: unknown, mode: Mode, bundle: PublicBundle | null
   const response = await post(mode === "protegido" ? "/api/pasarela/cobrar" : "/api/pasarela/cobrar-claro", sealed?.envelope ?? { ...(value as object), requestId });
   const body = await response.json();
   const data = sealed && body.ciphertext ? await clientOpen(sealed, body) : body;
-  if (!response.ok) throw new Error((data as { error?: string }).error ?? "No se pudo confirmar el cobro. Revisa la wallet antes de volver a pagar.");
+  if (!response.ok) {
+    const failure = data as { error?: string; code?: string };
+    throw new GatewayRequestError(failure.error ?? "No se pudo confirmar el cobro. Revisa la wallet antes de volver a pagar.", response.status, failure.code);
+  }
   if (sealed && !body.ciphertext) throw new Error("La respuesta protegida no está cifrada.");
   return { result: data as BaseResult, requestId };
 }

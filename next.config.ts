@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
     // Fija la raíz de este proyecto: Next detectaba un package-lock.json ajeno en C:\Users\jsala.
     root: import.meta.dirname,
     rules: {
-      "*.css": {
+      // Solo el entrypoint de Tailwind: `as: *.css` sobre *.module.css
+      // elimina su clasificación como módulo y sus exports de clases.
+      "globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },

@@ -24,7 +24,7 @@ function coincideFirma(bytes: Uint8Array, mime: string): boolean {
 /** Crea o edita un producto del caficultor con sesión. El dueño sale de la sesión, nunca del formulario. */
 export async function guardarProducto(_previo: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const perfil = await requerirRol("caficultor");
-  if (!perfil.tiene_invima) return { error: "Para abrir tu tienda necesitás tener INVIMA." };
+  if (!perfil.tiene_invima) return { error: "Para abrir tu tienda necesitas tener INVIMA." };
 
   const parsed = esquemaProducto.safeParse({
     nombre: formData.get("nombre"),
@@ -47,7 +47,7 @@ export async function guardarProducto(_previo: EstadoFormulario, formData: FormD
 
     const ruta = `${perfil.id}/${randomUUID()}.${extension}`;
     const { error: errSubida } = await db.storage.from("productos-fotos").upload(ruta, bytes, { contentType: foto.type });
-    if (errSubida) return { error: "No pudimos subir la foto. Probá de nuevo." };
+    if (errSubida) return { error: "No pudimos subir la foto. Intenta de nuevo." };
     fotoUrl = db.storage.from("productos-fotos").getPublicUrl(ruta).data.publicUrl;
   }
 

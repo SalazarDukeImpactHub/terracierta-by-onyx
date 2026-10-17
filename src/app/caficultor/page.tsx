@@ -31,7 +31,7 @@ export default async function InicioCaficultor() {
         {perfil.wallet_address ? (
           <p className="mt-1 break-all font-medium">{perfil.wallet_address}</p>
         ) : (
-          <p className="mt-1 text-apagado">Todavía no tenés una wallet asignada.</p>
+          <p className="mt-1 text-apagado">Todavía no tienes una wallet asignada.</p>
         )}
       </div>
 
@@ -119,7 +119,7 @@ async function CaminoSinInvima({ perfil }: { perfil: Perfil }) {
     <>
       <h2 className="mt-1 text-3xl">Sin INVIMA: vendés tu lote a una cooperativa</h2>
       <p className="mt-2 max-w-2xl text-apagado">
-        Cargá tu lote y te mostramos las 3 cooperativas que mejor te calzan. Elegís una y ella te paga directo a tu wallet.
+        Carga tu lote y te mostramos las 3 cooperativas que mejor se ajustan a tus necesidades. Eliges una y ella te paga directo a tu wallet.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">

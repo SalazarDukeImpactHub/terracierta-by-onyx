@@ -23,17 +23,17 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
   return (
     <section className="mx-auto max-w-2xl px-5 py-16">
       <p className="etiqueta">Acceso</p>
-      <h1 className="mt-2 text-4xl">{siguiente ? "Entrá para pagar" : "Entrá a tu espacio"}</h1>
+      <h1 className="mt-2 text-4xl">{siguiente ? "Entra para pagar" : "Entra a tu espacio"}</h1>
       <p className="mt-3 text-apagado">
         {siguiente
-          ? "Para pagar necesitás una cuenta: así tu billetera queda asociada a tus compras y a cada pago."
+          ? "Para pagar necesitas una cuenta: así tu billetera queda asociada a tus compras y a cada pago."
           : "Cada persona tiene su cuenta y su billetera: caficultores, cooperativas y compradores."}
       </p>
 
       {USE_MOCKS ? (
         <>
           <p className="mt-3 text-apagado">
-            El acceso real llega con el login de Supabase. Mientras tanto, entrá con uno de estos perfiles de ejemplo
+            El acceso real llega con el login de Supabase. Mientras tanto, entra con uno de estos perfiles de ejemplo
             para recorrer la demostración.
           </p>
           <form action={entrarDemo} className="mt-8 grid gap-3">
@@ -61,7 +61,7 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
       )}
 
       <p className="mt-8 text-sm text-apagado">
-        ¿Solo querés mirar el café? El catálogo es público; la cuenta se pide cuando vas a pagar.{" "}
+        ¿Solo quieres mirar el café? El catálogo es público; la cuenta se pide cuando vas a pagar.{" "}
         <Link href="/tienda" className="text-cobre-oscuro underline">
           Ir a la tienda
         </Link>

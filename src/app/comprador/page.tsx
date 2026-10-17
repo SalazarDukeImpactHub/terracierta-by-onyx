@@ -36,7 +36,7 @@ export default async function MisCompras() {
         {perfil.wallet_address ? (
           <p className="mt-1 break-all font-medium">{perfil.wallet_address}</p>
         ) : (
-          <p className="mt-1 text-apagado">Todavía no tenés una wallet asignada.</p>
+          <p className="mt-1 text-apagado">Todavía no tienes una wallet asignada.</p>
         )}
       </div>
 
@@ -49,7 +49,7 @@ export default async function MisCompras() {
 
       {compras.length === 0 ? (
         <p className="mt-4 border border-linea bg-crema-2 p-6 text-apagado">
-          Todavía no hiciste compras. Elegí un café en la tienda y pagá con tu wallet.
+          Todavía no hiciste compras. Elige un café en la tienda y paga con tu wallet.
         </p>
       ) : (
         <>

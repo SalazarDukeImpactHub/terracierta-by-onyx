@@ -346,7 +346,7 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 - **Datos escapados.** El HTML escrito en nombres y descripciones se muestra como texto; las URLs de foto solo aceptan `http(s)`.
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
 - **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro; un comprador solo ve sus compras.
-- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores y cooperativas; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora.
+- **Checkout con sesión.** Los pedidos requieren comprador y las ofertas cooperativa; el caficultor consulta sus cobros como participante. La identidad, el precio y las wallets se validan en servidor. El retorno vuelve a comprobar sesión, rol y propiedad antes de enviar.
 - **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan.
 - **Llaves solo en el servidor.** La llave de servicio no aparece en el bundle del navegador (verificado) ni en el repo.
 - **Sin custodia.** La plataforma nunca toca el dinero.
@@ -417,7 +417,7 @@ El riel principal es `PAYMENTS_RAIL=open-payments`: SDK oficial `@interledger/op
 
 1. Configura `.env.local` siguiendo `.env.example`: wallet de cliente, key ID, ruta de llave privada y origen de retorno. Usa la misma dirección `http://127.0.0.1:3100` al abrir la página. No guardes `private.key` en el repo.
 2. Con `USE_MOCKS=true`, prueba ambos modos sin red de pagos ni fondos. Con `USE_MOCKS=false`, se utiliza el SDK; si falta configuración, falla explícitamente.
-3. Abrir o recargar solo comprueba el canal local. Pulsa «Ver total» para solicitar la cotización oficial; se muestra el resumen y el total exacto. La protección post-cuántica está activada por defecto. Los datos temporales y el selector de modo están en «Ajustes de la demo».
+3. Una visita nueva comprueba el canal local. Pulsa «Ver total para pagar» para solicitar la cotización oficial. Una autorización pendiente se recupera sin habilitar otro cobro; el primer retorno GNAP puede finalizar y las visitas posteriores solo consultan. Los ajustes técnicos y el selector de modo están en `/pago/pasarela?prueba=1`.
 4. Pulsa «Pagar» después de revisar el total. Su titular autoriza el permiso de pago en la wallet. El servidor comprueba el hash del retorno GNAP y la cookie propia de esta sesión antes de ejecutar el pago saliente.
 5. Consulta el estado si sigue pendiente. El recibo híbrido de liquidación aparece únicamente después de comprobar el importe enviado y su recepción.
 6. Compara los dos modos en DevTools → Network, filtrando por `cobrar`: cifrado de aplicación frente a JSON legible. HTTPS sigue siendo necesario en ambos.
@@ -425,6 +425,8 @@ El riel principal es `PAYMENTS_RAIL=open-payments`: SDK oficial `@interledger/op
 `GET /api/pasarela/key` establece una cookie **propia** para vincular solicitudes de pago (no autentica usuarios), HttpOnly y SameSite=Lax (Secure sobre HTTPS); `POST /api/pasarela/echo` comprueba el canal. Los POST `cobrar` y `cobrar-claro` aceptan acciones `cotizar`, `confirmar`, `finalizar` y `consultar`. Una confirmación caduca a los cinco minutos, se vincula a la sesión, el modo y la cotización guardada, y no vuelve a crear el pago ante una repetición. `GET /api/pasarela/retorno` verifica el retorno de la wallet; en la pasarela la ejecución posterior se realiza por POST. No se transmiten tokens GNAP ni llaves privadas al navegador.
 
 El contrato `iniciarPago / consultarPago` permanece intacto: el riel SDK devuelve la URL de consentimiento y guarda el recibo PQC en `detalle` al completarse. El checkout usa `walletPagador` del perfil validado por el servidor; la wallet de cliente identifica a TerraCierta y no sustituye al comprador. El adaptador `USE_MOCKS` de la tienda conserva su recorrido existente. El riel `wallet-ui` está retirado y su configuración produce un error antes de cualquier solicitud externa. El script anterior está deshabilitado y no hace solicitudes.
+
+El checkout comercial también exige PQC: pedidos, ofertas y consultas de estado pasan por sobres ML-KEM-768/AES-256-GCM; los errores de negocio se devuelven cifrados. Su endpoint de llaves exige perfil autenticado y funciona independientemente de la demo pública. El navegador verifica las dos firmas del recibo y su vínculo con pago, importe y destinatario antes de mostrar un pago real completado. `canalPqc` proviene del contexto de inicio en servidor y se incluye en el recibo firmado. El antiguo GET público de estado responde 405. Esta integración se valida con dependencias simuladas; la aceptación con login real/DB y moneda acordada sigue pendiente.
 
 **Límites del prototipo:** llaves, cotizaciones, sesiones e idempotencia son efímeras y locales a un proceso. Para varios procesos o un reinicio se necesita almacenamiento compartido durable, conciliación y gestión persistente de llaves. Un fallo después de enviar fondos puede dejar un resultado incierto: revisa la wallet antes de crear otro cobro. El recibo certifica lo que verificó TerraCierta; no es una firma post-cuántica de la wallet ni de ILP. El bundle se obtiene desde un origen de confianza (HTTPS; HTTP solo en loopback para la demo).
 
@@ -455,3 +457,14 @@ Ver [respuestas al canvas, criterios del hackatón y guion de la demo](docs/pasa
 **Importe del vendedor:** se conserva el valor solicitado y se comprueba su moneda y escala en incoming, quote y seguimiento. La pantalla separa ese importe del adicional cotizado por la wallet y del débito total. No se aumenta el precio del producto, se resta una tarifa al vendedor ni se calcula una diferencia entre monedas distintas. La tarifa real depende del proveedor; ver [investigación de importes y PQC](docs/investigacion-pagos-pqc.md).
 
 **Para la IA que integra login:** [handoff de la pasarela](docs/handoff-pasarela-login.md), con contrato, variables, pruebas, límites y procedimiento de merge de esta rama. La aceptación real con login y la conciliación externa siguen pendientes; esta entrega no declara el sistema listo para producción.
+
+
+### Entrega PQC para integración y presentación
+
+La prueba autónoma se completó el 17 de octubre de 2026 con el SDK oficial y consentimiento manual del titular en testnet: 1,05 EUR debitados, 0,05 EUR recibidos y comprobante híbrido verificado. Burp MCP observó cotización/autorización 202, retorno 303, finalización pendiente 202 y consulta completada 201. El checkout comercial con login real y moneda COP aún requiere su aceptación conjunta.
+
+- [Handoff para la IA del login](docs/handoff-pasarela-login.md): contrato de sesión/perfil, roles, wallets, dependencias y límites.
+- [Presentación editable y PDF](docs/presentacion-pqc/README.md): 12 láminas con fórmulas, diagramas, evidencia y guion.
+- [Demostración del jurado](docs/demo-pqc-jurado.md) y [pruebas con Burp](docs/verificacion-burp-pqc.md).
+
+La animación pequeña de `/pago/pasarela` refleja estados conocidos del pago. El laboratorio de `/pago/seguridad` separa la comparación de canales ML-KEM/ECDH de la comparación de firmas Ed25519/ML-DSA. Sus escenarios de compromiso clásico son explícitos; no afirman romper una clave real mediante Shor.

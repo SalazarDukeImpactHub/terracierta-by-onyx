@@ -3,7 +3,8 @@ import Link from "next/link";
 import { requerirRol } from "@/adapters/auth";
 import { ofertasRecibidas, type OfertaRecibida } from "@/lib/ruta-b";
 import { formatoCop } from "@/lib/validacion";
-import { aceptarOferta, pagarOferta } from "./actions";
+import { aceptarOferta } from "./actions";
+import { PagoOferta } from "@/components/pago-oferta";
 
 export const metadata: Metadata = { title: "Cooperativa" };
 export const dynamic = "force-dynamic";
@@ -39,12 +40,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           </form>
         )}
         {(o.estado === "aceptada" || o.estado === "fallida") && (
-          <form action={pagarOferta}>
-            <input type="hidden" name="ofertaId" value={o.id} />
-            <button type="submit" className="btn btn-bosque">
-              {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Open Payments"}
-            </button>
-          </form>
+          <PagoOferta ofertaId={o.id} reintento={o.estado === "fallida"} />
         )}
         {o.estado === "fallida" && <span className="etiqueta !text-cereza">El último pago falló</span>}
         {o.estado === "pagada" && <span className="etiqueta !text-bosque">Pagada ✦</span>}
@@ -87,7 +83,7 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
       <h1 className="mt-2 text-4xl">{perfil.nombre}</h1>
       <div className="mt-4 border border-linea bg-crema-2 p-4">
         <p className="etiqueta">Tu wallet para pagar</p>
-        <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tenés una wallet asignada."}</p>
+        <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tienes una wallet asignada."}</p>
       </div>
 
       {error && (
@@ -98,12 +94,12 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
 
       <Seccion
         titulo="Por responder"
-        vacio="No tenés ofertas nuevas. Cuando un caficultor te elija, aparece acá."
+        vacio="No tienes ofertas nuevas. Cuando un caficultor te elija, aparece aquí."
         ofertas={ofertas.filter((o) => o.estado === "propuesta")}
       />
       <Seccion
         titulo="Por pagar"
-        vacio="No tenés ofertas aceptadas pendientes de pago."
+        vacio="No tienes ofertas aceptadas pendientes de pago."
         ofertas={ofertas.filter((o) => o.estado === "aceptada" || o.estado === "fallida")}
       />
       <Seccion titulo="Historial" vacio="Todavía no pagaste ningún lote." ofertas={ofertas.filter((o) => o.estado === "pagada")} />
