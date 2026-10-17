@@ -8,14 +8,14 @@ union all
 select '2. tablas en public', string_agg(tablename, ', ' order by tablename)
 from pg_tables where schemaname = 'public'
 union all
-select '3. políticas RLS (esperado 10)', count(*)::text
+select '3. políticas RLS (esperado 11)', count(*)::text
 from pg_policies where schemaname = 'public'
 union all
 select '4. funciones auxiliares (esperado 2)', count(*)::text
 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'public' and p.proname in ('es_dueno_del_lote', 'cooperativa_tiene_oferta_en_lote')
 union all
-select '5. perfiles (esperado 3)', count(*)::text from public.profiles
+select '5. perfiles (esperado 5: 1 caficultor sin INVIMA, 1 con INVIMA, 1 cooperativa, 2 compradores)', count(*)::text from public.profiles
 union all
 select '6. cooperativas (esperado 4)', count(*)::text from public.cooperativas
 union all
@@ -36,4 +36,15 @@ select '11. anon puede escribir en productos (esperado false)',
 union all
 select '12. anon lee la vista tiendas_publicas (esperado true)',
        has_table_privilege('anon', 'public.tiendas_publicas', 'SELECT')::text
+union all
+select '13. pedidos tiene comprador_id (esperado true)',
+       exists (select 1 from information_schema.columns
+               where table_schema = 'public' and table_name = 'pedidos' and column_name = 'comprador_id')::text
+union all
+select '14. profiles.rol admite comprador (esperado true)',
+       coalesce((select pg_get_constraintdef(oid) like '%comprador%' from pg_constraint
+                 where conrelid = 'public.profiles'::regclass and conname = 'profiles_rol_check'), false)::text
+union all
+select '15. compradores de ejemplo con wallet (esperado 2)',
+       count(*)::text from public.profiles where rol = 'comprador' and wallet_address is not null
 order by 1;

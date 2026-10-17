@@ -6,7 +6,10 @@
 insert into public.profiles (id, rol, nombre, municipio, tiene_invima, wallet_address) values
   ('11111111-1111-4111-8111-111111111111', 'caficultor',  'Marta Ospina',  'Marsella', true,  'https://wallet.example.test/marta-ospina'),
   ('22222222-2222-4222-8222-222222222222', 'caficultor',  'Jairo Montoya', 'Marsella', false, 'https://wallet.example.test/jairo-montoya'),
-  ('33333333-3333-4333-8333-333333333333', 'cooperativa', 'Cooperativa Cumbres Cafeteras (cuenta demo)', 'Marsella', false, 'https://wallet.example.test/cumbres-cafeteras');
+  ('33333333-3333-4333-8333-333333333333', 'cooperativa', 'Cooperativa Cumbres Cafeteras (cuenta demo)', 'Marsella', false, 'https://wallet.example.test/cumbres-cafeteras'),
+  -- Compradores: también tienen cuenta y wallet. El segundo tiene "fail" en su wallet: el mock hace que sus pagos fallen (demo del estado fallido).
+  ('44444444-4444-4444-8444-444444444444', 'comprador',   'Andrés Giraldo', 'Medellín', false, 'https://wallet.example.test/andres-giraldo'),
+  ('55555555-5555-4555-8555-555555555555', 'comprador',   'Sofía Arango (su pago falla)', 'Medellín', false, 'https://wallet.example.test/fail-sofia-arango');
 
 -- Cooperativas precargadas (la primera tiene cuenta demo que aprueba pagos)
 insert into public.cooperativas (id, perfil_id, nombre, municipio, precio_base_kg, capacidad_kg, metodos_aceptados, variedades_aceptadas) values
