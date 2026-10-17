@@ -33,7 +33,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
         {o.estado === "propuesta" && (
           <form action={aceptarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
-            <button type="submit" className="btn btn-bosque">
+            <button type="submit" className="btn">
               Aceptar oferta
             </button>
           </form>
@@ -41,7 +41,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
         {(o.estado === "aceptada" || o.estado === "fallida") && (
           <form action={pagarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
-            <button type="submit" className="btn btn-bosque">
+            <button type="submit" className="btn">
               {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Interledger"}
             </button>
           </form>

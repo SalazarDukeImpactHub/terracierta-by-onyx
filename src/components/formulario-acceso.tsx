@@ -39,7 +39,7 @@ export function FormularioAcceso({ siguiente }: { siguiente: string | null }) {
         </p>
       )}
 
-      <button type="submit" className="btn btn-bosque self-start" disabled={pendiente}>
+      <button type="submit" className="btn self-start" disabled={pendiente}>
         {pendiente ? "Entrando…" : "Iniciar sesión"}
       </button>
     </form>

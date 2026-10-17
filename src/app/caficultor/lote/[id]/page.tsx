@@ -119,7 +119,7 @@ export default async function CooperativasParaMiLote({
                   <form action={elegirCooperativa} className="mt-4">
                     <input type="hidden" name="loteId" value={lote.id} />
                     <input type="hidden" name="cooperativaId" value={r.cooperativaId} />
-                    <button type="submit" className="btn btn-bosque">
+                    <button type="submit" className="btn">
                       Elegir esta cooperativa
                     </button>
                   </form>

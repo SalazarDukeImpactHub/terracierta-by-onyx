@@ -110,7 +110,7 @@ export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolR
         </p>
       )}
 
-      <button type="submit" className="btn btn-bosque self-start" disabled={pendiente}>
+      <button type="submit" className="btn self-start" disabled={pendiente}>
         {pendiente ? "Creando tu cuenta…" : "Crear mi cuenta"}
       </button>
     </form>

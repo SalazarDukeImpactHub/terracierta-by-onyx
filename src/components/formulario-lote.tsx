@@ -53,7 +53,7 @@ export function FormularioLote({ municipioInicial }: { municipioInicial: string 
         </p>
       )}
 
-      <button type="submit" className="btn btn-bosque self-start" disabled={pendiente}>
+      <button type="submit" className="btn self-start" disabled={pendiente}>
         {pendiente ? "Analizando…" : "Ver las 3 mejores cooperativas"}
       </button>
     </form>

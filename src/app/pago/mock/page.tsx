@@ -55,7 +55,7 @@ export default async function ConsentimientoMock({
         <form action={decidirPagoMock} className="mt-6 flex flex-wrap gap-3">
           <input type="hidden" name="pago_id" value={pago_id} />
           <input type="hidden" name="retorno" value={retorno} />
-          <button type="submit" name="decision" value="autorizar" className="btn btn-bosque">
+          <button type="submit" name="decision" value="autorizar" className="btn">
             Autorizar pago
           </button>
           <button type="submit" name="decision" value="rechazar" className="btn btn-borde">

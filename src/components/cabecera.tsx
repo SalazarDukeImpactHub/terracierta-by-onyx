@@ -10,25 +10,25 @@ export async function Cabecera() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-linea bg-crema/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3">
         <Link href="/" className="flex items-center gap-3 leading-none" aria-label="Terracierta by Onyx, inicio">
-          <Marca tamano={44} className="shrink-0" />
+          <Marca tamano={44} className="h-9 w-9 shrink-0 sm:h-11 sm:w-11" />
           <span>
-            <span className="block font-titulo text-xl font-medium uppercase tracking-[0.28em]">Terracierta</span>
+            <span className="block font-titulo text-lg font-medium uppercase tracking-[0.22em] sm:text-xl sm:tracking-[0.28em]">Terracierta</span>
             <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.22em] text-apagado">
               by Onyx
             </span>
           </span>
         </Link>
 
-        <nav aria-label="Principal" className="flex items-center gap-5 text-[0.78rem] font-semibold uppercase tracking-[0.14em]">
+        <nav aria-label="Principal" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.74rem] sm:gap-x-5 sm:text-[0.78rem] font-semibold uppercase tracking-[0.14em]">
           <Link href="/tienda" className="hover:text-cobre-oscuro">
             Tienda
           </Link>
           {perfil ? (
             <>
               <Link href={home} className="hover:text-cobre-oscuro">
-                Mi espacio
+                Mi cuenta
               </Link>
               <form action={salir}>
                 <button type="submit" className="uppercase tracking-[0.14em] text-apagado hover:text-cereza">

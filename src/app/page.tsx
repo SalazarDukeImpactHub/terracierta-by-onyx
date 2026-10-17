@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Sello } from "@/components/marca";
 
@@ -38,7 +39,18 @@ const PASOS = [
 export default function Inicio() {
   return (
     <>
-      <section className="bg-bosque-hondo text-crema">
+      <section className="relative isolate overflow-hidden bg-cafe text-crema">
+        <Image
+          src="/fotos/cafetal-amanecer.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          loading="eager"
+          fetchPriority="high"
+          className="-z-20 object-cover object-[60%_50%]"
+        />
+        {/* Velo oscuro: deja el texto legible sobre la foto, más fuerte a la izquierda donde va el texto. */}
+        <div className="absolute inset-0 -z-10 bg-cafe/65 lg:bg-transparent lg:bg-gradient-to-r lg:from-cafe/90 lg:via-cafe/65 lg:to-cafe/30" />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 sm:py-28 lg:grid-cols-[1fr_20rem]">
           <div>
             <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
@@ -58,7 +70,9 @@ export default function Inicio() {
               </Link>
             </div>
           </div>
-          <Sello tono="oscuro" className="hidden w-full lg:block" />
+          <div className="hidden bg-cafe/75 p-2 backdrop-blur-sm lg:block">
+            <Sello tono="oscuro" className="w-full" />
+          </div>
         </div>
       </section>
 
@@ -72,7 +86,7 @@ export default function Inicio() {
               <h3 className="mt-3 text-2xl">{r.titulo}</h3>
               <p className="mt-2 flex-1 text-apagado">{r.texto}</p>
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-                <Link href={r.href} className="btn btn-bosque self-start">
+                <Link href={r.href} className="btn self-start">
                   {r.accion}
                 </Link>
                 {r.registro && (
@@ -107,11 +121,11 @@ export default function Inicio() {
             Una dirección de cobro propia y portátil, que cualquier billetera puede pagar.
           </blockquote>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-bosque p-5 text-crema">
+            <div className="bg-cafe-claro p-5 text-crema">
               <p className="font-titulo text-5xl">1</p>
               <p className="mt-1 text-sm text-crema/80">wallet propia por caficultor, de wallet a wallet</p>
             </div>
-            <div className="bg-bosque p-5 text-crema">
+            <div className="bg-cafe-claro p-5 text-crema">
               <p className="font-titulo text-5xl">0</p>
               <p className="mt-1 text-sm text-crema/80">dinero custodiado por la plataforma</p>
             </div>

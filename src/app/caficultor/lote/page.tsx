@@ -26,7 +26,7 @@ export default async function MiLote() {
   return (
     <section className="mx-auto max-w-5xl px-5 py-14">
       <Link href="/caficultor" className="etiqueta hover:text-tinta">
-        ← Mi espacio
+        ← Mi cuenta
       </Link>
       <h1 className="mt-3 text-4xl">Cargar mi lote</h1>
       <p className="mt-2 max-w-2xl text-apagado">

@@ -23,7 +23,7 @@ export default async function MiTienda() {
   return (
     <section className="mx-auto max-w-5xl px-5 py-14">
       <Link href="/caficultor" className="etiqueta hover:text-tinta">
-        ← Mi espacio
+        ← Mi cuenta
       </Link>
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -34,7 +34,7 @@ export default async function MiTienda() {
           <Link href={`/tienda/${perfil.id}`} className="btn btn-borde">
             Ver tienda pública
           </Link>
-          <Link href="/caficultor/tienda/nuevo" className="btn btn-bosque">
+          <Link href="/caficultor/tienda/nuevo" className="btn">
             Nuevo producto
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default async function MiTienda() {
               </Link>
               <form action={alternarPublicado}>
                 <input type="hidden" name="id" value={p.id} />
-                <button type="submit" className="btn btn-bosque">
+                <button type="submit" className="btn">
                   {p.publicado ? "Ocultar" : "Publicar"}
                 </button>
               </form>

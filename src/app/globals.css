@@ -11,7 +11,8 @@
   --cobre: #b0673c;
   --cereza: #9e3b2e;
   --tinta: #2a3327;
-  --bosque-hondo: #232e22; /* landing: banda oscura */
+  --cafe: #2b2118; /* fondos oscuros: café tostado (antes verde hondo, que cansaba la vista) */
+  --cafe-claro: #3d2e22; /* recuadros sobre claro */
   --crema-2: #eae1ce; /* landing: sección alterna */
   --cobre-oscuro: #8c4e2b; /* landing: botones (texto crema, contraste AA) */
   --apagado: #5b6455; /* landing: texto secundario */
@@ -24,7 +25,8 @@
   --color-cobre: var(--cobre);
   --color-cereza: var(--cereza);
   --color-tinta: var(--tinta);
-  --color-bosque-hondo: var(--bosque-hondo);
+  --color-cafe: var(--cafe);
+  --color-cafe-claro: var(--cafe-claro);
   --color-crema-2: var(--crema-2);
   --color-cobre-oscuro: var(--cobre-oscuro);
   --color-apagado: var(--apagado);
@@ -101,20 +103,12 @@ h4 {
   transition: background 0.15s, color 0.15s;
 }
 .btn:hover {
-  background: var(--tinta);
-  border-color: var(--tinta);
+  background: var(--cafe);
+  border-color: var(--cafe);
 }
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-.btn-bosque {
-  background: var(--bosque);
-  border-color: var(--bosque);
-}
-.btn-bosque:hover {
-  background: var(--bosque-hondo);
-  border-color: var(--bosque-hondo);
 }
 .btn-borde {
   background: transparent;
