@@ -4,9 +4,10 @@ const ROLES = [
   {
     numeral: "I",
     titulo: "Soy caficultor",
-    texto: "Recibí tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
+    texto: "Al crear tu cuenta recibís tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
     href: "/acceso",
-    accion: "Entrar",
+    accion: "Iniciar sesión",
+    registro: "/registro?rol=caficultor",
   },
   {
     numeral: "II",
@@ -14,13 +15,15 @@ const ROLES = [
     texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
     href: "/tienda",
     accion: "Ver la tienda",
+    registro: "/registro?rol=comprador",
   },
   {
     numeral: "III",
     titulo: "Soy cooperativa",
     texto: "Revisá las ofertas por lotes que te recomendamos y pagá desde la plataforma.",
     href: "/acceso",
-    accion: "Entrar",
+    accion: "Iniciar sesión",
+    registro: null,
   },
 ];
 
@@ -45,8 +48,8 @@ export default function Inicio() {
             su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/acceso" className="btn">
-              Entrar como caficultor
+            <Link href="/registro?rol=caficultor" className="btn">
+              Crear mi cuenta de caficultor
             </Link>
             <Link href="/tienda" className="btn btn-borde !border-crema !text-crema hover:!bg-crema hover:!text-tinta">
               Ver la tienda
@@ -64,9 +67,16 @@ export default function Inicio() {
               <span className="font-titulo text-5xl text-cobre">{r.numeral}</span>
               <h3 className="mt-3 text-2xl">{r.titulo}</h3>
               <p className="mt-2 flex-1 text-apagado">{r.texto}</p>
-              <Link href={r.href} className="btn btn-bosque mt-5 self-start">
-                {r.accion}
-              </Link>
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+                <Link href={r.href} className="btn btn-bosque self-start">
+                  {r.accion}
+                </Link>
+                {r.registro && (
+                  <Link href={r.registro} className="text-sm text-cobre-oscuro underline">
+                    Crear cuenta
+                  </Link>
+                )}
+              </div>
             </article>
           ))}
         </div>
