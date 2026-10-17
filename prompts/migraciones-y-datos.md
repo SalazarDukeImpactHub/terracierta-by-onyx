@@ -109,3 +109,14 @@ El riel oficial es el de cookie que corre hoy. Adaptá los 4 tests a ese riel y 
 
 ### Resultado breve
 - Los 4 tests se adaptaron al riel de cookie y a la política real (la cooperativa puede comprar y pagar ofertas). El ADR-001 registra la decisión, los riesgos aceptados y la condición para migrar al SDK/GNAP; **sigue en Borrador** hasta que Jennifer lo acepte.
+
+---
+
+## Entrada 10 — ADR-001 a Aceptado
+
+```
+Sí: pasá el ADR-001 a Aceptado con la decisión del riel de cookie, en un PR docs-only.
+```
+
+### Resultado breve
+- El ADR-001 queda en *Aceptado* (provisional). El agente señaló que el README aún lo llama borrador en cuatro lugares y no lo modificó sin aprobación.
