@@ -87,3 +87,14 @@ revisemos que funciono y hacemos el pr
 ### Resultado breve
 - Se verificó producción en solo lectura y se registró el resultado. Se corrigió en `AI_USAGE.md` una suposición del agente sobre un producto de prueba que resultó falsa.
 - Se subió la rama y se abrió el PR solo con documentos.
+
+---
+
+## Entrada 8 — Arreglar tests y jsdom
+
+```
+Arreglá primero los 4 tests y jsdom en una rama nueva con PR; la foto después.
+```
+
+### Resultado breve
+- Se agregó `jsdom` y se instalaron las dependencias declaradas que faltaban. Los 4 tests que siguen en rojo no son un error de test sino la decisión pendiente del ADR-001 (riel SDK frente a riel de cookie); se dejan sin tocar hasta que Jennifer decida.
