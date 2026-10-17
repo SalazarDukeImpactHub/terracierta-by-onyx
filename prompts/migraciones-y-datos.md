@@ -37,3 +37,39 @@ lo que sea lo mejor para que todo funcione bien y cuales son las migraciones o s
 
 ### Archivos tocados
 `supabase/migrations/20261017000100_usuarios.sql` (renombrado), `AI_USAGE.md`, `prompts/migraciones-y-datos.md`.
+
+---
+
+## Entrada 4 — Subir y fusionar el cambio de migraciones
+
+```
+Sí: subí la rama, abrí el PR contra main y fusionalo cuando los checks estén verdes; después verificá producción.
+```
+
+### Resultado breve
+- PR 38 fusionado en `main` con sus checks verdes; las migraciones quedan en 8 con versión única. Producción respondía bien, pero la base de la nube todavía no tenía el esquema nuevo.
+
+---
+
+## Entrada 5 — Los SQL para aplicar
+
+```
+y dame aqui los sql que debo aplicar
+```
+
+### Resultado breve
+- Se dividió el SQL en dos pasos: `01a-esquema.sql` (sin datos personales, pegado en el chat) y `01b-datos-base.sql` (con hashes; entregado como archivo). **Supuesto declarado:** la cédula real de Álvaro se reemplazó por una ficticia en lo que va a la base del equipo.
+
+---
+
+## Entrada 6 — Resultado de la nube, limpieza y "Entrar rápido"
+
+Jennifer pegó la tabla de 13 chequeos del SQL aplicado en su Supabase, todos en `OK`, sin más texto. Después escribió:
+
+```
+Sí: prepará el SQL de limpieza dirigido (con consulta previa, sin tocar esquema ni cuentas) y arreglá 'Entrar rápido' en una rama con commits; no apliques nada en la nube ni abras PR todavía.
+```
+
+### Resultado breve
+- Se prepararon `04a-limpieza-ver-que-se-borra.sql` (solo lee) y `04b-limpieza-borrar.sql` (una transacción), fuera del repositorio. **No se aplicó nada en la nube.**
+- **"Entrar rápido" no se tocó:** el agente había dicho que estaba roto sin haber leído el código de la acción; al probarlo funciona. Queda como corrección en `AI_USAGE.md`.
