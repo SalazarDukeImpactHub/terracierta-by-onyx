@@ -98,3 +98,47 @@ dejarlos queda lsito para remplazar cunado este
 ### Resultado breve
 - Los 7 archivos `docs/*.jpg` **se dejan** en el repo, listos para reemplazarlos cuando esté el diseño definitivo.
 - La respuesta eligió "dejarlos" y no dijo nada sobre el merge del PR 4; el agente lo interpretó como conformidad, ya que el PR solo cambia texto, tenía los 2 checks en verde y es reversible con un revert.
+
+---
+
+## Entrada 6 — Qué hacer con `.env.example` y los nombres del equipo
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+que debo hacer con el .env.example yaa te dpy tpdps los nombres para agregar caren briyid hoyos estrada,astrid carolina hoyos estrada,yamil andre la barrera lopez alvaro henao gonzalez
+```
+
+### Resultado breve
+- Los 4 nombres se agregaron a la sección **Equipo** del README **tal cual se escribieron, sin tildes**; los roles de cada integrante quedan pendientes de confirmar (no se asignaron por suposición).
+- `.env.example`: el entorno del agente no permite crear archivos `.env*`, así que se entregó el contenido listo para que una persona lo guarde con ese nombre (solo nombres de variables, sin valores). Se quitó `LLM_API_KEY`, porque el agente de match es solo reglas.
+
+### Archivos tocados
+`README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 7 — Roles, tildes y cierre de los PR pendientes
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+El agente preguntó quién se encarga de pagos y de login, y si los nombres llevan tildes (Álvaro, González, López).
+
+### Prompt (texto íntegro)
+
+```
+loggin alvaro pagos yamil si agrega als tildes  y cerremso lso pr pendientes para dejar todo lsito
+```
+
+### Resultado breve
+- **Roles:** login = Álvaro Henao González (`src/auth`); pagos = Yamil Andre La Barrera López (`src/payments`). Se reflejaron en el README y en la lista "Files with minimal or no AI" de `AI_USAGE.md`. El rol de Caren y de Astrid no se indicó y no se asumió.
+- **Tildes:** agregadas a Álvaro, González y López. "Andre" quedó sin tilde porque no se pidió.
+- **Cierre:** PR 7 y PR 8 fusionados a `main`.
+
+### Archivos tocados
+`README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
