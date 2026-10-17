@@ -42,6 +42,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - **Supuesto declarado:** la cercanía usa una tabla chica de municipios con coordenadas **aproximadas** escritas de memoria por la IA (no verificadas con una fuente oficial); un municipio que no está en la tabla da cercanía neutra.
 - Los pesos del puntaje (35/25/15/10/15) los eligió la IA; Jennifer decidió que sean solo reglas y que la oferta se cree al elegir. **Pendiente de revisión humana.**
 
+### 7c. El comprador también inicia sesión (`supabase/migrations/20261017000000_comprador.sql`, `src/lib/roles.ts`, `src/app/comprador/page.tsx`, `src/components/formulario-checkout.tsx`, `src/lib/pagos-service.ts`, `src/app/api/pagos/iniciar/route.ts`, `src/adapters/**`, `scripts/cloud-sql.mjs`)
+- **Decisión de Jennifer** (cambia el brief original, que decía "comprador sin registro"): todos necesitan cuenta para tener su wallet y pagar; el catálogo sigue público y el login se pide solo al pagar.
+- IA: rol `comprador` en el contrato, migración y política de RLS, perfiles de ejemplo, checkout con sesión (la wallet sale del perfil, la API responde 401/403 y ignora lo que mande el navegador), login con `siguiente` y su validación contra redirecciones abiertas, pantalla "Mis compras", textos corregidos, modo `update` del generador de SQL para la nube. **Pendiente de revisión humana.**
+- **Cambio de contrato con el compañero de login:** `profiles.rol` admite `comprador`, wallet asignada al registrarse y respetar `?siguiente=`. Queda anotado en `src/auth/index.ts` y en el README.
+
 ### 8. Identidad visual y páginas (`src/app/globals.css`, `layout.tsx`, `page.tsx`, `src/components/cabecera.tsx`, `pie.tsx`, `src/app/acceso/**`)
 - IA: tokens de Terracierta (brief §5.1 y valores medidos en la landing viva), fuentes, landing, acceso. No se crearon logos ni ilustraciones.
 
@@ -105,6 +110,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | Fotos y XSS en producción | Producto con `<b>` y un `<img onerror>` en nombre y descripción, más un PNG real, creado y publicado por Marta | El producto se creó y la foto quedó en el bucket `productos-fotos` de la nube (`200`, `image/png`, 70 bytes, firma PNG correcta); el HTML se ve como texto (0 elementos inyectados; en el HTML público aparece escapado como `&lt;b&gt;`); un visitante anónimo, sin cookies, ve el producto publicado y el borrador sigue oculto |
 | 2026-10-16 | Ruta B en producción | Jairo carga un lote (500 kg Caturra lavado, Marsella) → top 3 → elige Cumbres → la cooperativa demo acepta → paga → billetera simulada → recibo → historial | El agente da el mismo top 3 que en local (88, 87 y 59); oferta `propuesta` → `aceptada` → `pagada`; pago de $10.750.000 de la wallet de la cooperativa a la de Jairo; la cooperativa ve la oferta en su historial como `Pagada` |
 | 2026-10-16 | Caminos no felices y seguridad en producción | 8 peticiones manipuladas a `/api/pagos/iniciar`; `curl` con la cookie de cada perfil; pago con wallet `fail` | Borrador 404, id con inyección SQL 400, cantidad 99 400, wallet `javascript:` 400, pagarse a sí mismo 400, producto inexistente 404, no JSON 415, JSON roto 400; sin INVIMA → `/caficultor`; cada rol redirigido a su home; cookie falsa → `/acceso`; Marta no ve el lote de Jairo (404); ids basura 404/400; el pago con `fail` termina "No se pudo completar" con el motivo y el paso III en rojo |
+| 2026-10-16 | Comprador con cuenta: base de datos (local) | `npm run test:rls` (recrea la base con la migración y el seed nuevos) y `cloud-verify.sql` sobre la base local | RLS **46/46** (35 anteriores + 11 nuevas con dos compradores: ve su compra y su pago, no ve lotes ni ofertas, no escribe pedidos directo, no modifica pedidos, no crea productos, y otra compradora no ve la compra ajena); verificación estructural 15/15 con los valores nuevos (11 políticas, 5 perfiles, `pedidos.comprador_id`, rol `comprador`) |
+| 2026-10-16 | Comprador con cuenta: pruebas | `tsc`, `eslint`, `vitest` (unitarias) y `npm run test:db` | Tipos y lint sin errores ni avisos; **78/78** pruebas: 57 unitarias (nuevas: `roles.test.ts` con 13 casos de redirección abierta, y que el esquema de checkout descarta una wallet del navegador) y 21 de integración (8 nuevas del checkout: paga con la wallet del perfil, ignora wallet/monto falsos, 403 a caficultor y cooperativa sin crear nada, 409 sin wallet, 404/400 en entradas inválidas, queda en "Mis compras" y no en las de otro, y el comprador con `fail` termina fallido); los datos de prueba se borran solos |
+| 2026-10-16 | Comprador con cuenta: navegador (local) | Visitante anónimo → "Entrar para pagar" → `/acceso?siguiente=…` → comprador demo → vuelve al producto → pagar → billetera simulada → recibo → "Mis compras"; luego el comprador cuyo pago falla | Funciona completo: el catálogo se ve sin cuenta, tras entrar vuelve al mismo producto y la wallet sale del perfil (no hay campo de texto); compra de $38.000 completada y en "Mis compras"; el comprador con `fail` termina en "No se pudo completar" |
+| 2026-10-16 | Comprador con cuenta: seguridad y roles (local) | `curl` con la cookie de cada perfil | API de checkout: sin sesión 401, cookie falsa 401, caficultora 403, cooperativa 403. `?siguiente=` con `https://evil.test` y `//evil.test` se ignora (va a la home del rol); `/tienda` válido se respeta. `/comprador`: sin sesión → `/acceso`, otros roles → su home; el comprador en `/caficultor`, `/cooperativa` y `/caficultor/lote` → `/comprador`. El panel de pago: anónimo "Entrar para pagar", caficultora y cooperativa "Cambiar de cuenta", comprador "Pagar con Open Payments". Landing, tienda y acceso ya no dicen "sin registro" |
+| 2026-10-16 | Comprador con cuenta: migración para la nube | `npm run cloud:update -- 20261017000000_comprador` aplicado sobre una base de prueba que imita la nube actual (migraciones anteriores + seed anterior) | Pasa de 3 a 5 perfiles y de 10 a 11 políticas; los 15 chequeos coinciden; repetirla falla sin dejar nada a medias. Dos builds de producción (con y sin `USE_MOCKS`) pasan; la llave de servicio no aparece en el bundle del navegador. **Todavía no se aplicó en el proyecto de Supabase de la nube**: la ejecuta una persona |
 
 ### Lo que falló y lo que se corrigió
 
@@ -126,7 +136,12 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 12. **Falso positivo en producción:** una foto recién subida figuró "sin cargar" (`naturalWidth` 0) en el listado. No era un fallo: la imagen tiene `loading="lazy"` y el panel del navegador no la pinta fuera de pantalla. Se comprobó con una descarga directa (200, PNG válido) y forzando la carga del elemento real (ancho 1).
 13. **Datos de prueba en la nube:** el recorrido dejó filas de prueba en el proyecto de Supabase (2 pedidos, 3 pagos, 1 lote, 1 oferta, 1 producto) y **1 archivo en Storage**. Las filas se quitan con `npm run cloud:reset` (generado en `supabase/.temp/`); el archivo de Storage hay que borrarlo a mano desde el panel de Storage.
 
+14. **Cambio de producto a mitad del proyecto:** el brief decía "comprador sin registro". Jennifer corrigió que todos necesitan cuenta para tener su wallet. Como cambia el contrato con el login, el agente no tocó el código hasta que ella decidió el alcance (catálogo público, login solo al pagar), según la regla de `AGENTS.md` de bloquear ante ambigüedad que cambia el alcance.
+
 ### Sin probar todavía
+
+- **Comprador con cuenta en la nube y en producción:** la migración y el código nuevos solo se probaron en local y en una base de prueba que imita la nube. Falta que se aplique `cloud:update` en el proyecto de Supabase y se redeploye, y repetir el recorrido en producción.
+- **Comprador con el login real:** solo se probó con el login simulado; el compañero de login debe admitir el rol, asignar wallet y respetar `?siguiente=`.
 
 - **En la nube solo se verificó la estructura** (tablas, RLS, políticas, funciones, datos, bucket, permisos de `anon`). Las 35 pruebas de comportamiento de RLS (`test:rls`) y la Ruta A/B completas **no se han corrido contra Supabase en la nube**.
 
@@ -148,6 +163,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`ruta-b-agente.md`](./prompts/ruta-b-agente.md) — Ruta B: agente de match, oferta y pago de la cooperativa.
 - [`readme-docs.md`](./prompts/readme-docs.md) — merge de la Ruta B y rediseño del README.
 - [`supabase-nube.md`](./prompts/supabase-nube.md) — carga y verificación de Supabase en la nube.
+- [`comprador-con-login.md`](./prompts/comprador-con-login.md) — el comprador también inicia sesión y paga con su wallet de perfil.
 
 ## Security
 
