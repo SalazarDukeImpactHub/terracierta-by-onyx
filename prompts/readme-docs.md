@@ -210,3 +210,79 @@ perimero actualicemos el readme y despues continuamso con el deck
 
 ### Archivos tocados
 `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: autoría propia
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+el origen y licencia es mio yo lo hice entonces organicemos esto   la brecha lo que sea mas apropiado los datos que falta busquemos para dejarlo listo
+```
+
+```
+Sí: corregí en README.md y README.en.md la fila de la foto del inicio (es mía, hecha por mí), registralo en AI_USAGE y prompts, y abrí un PR desde origin/main.
+```
+
+### Resultado breve
+- Se corrigió la fila "Foto del inicio" de `README.md` y `README.en.md`, y el punto 8c de `AI_USAGE.md`; se agregó el punto 14.
+- **Supuesto declarado:** Jennifer dijo que la foto es suya y que la hizo ella, pero no con qué herramienta. Se dejó pendiente que lo indique si usó IA, porque la política del evento lo exige.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: herramienta de IA declarada
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README y política de IA
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+Usé una herramienta de IA para hacer la foto; te digo cuál para declararla en el PR 40.
+```
+
+```
+chat gpt
+```
+
+### Resultado breve
+- Se declaró **ChatGPT (OpenAI)** como herramienta de la foto en `README.md`, `README.en.md`, la lista "Tools Used" y los puntos 8c y 14 de `AI_USAGE.md`.
+- **Pendiente:** el modelo o versión de ChatGPT y el prompt de la imagen; Jennifer no los dio y el agente no los inventó.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: el modelo es el de creación de imágenes y el prompt
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README y política de IA
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+el promp modelo n o se pon cualquiera el de crear imagenes 
+```
+
+Además pegó el prompt con el que generó la imagen; está íntegro en [`foto-inicio.md`](./foto-inicio.md) y no se repite aquí.
+
+### Resultado breve
+- Se declaró el modelo como la **creación de imágenes de ChatGPT (OpenAI)**, sin una versión específica, y se guardó el prompt en `prompts/foto-inicio.md`.
+- Se actualizaron la fila de la foto en `README.md` y `README.en.md`, la lista "Tools Used", los puntos 8c y 14 y la lista de prompts de `AI_USAGE.md`. Ya no queda pendiente de modelo ni prompt.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/foto-inicio.md`, `prompts/readme-docs.md`.

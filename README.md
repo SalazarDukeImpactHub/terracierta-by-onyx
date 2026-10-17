@@ -436,7 +436,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Supabase en la nube + URL pública en Vercel | **Hecho.** Antes de presentar, revise las variables del despliegue ([Desplegar](#-desplegar-en-vercel)). `npm run cloud:reset` borra datos: confirme qué tablas toca (hay tablas nuevas, como `usuarios` y `sesiones`) antes de correrlo |
 | Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo. Con pagos reales ya no aplica; **si se despliega con `USE_MOCKS=true`, hay que decir en la presentación que los pagos son simulados** |
 | Uso de IA de los compañeros | Falta declararlo en [`AI_USAGE.md`](./AI_USAGE.md) |
-| Foto del inicio | Falta confirmar su origen y licencia |
+| Foto del inicio | Generada por Jennifer Salazar Duke con la creación de imágenes de ChatGPT (OpenAI). El prompt está en [`prompts/foto-inicio.md`](./prompts/foto-inicio.md) y la declaración en [`AI_USAGE.md`](./AI_USAGE.md) |
 | Capturas de pantalla en el README | Se agregan **al final, con el diseño definitivo** |
 | Validación con alguien de campo | Pendiente: cómo cobra hoy el caficultor, cuánto tarda, si tiene Nequi |
 | Licencia del repositorio | Por definir por el equipo |
