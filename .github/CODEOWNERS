@@ -1,0 +1,15 @@
+# Responsables por carpeta. GitHub pide su revisión automáticamente en los pull requests que toquen esos archivos.
+# La última regla que coincide gana, así que lo más específico va al final.
+
+# Por defecto, todo lo revisa Jennifer (dirección del proyecto).
+*                       @SalazarDukeImpactHub
+
+# Pagos con Open Payments — Yamil Andre La Barrera López
+/src/payments/          @0x15k
+
+# Login y asignación de wallets — Álvaro Henao González
+/src/auth/              @ahenao1256
+
+# El contrato entre la página y los módulos de pagos y login. Cambiarlo afecta a los dos:
+# se acuerda antes (ver README → "Contrato con el login" y "Cómo viaja el dinero").
+/src/adapters/types.ts  @SalazarDukeImpactHub @0x15k @ahenao1256
