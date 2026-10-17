@@ -148,3 +148,14 @@ no als extras no necesitamso solo las que ya son limpias y ordenadas todo debe q
 
 ### Resultado breve
 - Se despublicaron los productos de Marta en la nube (no se borraron) y se quitaron las dos cuentas extra. Ambos SQL se probaron en local antes y los ejecutó Jennifer; el agente no aplicó nada en la nube.
+
+---
+
+## Entrada 14 — Adelantar la revisión del README
+
+```
+se esta demmroado mucho alvaro podriamos adelantar algo d eal revision del readme solo etnemso 20 min para subir el ultimo push.
+```
+
+### Resultado breve
+- Se corrigieron cuatro afirmaciones desactualizadas en los README y en `AI_USAGE.md`, en una rama local sin publicar. Quedan el enlace del video y la declaración de IA de los compañeros.
