@@ -171,3 +171,21 @@ cuando este lsito el logging cambiamos el mocks si es necesario ya revise y la t
 
 ### Archivos tocados
 `supabase/tests/rls.sql`, `scripts/cloud-sql.mjs`, `package.json`, `README.md`, `AI_USAGE.md`, `prompts/supabase-nube.md`.
+
+---
+
+## Entrada 10 — Resultado de `rls.sql` en la nube
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+| resultado                                              |
+| ------------------------------------------------------ |
+| RLS: todas las pruebas pasaron (transacción revertida) |
+```
+
+### Resultado breve
+Las 35 verificaciones de comportamiento del RLS pasaron en el proyecto de Supabase en la nube. Con eso se recorrieron en producción la Ruta A, las fotos, la Ruta B y los caminos de fallo y seguridad (todo detallado en `AI_USAGE.md` → Verification Log). Quedaron filas de prueba en la nube: se limpian con `cloud-reset.sql`.
