@@ -5,7 +5,7 @@ export function Pie() {
     <footer className="bg-bosque-hondo text-crema">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-center gap-4">
-          <Marca tono="oscuro" tamano={56} className="shrink-0" />
+          <Marca tono="oscuro" carga="lazy" tamano={56} className="shrink-0" />
           <div>
             <p className="font-titulo text-2xl font-medium uppercase tracking-[0.26em]">Terracierta</p>
             <p className="text-[0.7rem] uppercase tracking-[0.22em] text-crema/70">by Onyx</p>

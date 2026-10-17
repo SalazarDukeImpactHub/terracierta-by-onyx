@@ -7,10 +7,13 @@ import Image from "next/image";
 export function Marca({
   tamano = 40,
   tono = "claro",
+  carga = "eager",
   className,
 }: {
   tamano?: number;
   tono?: "claro" | "oscuro";
+  /** `eager` (por defecto) para lo que se ve al abrir la página; `lazy` para lo que queda abajo, como el pie. */
+  carga?: "eager" | "lazy";
   className?: string;
 }) {
   return (
@@ -21,6 +24,7 @@ export function Marca({
       width={tamano}
       height={tamano}
       unoptimized
+      loading={carga}
       className={className}
     />
   );
