@@ -131,3 +131,20 @@ Sí: actualizá las cuatro menciones del README al ADR-001 aceptado en el PR 42 
 
 ### Resultado breve
 - En realidad eran ocho menciones por idioma (más la fila de pruebas, que había quedado falsa tras el PR 41); se actualizaron las de ES y EN en el mismo PR.
+
+---
+
+## Entrada 12 — Solo Álvaro en la tienda y solo cuentas limpias
+
+Dos mensajes de Jennifer, y después pegó dos tablas de verificación:
+
+```
+un detalle es marta aun aparece en al tienda solo deberia estar alvaro y revisa lo que ahce falta
+```
+
+```
+no als extras no necesitamso solo las que ya son limpias y ordenadas todo debe quedar ok y limpio
+```
+
+### Resultado breve
+- Se despublicaron los productos de Marta en la nube (no se borraron) y se quitaron las dos cuentas extra. Ambos SQL se probaron en local antes y los ejecutó Jennifer; el agente no aplicó nada en la nube.
