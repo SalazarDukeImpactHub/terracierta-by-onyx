@@ -119,4 +119,15 @@ Sí: pasá el ADR-001 a Aceptado con la decisión del riel de cookie, en un PR d
 ```
 
 ### Resultado breve
-- El ADR-001 queda en *Aceptado* (provisional). El agente señaló que el README aún lo llama borrador en cuatro lugares y no lo modificó sin aprobación.
+- El ADR-001 queda en *Aceptado* (provisional). El agente señaló que el README aún lo llama borrador y no lo modificó sin aprobación.
+
+---
+
+## Entrada 11 — README y fusión
+
+```
+Sí: actualizá las cuatro menciones del README al ADR-001 aceptado en el PR 42 y fusionalo con checks verdes.
+```
+
+### Resultado breve
+- En realidad eran ocho menciones por idioma (más la fila de pruebas, que había quedado falsa tras el PR 41); se actualizaron las de ES y EN en el mismo PR.

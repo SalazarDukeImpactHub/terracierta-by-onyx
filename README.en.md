@@ -125,7 +125,7 @@ flowchart TB
 **Key decisions:**
 
 - **The server decides the amount.** The browser only says *which product and how many units*; the price and the receiving wallet come from the database. Nobody can change the charge from the console.
-- **Mocks only on purpose.** Only with `USE_MOCKS=true`. If the variable is missing, the app uses the real modules: a forgotten deployment never silently simulates payments. Mind the opposite direction too: today a payment between two Interledger wallets is **real even if** `USE_MOCKS` is `true` (the wallet's domain decides). [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(draft, in Spanish)* proposes replacing that with an explicit setting.
+- **Mocks only on purpose.** Only with `USE_MOCKS=true`. If the variable is missing, the app uses the real modules: a forgotten deployment never silently simulates payments. Mind the opposite direction too: today a payment between two Interledger wallets is **real even if** `USE_MOCKS` is `true` (the wallet's domain decides). [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(accepted, in Spanish)* records this risk; an explicit setting is still pending.
 - **The database guarantees security.** RLS isolates each grower; the orders and payments tables have no write policies for users, only the server writes them.
 - **The platform holds no money.** Payments go wallet to wallet. In the gateway (official SDK) the holder authorizes in their own wallet; in the shop checkout the payment goes out with the wallet session stored for that account (see [How the money moves](#-how-the-money-moves)).
 - **The agent uses rules only.** It is explainable and needs no keys. It is ready to evolve (for example, a model could write the "why") without changing the score.
@@ -180,7 +180,7 @@ Everything happens on the **Interledger testnet**: the money is **test money**. 
 
 The checkout validates the amount, the receiving wallet and the role on the server; calls to `/api/pagos/*` travel through the ML-KEM-768 encrypted channel. If a wallet is not an Interledger one and `USE_MOCKS=true`, the payment falls back to the mock and the screen declares it as simulated.
 
-> ⚠️ **Two paths, one goal.** Having two rails is an integration state, not a final design. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(draft, not accepted; in Spanish)* analyzes unifying them on the official SDK. The gateway guide is in [`docs/pasarela-hackathon.md`](./docs/pasarela-hackathon.md) and the jury demo in [`docs/demo-pqc-jurado.md`](./docs/demo-pqc-jurado.md) *(both in Spanish)*.
+> ⚠️ **Two paths, one goal.** Having two rails is an integration state, not a final design. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(accepted, in Spanish)* makes the checkout's cookie rail the official one for now and leaves the official SDK as a future path. The gateway guide is in [`docs/pasarela-hackathon.md`](./docs/pasarela-hackathon.md) and the jury demo in [`docs/demo-pqc-jurado.md`](./docs/demo-pqc-jurado.md) *(both in Spanish)*.
 
 **Contract the app expects** (`src/adapters/types.ts`):
 
@@ -199,7 +199,7 @@ The return route is `/pago/retorno?tipo=…&ref=…&pago_id=…`. If the wallet 
 - **For an account to pay or get paid through Interledger** two pieces of data are needed that today are **loaded by hand in the database**: its test wallet address (`profiles.wallet_address`, on `interledger-test.dev`) and, to pay from it, the wallet session (`usuarios.token`). The sign-up form never writes the token.
 - **Sample data (`seed.sql`):** its wallets use the reserved domain `wallet.example.test`. They are **placeholders**, not Interledger wallets: payments with them are not real. They must be replaced by test wallets to operate.
 - **With no wallet, or a non-Interledger wallet,** the real payment does not complete: with `USE_MOCKS=true` it falls back to the mock, and without that variable the payment does not go out.
-- **Fallback account:** if an account's token expired or does not exist, the module tries to sign in with `INTERLEDGER_EMAIL` / `INTERLEDGER_PASSWORD` (a shared account). ADR-001 proposes removing this mechanism.
+- **Fallback account:** if an account's token expired or does not exist, the module tries to sign in with `INTERLEDGER_EMAIL` / `INTERLEDGER_PASSWORD` (a shared account). ADR-001 accepts this mechanism as a known risk of the cookie rail.
 
 ---
 
@@ -369,7 +369,7 @@ Every push to `main` updates production, and every branch or *pull request* gets
 | `src/payments/` | Payments module *(Yamil)*: checkout, gateway with the official SDK, post-quantum channel and receipts (`pqc/`) |
 | `src/auth/` | Accounts module *(Álvaro)*: sign up, sign in and session; the session logic is in `src/lib/sesion.ts` |
 | `src/lib/interledger.ts` | Test Wallet API client: quote, send and confirm checkout payments |
-| `docs/` | Gateway, jury demo, ADR-001 (draft), integration plans and PQC research *(in Spanish)* |
+| `docs/` | Gateway, jury demo, ADR-001 (accepted), integration plans and PQC research *(in Spanish)* |
 | `src/lib/match.ts` | Match agent: score, breakdown and reason |
 | `src/lib/ruta-b.ts` | Lot, cooperative choice, accepting an offer |
 | `src/lib/roles.ts` | Each role's home and `rutaSegura` (where to return after signing in, internal routes only) |
@@ -394,7 +394,7 @@ A platform that moves payments has to **pass its own audit**. Layers implemented
 - **Escaped data.** HTML typed into names and descriptions is shown as text; photo URLs accept only `http(s)`.
 - **Validated photos.** Type, size (2 MB) and the file's **real signature**: a text file disguised as a PNG is rejected.
 - **Role protection.** No session → `/acceso`; each role sees only its own space; a grower cannot see another's lots; a buyer sees only their purchases.
-- **Checkout with a session.** The payments API answers 401 without a session and 403 to growers; the wallet used to pay comes from the profile, so a wallet sent by the browser is ignored. Today the checkout admits buyers **and** cooperatives; that policy is under review (ADR-001, draft).
+- **Checkout with a session.** The payments API answers 401 without a session and 403 to growers; the wallet used to pay comes from the profile, so a wallet sent by the browser is ignored. Today the checkout admits buyers **and** cooperatives; that is the current policy (ADR-001, accepted).
 - **Post-quantum encrypted channel.** Payment calls travel with ML-KEM-768 + AES-256-GCM; the gateway adds a single-use token bound to the session and the quote, expiring in five minutes. Encryption protects the browser–server leg: it **does not authorize** payments and does not make Interledger post-quantum.
 - **Caps on the test account.** The checkout rejects payments over 25 EUR or quotes that would debit more than 30 EUR.
 - **No open redirects.** The `siguiente` parameter accepts only internal routes: `https://…`, `//…` and `javascript:` are discarded, also on `/acceso` and `/registro`.
@@ -423,16 +423,16 @@ We comply with the **event's AI Policy**: everything is recorded as the work hap
 
 | Pending | Status |
 |---------|--------|
-| Two payment paths (checkout with the Test Wallet API, and gateway with the official SDK and GNAP) | They coexist. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(draft)* proposes unifying them on the official SDK; the decision is the team's |
+| Two payment paths (checkout with the Test Wallet API, and gateway with the official SDK and GNAP) | They coexist. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(accepted)*: the official rail is the checkout's cookie rail; the gateway with SDK and GNAP stays as a future path until its state is persisted |
 | Real checkout payment without explicit consent | The checkout pays with the account's stored wallet session (or the fallback `INTERLEDGER_EMAIL`); the gateway does ask for the holder's authorization |
 | Wallet assignment | Sign-up **does not assign** a wallet or token: they are loaded by hand in the database. How they get assigned is still to be defined |
 | Sample data with placeholder wallets | `seed.sql` uses `wallet.example.test`: they are not Interledger wallets |
 | Duplicated `tiene_invima` | Sign-up stores it in `usuarios` and in `profiles`; the single source is still to be defined |
 | Currency and minor units of the amount | Prices are in COP and the test wallet charges in EUR: converted with the Test Wallet rate, with caps |
-| Cooperative policy | Today the checkout admits cooperatives as buyers, with no purchases screen of their own; which cooperatives have accounts is still to be decided (ADR-001, draft) |
+| Cooperative policy | Today the checkout admits cooperatives as buyers, with no purchases screen of their own; that policy is accepted in ADR-001; the cooperatives with accounts are sample data |
 | Double payment with the real module | An abandoned pending payment is not cancelled: review |
 | Gateway state on serverless | According to the gateway's documentation, its grants and keys live in one process's memory: on Vercel (serverless) the full flow may not complete. It still needs validation with a real sign-in |
-| Tests | `jsdom` is not declared in `package.json`. Also, 2 tests in `src/payments/index.test.ts` expect the checkout to delegate to the SDK without cookies, and today it delegates to the Test Wallet API with a cookie (the same tension as ADR-001). The remaining failures in the last local run came from uninstalled dependencies (`npm install`) |
+| Tests | The suite passes in full (216 tests, 0 failures, 31 skipped). The payment ones use mocks: they do not test a real payment |
 | Migrations | Two migrations share the timestamp `20261017000000` (`comprador` and `usuarios`) |
 | Agent: municipality coordinates | Approximate; the agent will evolve (for example, a model that writes the reason) |
 | Cloud Supabase + public URL on Vercel | **Done.** Before presenting, check the deployment variables ([Deploy](#-deploy-on-vercel)). `npm run cloud:reset` deletes data: confirm which tables it touches (there are new ones, such as `usuarios` and `sesiones`) before running it |
