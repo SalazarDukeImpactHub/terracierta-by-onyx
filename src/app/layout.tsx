@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: { default: "Terracierta by Onyx — Café con nombre propio", template: "%s · Terracierta by Onyx" },
   description:
-    "Cada caficultor con su propia wallet para cobrar directo con Open Payments: vende en su tienda o a la mejor cooperativa.",
+    "Cada caficultor con su propia wallet para cobrar directo con Interledger: vende en su tienda o a la mejor cooperativa.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

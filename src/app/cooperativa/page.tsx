@@ -42,7 +42,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           <form action={pagarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn btn-bosque">
-              {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Open Payments"}
+              {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Interledger"}
             </button>
           </form>
         )}

@@ -5,7 +5,7 @@ import type { ConsultarPagoOutput, IniciarPagoInput, IniciarPagoOutput } from "@
 
 /**
  * MOCK de pagos (USE_MOCKS=true). Simula el ciclo del brief: solicitud -> autorización ->
- * ejecución -> finalización. NO mueve dinero ni habla con Open Payments.
+ * ejecución -> finalización. NO mueve dinero ni habla con Interledger.
  *
  *  - iniciarPago devuelve una pantalla de consentimiento simulada (/pago/mock).
  *  - Al autorizar, el pago queda "pendiente" unos segundos (ejecución) y luego "completado".

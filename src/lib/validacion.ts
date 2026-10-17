@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Wallet address de Open Payments: URL https (https://host/ruta) o payment pointer ($host/ruta).
+ * Wallet address de Interledger: URL https (https://host/ruta) o payment pointer ($host/ruta).
  * Se normaliza el payment pointer a https. Validar acá evita guardar basura o URLs peligrosas
  * (javascript:, data:, etc.).
  */

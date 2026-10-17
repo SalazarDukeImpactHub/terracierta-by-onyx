@@ -137,7 +137,7 @@ export function FormularioCheckout({
       )}
 
       <button type="submit" className="btn btn-bosque self-start" disabled={enviando || !sesion.wallet}>
-        {enviando ? "Iniciando pago…" : "Pagar con Open Payments"}
+        {enviando ? "Iniciando pago…" : "Pagar con Interledger"}
       </button>
     </form>
   );

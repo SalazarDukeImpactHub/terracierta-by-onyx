@@ -1,5 +1,5 @@
 /**
- * STUB — esta carpeta es del compañero de pagos (Open Payments).
+ * STUB — esta carpeta es del compañero de pagos (Interledger).
  * El Dev System solo dejó este punto de enchufe; NO implementa pagos reales.
  *
  * Contrato que espera la página (brief §7.1, ver src/adapters/types.ts):
@@ -8,7 +8,7 @@
  *   consultarPago(pagoId) -> { estado: pendiente | completado | fallido, detalle }
  *
  * Para integrar: reemplazar el cuerpo de estas dos funciones y poner USE_MOCKS=false.
- * Las llaves de Open Payments se leen SOLO en el servidor (variables sin NEXT_PUBLIC_).
+ * Las llaves de Interledger se leen SOLO en el servidor (variables sin NEXT_PUBLIC_).
  */
 import type { ConsultarPagoOutput, IniciarPagoInput, IniciarPagoOutput } from "@/adapters/types";
 
