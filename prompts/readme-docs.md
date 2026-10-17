@@ -262,3 +262,27 @@ chat gpt
 
 ### Archivos tocados
 `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: el modelo es el de creación de imágenes y el prompt
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README y política de IA
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+el promp modelo n o se pon cualquiera el de crear imagenes 
+```
+
+Además pegó el prompt con el que generó la imagen; está íntegro en [`foto-inicio.md`](./foto-inicio.md) y no se repite aquí.
+
+### Resultado breve
+- Se declaró el modelo como la **creación de imágenes de ChatGPT (OpenAI)**, sin una versión específica, y se guardó el prompt en `prompts/foto-inicio.md`.
+- Se actualizaron la fila de la foto en `README.md` y `README.en.md`, la lista "Tools Used", los puntos 8c y 14 y la lista de prompts de `AI_USAGE.md`. Ya no queda pendiente de modelo ni prompt.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/foto-inicio.md`, `prompts/readme-docs.md`.

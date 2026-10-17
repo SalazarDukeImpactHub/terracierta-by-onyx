@@ -6,7 +6,7 @@ Proyecto: **Terracierta by Onyx** — Hackatón Open Payments Medellín 2026.
 ## Tools Used
 
 - **Claude Code** (app de escritorio de Anthropic) con el modelo **Claude Sonnet 5.5** (`claude-sonnet-5-5`) — créditos usados: **[pendiente — lo consulta y anota el equipo]**.
-- **ChatGPT** (OpenAI): lo usó Jennifer, fuera de la sesión de Claude Code, para generar la foto de fondo del inicio (`public/fotos/cafetal-amanecer.webp`). Modelo, versión y prompt: **[pendiente — los anota Jennifer]**.
+- **ChatGPT** (OpenAI), con su función de **creación de imágenes**: la usó Jennifer, fuera de la sesión de Claude Code, para generar la foto de fondo del inicio (`public/fotos/cafetal-amanecer.webp`). Modelo: el de creación de imágenes de ChatGPT, sin versión indicada. Prompt íntegro en [`prompts/foto-inicio.md`](./prompts/foto-inicio.md).
 - **Cómo se usó:** una sola sesión de Claude Code (el "Dev System") escribió la página. **Jennifer Salazar Duke dirige y revisa cada decisión:** aprobó el plan antes de crear estructuras grandes, aprobó la lista de dependencias y decidió cuándo seguir o parar.
 - **Subagentes y skills:** *no se usaron* en esta etapa. Todo el trabajo lo hizo la sesión principal con sus herramientas (leer y escribir archivos, correr comandos, navegador integrado para probar).
 - **Reglas que rigen al agente:** `AGENTS.md` del workspace (no hacer commits ni git sin aprobación, no instalar dependencias sin aprobación, preguntar ante ambigüedad).
@@ -64,7 +64,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - **Cambio de texto pedido por Jennifer:** "Open Payments" → "Interledger" donde nombra el protocolo o el módulo de pagos. **Supuesto declarado:** el nombre del evento "Hackatón Open Payments" se dejó igual (es su nombre oficial). También se cambiaron comentarios del stub `src/payments/index.ts`, que escribió el agente (la implementación real sigue siendo de Yamil).
 
 ### 8c. "Mi cuenta", foto de fondo, encabezado en móvil y café tostado (`public/fotos/*`, `src/app/page.tsx`, `src/components/cabecera.tsx`, `src/app/globals.css`)
-- **Foto:** la entregó Jennifer en el chat (un cafetal al amanecer, 1916×821, WebP, 222 KB). **Jennifer confirmó el 2026-10-17 que la hizo ella con ChatGPT (OpenAI)**: es una imagen generada con IA, no una fotografía, y no hay licencia de terceros que resolver. **No indicó el modelo, la versión ni el prompt que usó: pendiente de que Jennifer los anote.** La IA solo la colocó y le puso un velo oscuro para que el texto se lea.
+- **Foto:** la entregó Jennifer en el chat (un cafetal al amanecer, 1916×821, WebP, 222 KB). **Jennifer confirmó el 2026-10-17 que la hizo ella con ChatGPT (OpenAI)**: es una imagen generada con IA, no una fotografía, y no hay licencia de terceros que resolver. **Modelo:** la creación de imágenes de ChatGPT, sin versión indicada; el prompt íntegro está en [`prompts/foto-inicio.md`](./prompts/foto-inicio.md). La IA solo la colocó y le puso un velo oscuro para que el texto se lea.
 - IA: cambio de texto "Mi espacio" → "Mi cuenta" (decisión de Jennifer sobre claridad; la palabra la eligió el agente), foto en el encabezado del inicio y arreglo del encabezado en móvil. **Pendiente de revisión humana.**
 - **Color (decisión de Jennifer, opción A):** el verde oscuro cansaba la vista, así que los fondos oscuros (pie, encabezado del inicio, recuadros "1 / 0" y cifras del caficultor) pasan a **café tostado** (`--cafe: #2b2118`, `--cafe-claro: #3d2e22`) y los botones a **cobre** (se eliminó la variante `btn-bosque`). El verde queda en los logos y en detalles (texto y paso "Listo" de un pago completado). **Los dos cafés los eligió la IA, no están en el brief ni en la landing viva**; pendiente de revisión humana.
 
@@ -117,7 +117,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 ### 14. Foto del inicio: autoría y herramienta declaradas (`README.md`, `README.en.md`, `AI_USAGE.md`)
 - **Pedido de Jennifer:** corregir en los dos README la fila de la foto del inicio, porque la foto es suya y la hizo ella.
 - IA: se cambió solo esa fila de "Falta confirmar su origen y licencia" por la autoría de Jennifer, y se actualizaron el punto 8c y la lista de herramientas de este archivo. **Pendiente de revisión humana.**
-- **Declarado el 2026-10-17:** Jennifer dijo que usó una herramienta de IA y que fue **ChatGPT (OpenAI)**; se agregó a "Tools Used". **Pendiente:** el modelo o la versión de ChatGPT y el prompt de la imagen, que solo ella tiene. No se tocó ninguna imagen ni código.
+- **Declarado el 2026-10-17:** Jennifer dijo que usó **ChatGPT (OpenAI)**, su creación de imágenes, y pegó el prompt en el chat; se guardó íntegro en [`prompts/foto-inicio.md`](./prompts/foto-inicio.md) y se agregó a "Tools Used". Aclaró que el modelo es el de creación de imágenes de ChatGPT, sin una versión específica. No se tocó ninguna imagen ni código.
 
 ## Files with minimal or no AI
 
@@ -274,6 +274,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`ajustes-visuales.md`](./prompts/ajustes-visuales.md) — "Mi cuenta", foto de fondo y el color verde.
 - [`integracion-companeros.md`](./prompts/integracion-companeros.md) — revisión de los merges de los compañeros, deploy fallido, ADR-001 y plan.
 - [`migraciones-y-datos.md`](./prompts/migraciones-y-datos.md) — migraciones sin versión repetida y datos de Álvaro hacia el proyecto del equipo.
+- [`foto-inicio.md`](./prompts/foto-inicio.md) — prompt con el que Jennifer generó la foto del inicio en ChatGPT (creación de imágenes).
 
 ## Security
 
