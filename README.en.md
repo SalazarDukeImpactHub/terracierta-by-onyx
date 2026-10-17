@@ -30,9 +30,9 @@
 <!-- video:inicio -->
 ## 🎬 Demo video
 
-[![Watch the demo video on YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
+[![Watch the full experience on YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
 
-**[▶️ Watch the video on YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
+**[▶️ Watch the full experience on YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
 
 ---
 

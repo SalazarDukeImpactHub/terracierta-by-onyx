@@ -28,9 +28,9 @@
 <!-- video:inicio -->
 ## 🎬 Video de la demo
 
-[![Ver el video de la demo en YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
+[![Ver la experiencia completa en YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
 
-**[▶️ Ver el video en YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
+**[▶️ Ver la experiencia completa en YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
 
 ---
 

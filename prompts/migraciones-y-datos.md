@@ -180,4 +180,15 @@ https://youtu.be/x2wtAdvquYA YA ESTA EN YOUTUBE
 ```
 
 ### Resultado breve
-- Se reemplazó en los README el respaldo de Google Vids por el enlace de YouTube (video corto de la demo de pagos).
+- Se reemplazó en los README el respaldo de Google Vids por el enlace de YouTube. El agente supuso que era el video corto; Jennifer aclaró después que es el largo (ver la entrada 17).
+
+---
+
+## Entrada 17 — Ese es el video largo
+
+```
+ESE ES EL LARGO APENAS ESTOY TERMIANDO EL CORTO PERO SUBE ESE LARGO Y QUE TODO QUEDE OK ES EL ULTIMMO PUSH POR AHORA
+```
+
+### Resultado breve
+- El botón del README ahora dice «experiencia completa». El video corto se agrega cuando esté subido.
