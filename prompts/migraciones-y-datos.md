@@ -73,3 +73,17 @@ Sí: prepará el SQL de limpieza dirigido (con consulta previa, sin tocar esquem
 ### Resultado breve
 - Se prepararon `04a-limpieza-ver-que-se-borra.sql` (solo lee) y `04b-limpieza-borrar.sql` (una transacción), fuera del repositorio. **No se aplicó nada en la nube.**
 - **"Entrar rápido" no se tocó:** el agente había dicho que estaba roto sin haber leído el código de la acción; al probarlo funciona. Queda como corrección en `AI_USAGE.md`.
+
+---
+
+## Entrada 7 — Resultado de la limpieza y PR
+
+Jennifer pegó la tabla de 8 chequeos de la limpieza, todos en `OK`, y escribió:
+
+```
+revisemos que funciono y hacemos el pr
+```
+
+### Resultado breve
+- Se verificó producción en solo lectura y se registró el resultado. Se corrigió en `AI_USAGE.md` una suposición del agente sobre un producto de prueba que resultó falsa.
+- Se subió la rama y se abrió el PR solo con documentos.
