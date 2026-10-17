@@ -248,10 +248,21 @@ USE_MOCKS=true                              # pagos y login simulados (hasta int
 NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
 SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key   # solo servidor, nunca con prefijo NEXT_PUBLIC
-# NEXT_PUBLIC_SITE_URL=http://localhost:3000    # opcional: en Vercel se toma de la URL del despliegue
+# NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000    # opcional: en Vercel se toma de la URL del despliegue
+
+# Pagos reales con SDK oficial — ver .env.example
+# PAYMENTS_RAIL=open-payments
+# OPEN_PAYMENTS_CLIENT_WALLET=
+# OPEN_PAYMENTS_SENDER_WALLET=
+# OPEN_PAYMENTS_KEY_ID=
+# OPEN_PAYMENTS_PRIVATE_KEY_PATH=
+# OPEN_PAYMENTS_REDIRECT_ORIGIN=http://127.0.0.1:3100
+# OPEN_PAYMENTS_MAX_RECEIVE=0.05
+# OPEN_PAYMENTS_MAX_DEBIT=0.05
+# PAYMENTS_EXECUTION_ENABLED=true
 ```
 
-Las llaves de Open Payments las define el módulo de pagos y viven **solo en el servidor**.
+El módulo de pagos usa exclusivamente el SDK oficial `@interledger/open-payments`, con la llave privada y los tokens GNAP en el servidor. No usa cookies ni endpoints de la API web de Test Wallet. El titular autoriza el pago en la wallet; el login de TerraCierta sigue a cargo del compañero de autenticación.
 
 ---
 
@@ -396,3 +407,51 @@ Lo técnico recae sobre todo en Yamil y Álvaro. Caren y Astrid llevan la **admi
 Proyecto construido para el **Hackatón Open Payments · Medellín 2026** (Ruta N, 16 y 17 de octubre). La demo muestra el ciclo completo: **solicitud de pago → autorización → ejecución → finalización exitosa**, en las dos rutas: un caficultor con INVIMA que publica su café y recibe un pago directo, y otro sin INVIMA que carga su lote, elige una cooperativa y ve el cobro.
 
 Terracierta es un proyecto de café con nombre propio, que parte de Marsella. Conózcalo en **[terracierta-landing.vercel.app](https://terracierta-landing.vercel.app/)**.
+
+
+### Pasarela protegida y autorización en la wallet
+
+Abre [la pasarela local](http://127.0.0.1:3100/pago/pasarela). Hereda el layout de TerraCierta y funciona sin catálogo, productos ni sesión de caficultor.
+
+El riel principal es `PAYMENTS_RAIL=open-payments`: SDK oficial `@interledger/open-payments`, llaves de cliente Ed25519 y grants GNAP. La wallet de la demo se configura temporalmente en el servidor. El login del usuario lo implementa otro compañero y su conexión con la pasarela está pendiente. La pasarela no implementa login ni llama a su endpoint. En este riel SDK no se importan cookies de la Test Wallet. Las firmas estándar del SDK se conservan: PQC es una capa adicional entre el navegador y TerraCierta.
+
+1. Configura `.env.local` siguiendo `.env.example`: wallet de cliente, key ID, ruta de llave privada y origen de retorno. Usa la misma dirección `http://127.0.0.1:3100` al abrir la página. No guardes `private.key` en el repo.
+2. Con `USE_MOCKS=true`, prueba ambos modos sin red de pagos ni fondos. Con `USE_MOCKS=false`, se utiliza el SDK; si falta configuración, falla explícitamente.
+3. Abrir o recargar solo comprueba el canal local. Pulsa «Ver total» para solicitar la cotización oficial; se muestra el resumen y el total exacto. La protección post-cuántica está activada por defecto. Los datos temporales y el selector de modo están en «Ajustes de la demo».
+4. Pulsa «Pagar» después de revisar el total. Su titular autoriza el permiso de pago en la wallet. El servidor comprueba el hash del retorno GNAP y la cookie propia de esta sesión antes de ejecutar el pago saliente.
+5. Consulta el estado si sigue pendiente. El recibo híbrido de liquidación aparece únicamente después de comprobar el importe enviado y su recepción.
+6. Compara los dos modos en DevTools → Network, filtrando por `cobrar`: cifrado de aplicación frente a JSON legible. HTTPS sigue siendo necesario en ambos.
+
+`GET /api/pasarela/key` establece una cookie **propia** para vincular solicitudes de pago (no autentica usuarios), HttpOnly y SameSite=Lax (Secure sobre HTTPS); `POST /api/pasarela/echo` comprueba el canal. Los POST `cobrar` y `cobrar-claro` aceptan acciones `cotizar`, `confirmar`, `finalizar` y `consultar`. Una confirmación caduca a los cinco minutos, se vincula a la sesión, el modo y la cotización guardada, y no vuelve a crear el pago ante una repetición. `GET /api/pasarela/retorno` verifica el retorno de la wallet; en la pasarela la ejecución posterior se realiza por POST. No se transmiten tokens GNAP ni llaves privadas al navegador.
+
+El contrato `iniciarPago / consultarPago` permanece intacto: el riel SDK devuelve la URL de consentimiento y guarda el recibo PQC en `detalle` al completarse. El checkout usa `walletPagador` del perfil validado por el servidor; la wallet de cliente identifica a TerraCierta y no sustituye al comprador. El adaptador `USE_MOCKS` de la tienda conserva su recorrido existente. El riel `wallet-ui` está retirado y su configuración produce un error antes de cualquier solicitud externa. El script anterior está deshabilitado y no hace solicitudes.
+
+**Límites del prototipo:** llaves, cotizaciones, sesiones e idempotencia son efímeras y locales a un proceso. Para varios procesos o un reinicio se necesita almacenamiento compartido durable, conciliación y gestión persistente de llaves. Un fallo después de enviar fondos puede dejar un resultado incierto: revisa la wallet antes de crear otro cobro. El recibo certifica lo que verificó TerraCierta; no es una firma post-cuántica de la wallet ni de ILP. El bundle se obtiene desde un origen de confianza (HTTPS; HTTP solo en loopback para la demo).
+
+En producción la pasarela pública está deshabilitada salvo `PASARELA_DEMO_ENABLED=true`. Esta opción está destinada a una demo controlada de testnet; no constituye autenticación del titular ni autorización para operar una wallet de plataforma sin GNAP. El límite de diez solicitudes por minuto es por proceso. `OPEN_PAYMENTS_MAX_RECEIVE` acota el importe receptor de la demo y `OPEN_PAYMENTS_MAX_DEBIT` acota de forma independiente el débito del SDK, incluidos los costos cotizados. No se amplía ningún tope automáticamente.
+
+Pruebas sin testnet:
+
+```bash
+npx vitest run src/payments
+npm test
+npx tsc --noEmit
+```
+
+Comprobación opcional entre handlers reales de Next (solo key/echo, sin cobros):
+
+```bash
+LOCAL_PASARELA_ORIGIN=http://127.0.0.1:3100 npx vitest run src/payments/local-channel.test.ts
+```
+
+Ver [respuestas al canvas, criterios del hackatón y guion de la demo](docs/pasarela-hackathon.md).
+
+
+**Verificación de autorización:** las pruebas del SDK cubren rechazo de grants sin interacción, hash o sesión incorrectos, finalización anticipada, repetición y ejecución deshabilitada después del consentimiento. Una prueba completa conecta cliente PQC, gateway, callback GNAP y comprobación de recepción con un SDK simulado; no usa la testnet ni mueve fondos. La prueba real completa queda pendiente de autorización manual del titular. No se presenta la cotización oficial como un pago completado.
+
+
+**Checkout comercial:** `montoCop` mantiene su significado de pesos colombianos enteros. El adaptador no lo recorta al tope de demo ni lo interpreta como EUR. Si supera el límite o la wallet receptora no usa COP, falla antes de solicitar autorización; una conversión de precios requiere una decisión explícita de integración. La pasarela independiente de testnet conserva su importe pequeño configurado. Si un pago pierde su registro de memoria, se informa pendiente/incierto y se requiere conciliación; no se declara fallido por ausencia de memoria.
+
+**Importe del vendedor:** se conserva el valor solicitado y se comprueba su moneda y escala en incoming, quote y seguimiento. La pantalla separa ese importe del adicional cotizado por la wallet y del débito total. No se aumenta el precio del producto, se resta una tarifa al vendedor ni se calcula una diferencia entre monedas distintas. La tarifa real depende del proveedor; ver [investigación de importes y PQC](docs/investigacion-pagos-pqc.md).
+
+**Para la IA que integra login:** [handoff de la pasarela](docs/handoff-pasarela-login.md), con contrato, variables, pruebas, límites y procedimiento de merge de esta rama. La aceptación real con login y la conciliación externa siguen pendientes; esta entrega no declara el sistema listo para producción.

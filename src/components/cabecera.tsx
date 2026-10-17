@@ -9,7 +9,7 @@ export async function Cabecera() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-linea bg-crema/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Link href="/" className="leading-none" aria-label="Terracierta by Onyx, inicio">
           <span className="block font-titulo text-xl font-medium uppercase tracking-[0.28em]">Terracierta</span>
           <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.22em] text-apagado">
@@ -17,7 +17,7 @@ export async function Cabecera() {
           </span>
         </Link>
 
-        <nav aria-label="Principal" className="flex items-center gap-5 text-[0.78rem] font-semibold uppercase tracking-[0.14em]">
+        <nav aria-label="Principal" className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em]">
           <Link href="/tienda" className="hover:text-cobre-oscuro">
             Tienda
           </Link>

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // El SDK lee sus esquemas YAML desde disco; Node debe conservar las rutas del paquete.
+  serverExternalPackages: ["@interledger/open-payments"],
   // Cache Components / partialPrefetching venían activados por el scaffold;
   // no adoptamos ese modelo (obliga a envolver todo dato dinámico en Suspense).
   turbopack: {

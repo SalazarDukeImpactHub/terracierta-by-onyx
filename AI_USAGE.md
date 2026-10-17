@@ -175,3 +175,41 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 
 - Repo público: sin llaves, tokens ni `.env.local`. Las variables necesarias son solo nombres en `README.md` / `.env.example` (pendiente de crear, ver arriba).
 - Nada de secretos en `/prompts` ni en este archivo.
+
+
+## Pasarela de pagos: alcance y verificación (16 de octubre de 2026)
+
+La IA implementó la pasarela con canal ML-KEM-768/AES-GCM y recibos Ed25519/ML-DSA-65, el adaptador SDK oficial con consentimiento GNAP y una alternativa explícita `wallet-ui`. El comprador revisa el total antes de pagar; el servidor conserva la confirmación de un uso y la vinculación a la cotización. La pantalla se simplificó a resumen, total y Pagar, con cotización automática y ajustes técnicos cerrados por defecto.
+
+El login pertenece a otro compañero. Se retiraron la llamada automática a `/login`, el método de login del cliente de pagos y las credenciales de correo/contraseña de la configuración de ejemplo y del script de prueba. La conexión con la sesión real del usuario está pendiente; la demo conserva configuración temporal de servidor. No se modificó `src/auth` ni el contrato `src/adapters/types.ts`.
+
+Verificación de esta versión: 94 pruebas aprobadas y 22 omitidas (base de datos y prueba local opcional); 37 pruebas de pagos aprobadas y una omitida. TypeScript, lint del módulo de pagos/pasarela y compilación de producción aprobados. En el navegador se comprobaron la cotización automática del SDK, ambos modos y la presentación en escritorio y móvil. La cotización real observada fue 1,05 EUR de débito para entregar 0,05 EUR; no se ejecutó un pago real. La autorización y confirmación final reales siguen pendientes de la intervención del titular de la wallet. Ninguna llave privada ni cookie de Test Wallet se incluyó en este registro.
+
+
+## Decisión final de integración: Open Payments oficial (16 de octubre de 2026)
+
+El usuario eligió el SDK oficial con consentimiento GNAP. Se retiraron el cliente de la API web con cookies, su camino alternativo en el checkout y sus pruebas obsoletas. El script anterior se conserva únicamente como aviso de deshabilitación y no hace solicitudes. Una configuración antigua `wallet-ui` falla antes de contactar servicios externos. Las cookies del proveedor ya no forman parte de la configuración activa.
+
+Corrección del diagnóstico anterior: la IA llamó al endpoint web `/quotes` suponiendo que no ejecutaba pagos. El usuario informó que sí los ejecuta. Por tanto, no se afirma que aquellas llamadas fueran inocuas ni que no movieran fondos; no se realizó una conciliación de movimientos. Esas pruebas se detuvieron. La validación de la migración posterior utilizó simulaciones del SDK, sin ejecutar pagos reales ni volver a utilizar la API web.
+
+Se eliminó la preparación automática al abrir o recargar la página. El comprador solicita el total y después continúa al consentimiento de la wallet. Se conserva PQC en ambos tramos de petición/respuesta del modo protegido, firma híbrida de cotización y recibo, retorno GNAP verificado y confirmación de un uso. El modo claro conserva la misma autorización estándar.
+
+Una revisión independiente identificó y se corrigieron tres problemas: recorte silencioso de importes COP al límite de demo, estado fallido incorrecto al perder registros de memoria y comparación del importe enviado con un débito que incluye comisiones. El checkout no convierte COP a otra moneda de forma implícita: requiere wallet receptora COP y topes suficientes; la demo de pasarela permanece separada de los pedidos comerciales.
+
+Verificación final de esta migración: 94 pruebas aprobadas y 22 omitidas; dentro de pagos, 37 aprobadas y una comprobación local opcional omitida en la ejecución normal. TypeScript, lint del alcance y build de producción aprobados. Auditoría de dependencias de producción: cero vulnerabilidades reportadas. Las pruebas cubren el flujo SDK con PQC hasta la confirmación de recepción simulada, grants no interactivos rechazados, hash/sesión incorrectos, intentos repetidos, cambios de modo/datos, configuración incompleta sin fallback, importes/monedas incompatibles y falta de estado durable. El login del compañero y `src/adapters/types.ts` no se modificaron.
+
+Pendiente: recorrer manualmente el consentimiento real y verificar un pago real autorizado por el titular; incorporar persistencia y conciliación para producción. Una revisión local y las pruebas simuladas no certifican al proveedor externo ni convierten GNAP/ILP/TLS en protocolos post-cuánticos.
+
+## Corrección del retorno GNAP (16 de octubre de 2026)
+
+El titular aceptó el consentimiento en Test Wallet y el retorno fue rechazado por la pasarela. Se identificó una incompatibilidad concreta con Rafiki: devuelve el hash SHA-256 en Base64 con relleno, mientras el verificador solo admitía Base64URL sin relleno. Ahora se comprueban los mismos 32 bytes con comparación de tiempo constante, admitiendo ambos formatos canónicos y rechazando codificaciones malformadas, datos alterados y sesiones ajenas. No se elimina la validación ni se usa la API web con cookies.
+
+La regresión reprodujo el rechazo HTTP 403 antes del arreglo. Tras corregirlo: 38 pruebas de pagos aprobadas y una prueba local opcional omitida; TypeScript y lint de los archivos modificados aprobados. El diagnóstico y las pruebas no crearon pagos externos. La comprobación final con consentimiento y movimiento reales sigue pendiente del titular.
+
+## Cierre de rama para integrar login
+
+Se investigaron tarifas con fuentes públicas de Rafiki y Test Wallet, y ML-KEM/ML-DSA con FIPS 203/204 de NIST. Se corrigieron dos hallazgos de revisión independiente: `walletPagador` se transmite al riel desde el contrato del servidor, y el importe del vendedor se verifica contra la solicitud original en incoming, quote y seguimiento. Se agregó un desglose visible del adicional cotizado, sin atribuir un concepto de tarifa no comprobado ni modificar precios del catálogo. Se crearon handoff de login e investigación de importes/PQC; las propuestas de pagos futuros y reloj se documentaron sin implementarlas ni usar el endpoint web retirado.
+
+Validación de cierre: 104 pruebas aprobadas y 22 omitidas (DB/prueba local opcional); en pagos, 47 aprobadas y una omitida. La prueba local key/echo pasó por separado. TypeScript, lint del alcance, build y auditoría de producción aprobados; cero vulnerabilidades reportadas por npm audit --omit=dev. Revisión independiente posterior sin bloqueos en las dos correcciones. Se verificó el desglose en navegador de escritorio y móvil con una nueva cotización oficial de 0,05 EUR recibidos y 1,05 EUR debitados. Esa comprobación no solicitó aprobación ni creó outgoing. No se realizó un pago nuevo. El contrato público y el módulo de auth no cambiaron.
+
+Pendientes explícitos: conciliar el movimiento anterior con sus IDs y saldos, validar autorización/recepción reales con el titular, integrar el login del compañero, acordar moneda del checkout y persistir estado/llaves antes de producción. No se declara la pasarela ni todo Interledger postcuántico al 100%.

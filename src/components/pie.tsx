@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Pie() {
   return (
     <footer className="bg-bosque-hondo text-crema">
@@ -12,6 +14,9 @@ export function Pie() {
           <span className="mt-1 block text-[0.68rem] uppercase tracking-[0.18em] text-crema/55">
             Hackatón Open Payments · Medellín 2026
           </span>
+          <Link href="/pago/pasarela" className="mt-3 inline-block text-sm text-crema/80 underline underline-offset-4 hover:text-crema">
+            Probar la pasarela de pagos
+          </Link>
         </p>
       </div>
     </footer>
