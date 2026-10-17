@@ -181,3 +181,21 @@ Quitá también la línea del pie y creá la rama fix/sin-barra-demo con commits
 ```
 
 - Se quitó también la línea del pie: **no queda ningún aviso global de modo demostración**. Hay que decir en la presentación que los pagos son simulados mientras sigan así.
+
+---
+
+## Entrada 9 — La frase del título con color vivo y efecto de escritura
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+me gustaria que con nombre propio que se ve naranja no se si pueda resaltar mas y que tenga un movimiento como de typing pero solo eso con nombre propio
+```
+
+### Resultado breve
+- La frase pasa a un cobre más claro y vivo con un brillo suave, y se "escribe" sola con un cursor (solo CSS, respeta "reducir movimiento", el texto siempre está en la página).
+- **Supuestos declarados:** "resaltar más" se resolvió con color y brillo, no con tamaño ni subrayado; el efecto ocurre una vez al cargar la página, no en bucle. Si se quiere en bucle o con otro ritmo, son valores en `src/app/globals.css`.
+- Archivos: `src/app/page.tsx`, `src/app/globals.css`.
