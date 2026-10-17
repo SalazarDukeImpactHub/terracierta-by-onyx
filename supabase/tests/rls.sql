@@ -1,5 +1,7 @@
--- Pruebas de RLS contra la base local. Se corren con:
+-- Pruebas de RLS. Contra la base local:
 --   docker exec -i supabase_db_terracierta-by-onyx psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/rls.sql
+-- Contra Supabase en la nube: pegar este archivo completo en el SQL Editor y ejecutarlo (con el seed limpio).
+--   Si todo está bien, devuelve una fila "RLS: todas las pruebas pasaron". Si algo falla, muestra el error en rojo.
 -- Todo ocurre dentro de una transacción que termina en ROLLBACK: no deja datos.
 -- Espera el seed limpio (cuenta filas): `npm run test:rls` recrea la base antes de correrlo.
 -- Cada bloque lanza una excepción si el comportamiento no es el esperado.
@@ -164,4 +166,5 @@ end $$;
 
 reset role;
 rollback;
-\echo 'RLS: todas las pruebas pasaron (transacción revertida)'
+-- Si llegó hasta aquí, ninguna verificación lanzó excepción. (Es un select, no \echo: así también corre en el SQL Editor de Supabase.)
+select 'RLS: todas las pruebas pasaron (transacción revertida)' as resultado;
