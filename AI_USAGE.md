@@ -57,7 +57,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - IA: redactados por el agente; pendientes de revisión humana.
 - `README.md` reescrito al estilo del README de ejemplo que indicó Jennifer (`cavaltechackathon`), usado **solo como referencia de formato**; el contenido es propio.
 - `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real). **Ya no se muestran en el README**: Jennifer pidió agregarlas al final, con el diseño definitivo.
-- Nombres del equipo en el README: los dio Jennifer en el chat; después ella pidió agregar las tildes (Álvaro, González, López) y asignó los roles de pagos y login. "Andre" se dejó sin tilde porque no se indicó otra cosa. Pendiente de revisión humana: el rol de Caren Briyid Hoyos Estrada y de Astrid Carolina Hoyos Estrada.
+- Nombres del equipo en el README: los dio Jennifer en el chat; después ella pidió agregar las tildes (Álvaro, González, López) y asignó los roles de pagos y login. "Andre" se dejó sin tilde porque no se indicó otra cosa. Caren Briyid Hoyos Estrada y Astrid Carolina Hoyos Estrada: administración y parte creativa, ideas y revisión de errores (rol indicado por Jennifer).
 
 ## Files with minimal or no AI
 

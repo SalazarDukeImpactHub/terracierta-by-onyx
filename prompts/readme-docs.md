@@ -142,3 +142,24 @@ loggin alvaro pagos yamil si agrega als tildes  y cerremso lso pr pendientes par
 
 ### Archivos tocados
 `README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 8 — Roles de Caren y Astrid, invitaciones al repo y `.env.example`
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+ya estan invitados a el repo que es ya voy a crear el env exammple y lso roles de caro y  caren ayudame a ponerlo ellas se encargan de no se adminsitracion y parte creativa hasignales aaglo de valor aunque lo tecnico recaae mas en lso otros ellas igual aportan con ideas y revisando errores que se nos escapen
+```
+
+### Resultado breve
+- **Roles:** Caren y Astrid → administración y parte creativa, aportan ideas y revisan la app para detectar errores. Se redactó así en el README, sin inventarles tareas técnicas; "Caro" se interpretó como Astrid Carolina.
+- **Invitaciones:** el repo ya muestra 4 colaboradores con permiso de escritura (y ninguna invitación pendiente). Falta que Jennifer confirme qué usuario de GitHub es cada integrante antes de armar un `CODEOWNERS`.
+- **`.env.example`:** Jennifer lo va a crear; el agente lo sube con su PR cuando exista.
+
+### Archivos tocados
+`README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
