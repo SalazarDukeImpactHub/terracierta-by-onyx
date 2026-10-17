@@ -118,3 +118,27 @@ que debo hacer con el .env.example yaa te dpy tpdps los nombres para agregar car
 
 ### Archivos tocados
 `README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada 7 — Roles, tildes y cierre de los PR pendientes
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+El agente preguntó quién se encarga de pagos y de login, y si los nombres llevan tildes (Álvaro, González, López).
+
+### Prompt (texto íntegro)
+
+```
+loggin alvaro pagos yamil si agrega als tildes  y cerremso lso pr pendientes para dejar todo lsito
+```
+
+### Resultado breve
+- **Roles:** login = Álvaro Henao González (`src/auth`); pagos = Yamil Andre La Barrera López (`src/payments`). Se reflejaron en el README y en la lista "Files with minimal or no AI" de `AI_USAGE.md`. El rol de Caren y de Astrid no se indicó y no se asumió.
+- **Tildes:** agregadas a Álvaro, González y López. "Andre" quedó sin tilde porque no se pidió.
+- **Cierre:** PR 7 y PR 8 fusionados a `main`.
+
+### Archivos tocados
+`README.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.

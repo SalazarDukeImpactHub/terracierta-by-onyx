@@ -57,14 +57,14 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - IA: redactados por el agente; pendientes de revisión humana.
 - `README.md` reescrito al estilo del README de ejemplo que indicó Jennifer (`cavaltechackathon`), usado **solo como referencia de formato**; el contenido es propio.
 - `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real). **Ya no se muestran en el README**: Jennifer pidió agregarlas al final, con el diseño definitivo.
-- Nombres del equipo en el README: los dio Jennifer en el chat y se escribieron **tal cual los tecleó**, sin tildes. Pendiente de revisión humana: tildes y ortografía, y el rol de cada integrante.
+- Nombres del equipo en el README: los dio Jennifer en el chat; después ella pidió agregar las tildes (Álvaro, González, López) y asignó los roles de pagos y login. "Andre" se dejó sin tilde porque no se indicó otra cosa. Pendiente de revisión humana: el rol de Caren Briyid Hoyos Estrada y de Astrid Carolina Hoyos Estrada.
 
 ## Files with minimal or no AI
 
-- `src/payments/...` — **servicio real de Open Payments: compañero de pagos.** (Hoy solo existe el stub del punto 3.)
-- `src/auth/...` — **login y asignación de wallets: compañero de login.** (Hoy solo existe el stub del punto 3.)
+- `src/payments/...` — **servicio real de Open Payments: Yamil Andre La Barrera López (pagos).** (Hoy solo existe el stub del punto 3.)
+- `src/auth/...` — **login y asignación de wallets: Álvaro Henao González (login).** (Hoy solo existe el stub del punto 3.)
 
-> Cuando los compañeros entreguen, se listan aquí sus rutas exactas y cuánta IA usaron, por separado.
+> Cuando entreguen, cada uno lista aquí sus rutas exactas y cuánta IA usó, por separado. **Cuánta IA usó cada uno es una declaración suya**: el agente no puede saberla.
 
 ## Prior Code and Reference Material
 

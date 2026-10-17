@@ -377,10 +377,10 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 - **Jennifer Salazar Duke** — dirección del proyecto, producto y revisión
 - **Caren Briyid Hoyos Estrada**
 - **Astrid Carolina Hoyos Estrada**
-- **Yamil Andre La Barrera Lopez**
-- **Alvaro Henao Gonzalez**
+- **Yamil Andre La Barrera López** — pagos con Open Payments (`src/payments`)
+- **Álvaro Henao González** — login y asignación de wallets (`src/auth`)
 
-> Dos integrantes del equipo se encargan de los módulos de **pagos con Open Payments** (`src/payments`) y de **login con asignación de wallets** (`src/auth`). El rol de cada integrante se indica aquí cuando se confirme.
+> Cada uno trabaja **solo en su carpeta** y en su propia rama (`feat/payments`, `feat/auth`), con *pull request* hacia `main`. El rol de Caren y Astrid se agrega aquí cuando se confirme.
 
 ---
 
