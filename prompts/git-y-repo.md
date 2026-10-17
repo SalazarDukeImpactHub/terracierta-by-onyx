@@ -86,3 +86,26 @@ hazlo antes de seguir con el b  y de tomar deciones
 
 ### Resultado breve
 Push de `08b7858` a `origin/main`; local y remoto coinciden. La Ruta B sigue sin empezar a la espera de dos decisiones de diseño.
+
+---
+
+## Entrada 6 — Protección de `main` y `CODEOWNERS`
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+El repo ya tenía 4 colaboradores con permiso de escritura y `main` sin protección. El agente propuso exigir *pull request* para entrar a `main` y un `CODEOWNERS`, y preguntó si el usuario `0x15k` era Yamil.
+
+### Prompt (texto íntegro)
+
+```
+si ese es yamil y si proteje y codeowners
+```
+
+### Resultado breve
+- **Protección de `main`** (configuración del repo, aplicada con la API de GitHub y leída de vuelta): *pull request* obligatorio, **0 aprobaciones requeridas** (no frena a nadie), sin *force push*, sin borrar la rama, y **sin incluir administradores** (Jennifer puede saltarla en una emergencia). No se exige la revisión de los code owners, porque bloquearía a cada dueño en su propia carpeta.
+- **`.github/CODEOWNERS`:** `src/payments/` → `@0x15k` (Yamil), `src/auth/` → `@ahenao1256` (Álvaro), `src/adapters/types.ts` (el contrato) → Jennifer, Yamil y Álvaro; todo lo demás → `@SalazarDukeImpactHub`. La correspondencia de usuarios la confirmó Jennifer solo para Yamil (`0x15k`); Álvaro (`ahenao1256`) se dedujo por el nombre del usuario.
+
+### Archivos tocados
+`.github/CODEOWNERS` (nuevo), `README.md`, `AI_USAGE.md`, `prompts/git-y-repo.md`.

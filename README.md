@@ -297,6 +297,9 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 
 **Flujo de trabajo del equipo:** `main` siempre desplegable · cada cambio en una rama corta (`feat/…`, `fix/…`, `docs/…`) con *pull request* · cada compañero toca solo su carpeta (`src/payments`, `src/auth`).
 
+- **`main` está protegida:** solo se entra por *pull request* (no se aprueba con revisiones obligatorias, para no frenar a nadie), no admite *force push* y no se puede borrar. Vercel genera una URL de *preview* por cada rama.
+- **`.github/CODEOWNERS`:** GitHub pide revisión automáticamente según la carpeta: `src/payments/` → Yamil, `src/auth/` → Álvaro, y `src/adapters/types.ts` (el contrato entre la página y los dos módulos) → Jennifer, Yamil y Álvaro. Todo lo demás lo revisa Jennifer.
+
 ---
 
 ## 📁 Estructura del proyecto
