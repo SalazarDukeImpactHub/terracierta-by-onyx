@@ -1,11 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { SelectorRol, type OpcionRol } from "@/components/selector-rol";
 
 interface RolInicio {
   id: string;
   etiqueta: string;
-  numeral: string;
   titulo: string;
   texto: string;
   href: string;
@@ -19,7 +17,6 @@ const ROLES: RolInicio[] = [
   {
     id: "caficultor",
     etiqueta: "Caficultor",
-    numeral: "I",
     titulo: "Soy caficultor",
     texto: "Al crear tu cuenta recibís tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
     href: "/acceso",
@@ -30,7 +27,6 @@ const ROLES: RolInicio[] = [
   {
     id: "comprador",
     etiqueta: "Comprador",
-    numeral: "II",
     titulo: "Quiero comprar café",
     texto: "Mirá el café de cada finca sin cuenta. Para pagar entrás con tu cuenta: pagás desde tu billetera, directo a su dueño.",
     href: "/tienda",
@@ -40,7 +36,6 @@ const ROLES: RolInicio[] = [
   {
     id: "cooperativa",
     etiqueta: "Cooperativa",
-    numeral: "III",
     titulo: "Soy cooperativa",
     texto: "Revisá las ofertas por lotes que te recomendamos y pagá desde la plataforma.",
     href: "/acceso",
@@ -102,39 +97,9 @@ export default function Inicio() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <p className="etiqueta">Uno · Elegí tu entrada</p>
-        <h2 className="mt-2 text-4xl">¿Desde dónde llegás?</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {ROLES.map((r) => (
-            <article key={r.numeral} className="flex flex-col border border-linea bg-crema-2 p-6">
-              <span className="font-titulo text-5xl text-cobre">{r.numeral}</span>
-              <h3 className="mt-3 text-2xl">{r.titulo}</h3>
-              <p className="mt-2 flex-1 text-apagado">{r.texto}</p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-                <Link href={r.href} className="btn self-start">
-                  {r.accion}
-                </Link>
-                {r.registro && (
-                  <Link href={r.registro} className="text-sm text-cobre-oscuro underline">
-                    Crear cuenta
-                  </Link>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-6xl px-5">
-        <div className="rombo" aria-hidden="true">
-          ◆
-        </div>
-      </div>
-
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2">
         <div>
-          <p className="etiqueta">Dos · Cómo funciona</p>
+          <p className="etiqueta">Uno · Cómo funciona</p>
           <h2 className="mt-2 text-4xl">Del lote a la billetera</h2>
           <ul className="cruces mt-6">
             {PASOS.map((p) => (
