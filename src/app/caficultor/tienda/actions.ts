@@ -88,14 +88,5 @@ export async function alternarPublicado(formData: FormData) {
   revalidatePath("/caficultor/tienda");
 }
 
-/**
- * Responde "¿Tienes INVIMA?". PENDIENTE DE ACORDAR con el compañero de login quién escribe este campo
- * (brief §6): por ahora lo escribe la página sobre su propio perfil.
- */
-export async function declararInvima(formData: FormData) {
-  const perfil = await requerirRol("caficultor");
-  const tiene = formData.get("tiene") === "si";
-  await clienteAdmin().from("profiles").update({ tiene_invima: tiene }).eq("id", perfil.id);
-  revalidatePath("/caficultor");
-  redirect(tiene ? "/caficultor/tienda" : "/caficultor/lote");
-}
+// `tiene_invima` NO se escribe desde la página: lo registra el login al crear la cuenta y aquí solo se lee.
+// (Antes había una acción que lo reescribía con un clic: cualquier caficultor podía "darse" el INVIMA.)

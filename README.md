@@ -43,7 +43,7 @@
 Terracierta by Onyx lo resuelve en cuatro pasos:
 
 1. **Ingrese** con su cuenta (caficultor, cooperativa o comprador) y reciba su **wallet propia**: una dirección de cobro y de pago que cualquier billetera puede usar.
-2. **Declare** si tiene INVIMA. De eso depende su camino.
+2. **Su camino** depende de si tiene INVIMA, un dato que queda **registrado con su cuenta**: la página lo lee y no se lo vuelve a preguntar.
 3. **Ruta A, con INVIMA:** abra su tienda, publique sus productos y reciba el pago de cada comprador directo en su wallet.
 4. **Ruta B, sin INVIMA:** cargue su lote, elija entre las **3 mejores cooperativas** que le recomienda el agente, y la cooperativa le paga por la plataforma.
 
@@ -114,7 +114,7 @@ flowchart TB
 - **El agente solo usa reglas.** Es explicable y no necesita llaves. Queda preparado para evolucionar (por ejemplo, que un modelo redacte el "por qué") sin cambiar el puntaje.
 - **Todos tienen cuenta y wallet para pagar o cobrar.** Caficultores, cooperativas **y compradores**. Mirar el café no necesita cuenta; pagar sí, y la wallet con la que se paga sale del perfil (nadie puede pagar con una wallet ajena).
 
-**Contrato con el login** (`src/adapters/types.ts`): `Rol = caficultor | cooperativa | comprador`; `obtenerPerfil()` devuelve la `wallet_address` asignada al registrarse. La página manda a `/acceso?siguiente=<ruta>` para pedir la cuenta y volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
+**Contrato con el login** (`src/adapters/types.ts`): `Rol = caficultor | cooperativa | comprador`; `obtenerPerfil()` devuelve la `wallet_address` asignada al registrarse y, para los caficultores, `tiene_invima`: **el login lo pide y lo guarda al crear la cuenta** y la página solo lo lee (no hay ninguna pantalla que lo cambie). La página manda a `/acceso?siguiente=<ruta>` para pedir la cuenta y volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
 
 ---
 
@@ -330,7 +330,7 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 - **Row Level Security en las 7 tablas.** Cada caficultor ve y edita solo lo suyo; el catálogo público lee solo `publicado = true`. **46 verificaciones en SQL** con seis actores distintos (sin sesión, caficultora, caficultor sin INVIMA, cooperativa y dos compradores).
 - **Escrituras sensibles solo desde el servidor.** Pedidos, pagos y ofertas no tienen políticas de escritura para usuarios.
 - **Vista pública sin wallets.** La tienda se arma con una vista que expone solo `id`, `nombre` y `municipio`.
-- **Sin INVIMA no se abre tienda**, también a nivel de base de datos.
+- **Sin INVIMA no se abre tienda**, también a nivel de base de datos. Y el INVIMA **no se autodeclara desde la página**: el dato viene de la cuenta, así que un caficultor no puede darse acceso a la tienda con un clic.
 - **Validación en el servidor.** Zod en cada entrada; wallet address `https://` o `$`; precios y cantidades acotados.
 - **Datos escapados.** El HTML escrito en nombres y descripciones se muestra como texto; las URLs de foto solo aceptan `http(s)`.
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
@@ -362,7 +362,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 |-----------|--------|
 | Pagos reales con Open Payments | Lo entrega el compañero de pagos en `src/payments` |
 | Login real y asignación de wallets | Lo entrega el compañero de login en `src/auth` |
-| Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. Falta acordar quién escribe `tiene_invima` |
+| Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. `tiene_invima` lo **registra el login al crear la cuenta** (la página solo lo lee) |
 | Rol `comprador` y wallet asignada en el login real | El compañero de login debe admitir `comprador` en `profiles.rol`, asignar wallet al registrarse y respetar `?siguiente=` (cambio de contrato) |
 | Moneda y unidades menores del monto | Por confirmar con el módulo de pagos (hoy: COP entero) |
 | Cooperativas sin cuenta | Solo la **cuenta demo** puede aceptar y pagar ofertas; las demás son precargadas |

@@ -15,6 +15,10 @@
  * pagar: el login real debe respetar `siguiente` (src/lib/roles.ts → rutaSegura valida que sea una ruta interna).
  * La tabla `profiles` también debe admitir rol 'comprador' (migración 20261017000000_comprador.sql).
  *
+ * `tiene_invima` (solo caficultores): lo debe PEDIR y GUARDAR el login al crear la cuenta. La página ya no lo
+ * pregunta ni lo modifica (se quitó la acción `declararInvima`): lee `perfil.tiene_invima` y muestra el camino
+ * que corresponde (con INVIMA -> su tienda; sin INVIMA -> vender el lote a una cooperativa).
+ *
  * Para integrar: reemplazar el cuerpo de estas funciones y poner USE_MOCKS=false.
  */
 import type { Perfil, Sesion } from "@/adapters/types";
