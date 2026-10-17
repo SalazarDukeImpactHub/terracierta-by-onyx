@@ -436,7 +436,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Supabase en la nube + URL pública en Vercel | **Hecho.** Antes de presentar, revise las variables del despliegue ([Desplegar](#-desplegar-en-vercel)). `npm run cloud:reset` borra datos: confirme qué tablas toca (hay tablas nuevas, como `usuarios` y `sesiones`) antes de correrlo |
 | Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo. Con pagos reales ya no aplica; **si se despliega con `USE_MOCKS=true`, hay que decir en la presentación que los pagos son simulados** |
 | Uso de IA de los compañeros | Falta declararlo en [`AI_USAGE.md`](./AI_USAGE.md) |
-| Foto del inicio | Hecha por Jennifer Salazar Duke. Si se usó una herramienta de IA para hacerla, falta declararla en [`AI_USAGE.md`](./AI_USAGE.md) |
+| Foto del inicio | Generada por Jennifer Salazar Duke con ChatGPT (OpenAI); declarada en [`AI_USAGE.md`](./AI_USAGE.md). Falta anotar el modelo y el prompt |
 | Capturas de pantalla en el README | Se agregan **al final, con el diseño definitivo** |
 | Validación con alguien de campo | Pendiente: cómo cobra hoy el caficultor, cuánto tarda, si tiene Nequi |
 | Licencia del repositorio | Por definir por el equipo |

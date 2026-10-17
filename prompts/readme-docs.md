@@ -236,3 +236,29 @@ Sí: corregí en README.md y README.en.md la fila de la foto del inicio (es mía
 
 ### Archivos tocados
 `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: herramienta de IA declarada
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README y política de IA
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+Usé una herramienta de IA para hacer la foto; te digo cuál para declararla en el PR 40.
+```
+
+```
+chat gpt
+```
+
+### Resultado breve
+- Se declaró **ChatGPT (OpenAI)** como herramienta de la foto en `README.md`, `README.en.md`, la lista "Tools Used" y los puntos 8c y 14 de `AI_USAGE.md`.
+- **Pendiente:** el modelo o versión de ChatGPT y el prompt de la imagen; Jennifer no los dio y el agente no los inventó.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
