@@ -63,7 +63,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - **Cambio de texto pedido por Jennifer:** "Open Payments" → "Interledger" donde nombra el protocolo o el módulo de pagos. **Supuesto declarado:** el nombre del evento "Hackatón Open Payments" se dejó igual (es su nombre oficial). También se cambiaron comentarios del stub `src/payments/index.ts`, que escribió el agente (la implementación real sigue siendo de Yamil).
 
 ### 8c. "Mi cuenta", foto de fondo, encabezado en móvil y café tostado (`public/fotos/*`, `src/app/page.tsx`, `src/components/cabecera.tsx`, `src/app/globals.css`)
-- **Foto:** la entregó Jennifer en el chat (un cafetal al amanecer, 1916×821, WebP, 222 KB). **Su origen y licencia no se indicaron**: si es una imagen generada con IA o de un banco de imágenes, hay que declararlo en esta política y confirmar que se puede usar. **Pendiente de confirmar por Jennifer.** La IA solo la colocó y le puso un velo oscuro para que el texto se lea.
+- **Foto:** la entregó Jennifer en el chat (un cafetal al amanecer, 1916×821, WebP, 222 KB). **Jennifer confirmó el 2026-10-17 que la foto es suya y que la hizo ella**, así que no hay licencia de terceros que resolver. **No indicó con qué herramienta la hizo:** si usó IA para generarla, la política del evento exige declararlo aquí. **Pendiente de que Jennifer indique la herramienta.** La IA solo la colocó y le puso un velo oscuro para que el texto se lea.
 - IA: cambio de texto "Mi espacio" → "Mi cuenta" (decisión de Jennifer sobre claridad; la palabra la eligió el agente), foto en el encabezado del inicio y arreglo del encabezado en móvil. **Pendiente de revisión humana.**
 - **Color (decisión de Jennifer, opción A):** el verde oscuro cansaba la vista, así que los fondos oscuros (pie, encabezado del inicio, recuadros "1 / 0" y cifras del caficultor) pasan a **café tostado** (`--cafe: #2b2118`, `--cafe-claro: #3d2e22`) y los botones a **cobre** (se eliminó la variante `btn-bosque`). El verde queda en los logos y en detalles (texto y paso "Listo" de un pago completado). **Los dos cafés los eligió la IA, no están en el brief ni en la landing viva**; pendiente de revisión humana.
 
@@ -112,6 +112,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - IA: se renumeró la migración con versión duplicada, y se generó (fuera del repo, porque contiene hashes y datos personales) un SQL idempotente con las tres migraciones nuevas y los datos base, más un ensayo que no guarda nada. **El agente no ejecutó nada contra la base de la nube.** **Pendiente de revisión humana.**
 - **Decisiones declaradas:** la cookie de Test Wallet (`usuarios.token`) **no se copia** (la app la vuelve a pedir con `INTERLEDGER_EMAIL`/`INTERLEDGER_PASSWORD`); se excluyen las sesiones, la vista `tiendas_publicas` y los perfiles de prueba sin cuenta; las URLs a `localhost` se cambian por la del sitio; el historial de pruebas queda en un archivo aparte y opcional.
 - **Corrección del agente:** dijo que "Entrar rápido" estaba roto porque creaba una cookie del sistema anterior. **Era una inferencia sin comprobar**: la acción `entrarDemo` ya abre la sesión real con `abrirSesionDe` (desde el commit `53671f2`). Se probó en local y funciona. No se hizo ningún cambio de código por esto.
+
+### 14. Foto del inicio: autoría confirmada (`README.md`, `README.en.md`, `AI_USAGE.md`)
+- **Pedido de Jennifer:** corregir en los dos README la fila de la foto del inicio, porque la foto es suya y la hizo ella.
+- IA: se cambió solo esa fila de "Falta confirmar su origen y licencia" por la autoría de Jennifer, y se actualizó el punto 8c de este archivo. **Pendiente de revisión humana.**
+- **Supuesto declarado:** "la hizo ella" se registró tal cual, sin asumir cómo. Como la política del evento exige declarar el uso de IA, la fila y el punto 8c dejan pendiente que Jennifer diga con qué herramienta la hizo, si usó una. No se tocó ninguna imagen ni código.
 
 ## Files with minimal or no AI
 

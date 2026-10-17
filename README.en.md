@@ -438,7 +438,7 @@ We comply with the **event's AI Policy**: everything is recorded as the work hap
 | Cloud Supabase + public URL on Vercel | **Done.** Before presenting, check the deployment variables ([Deploy](#-deploy-on-vercel)). `npm run cloud:reset` deletes data: confirm which tables it touches (there are new ones, such as `usuarios` and `sesiones`) before running it |
 | Demo-mode notice | Removed from the interface at the team's request. With real payments it no longer applies; **if deployed with `USE_MOCKS=true`, the presentation must say payments are simulated** |
 | Teammates' AI use | Still to be declared in [`AI_USAGE.md`](./AI_USAGE.md) |
-| Home photo | Its origin and license still need to be confirmed |
+| Home photo | Made by Jennifer Salazar Duke. If an AI tool was used to make it, it still has to be declared in [`AI_USAGE.md`](./AI_USAGE.md) |
 | Screenshots in the README | Added **at the end, with the final design** |
 | Validation with someone in the field | Pending: how a grower gets paid today, how long it takes, whether they have Nequi |
 | Repository license | To be defined by the team |

@@ -210,3 +210,29 @@ perimero actualicemos el readme y despues continuamso con el deck
 
 ### Archivos tocados
 `README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
+
+---
+
+## Entrada — Foto del inicio: autoría propia
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Área:** README
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+el origen y licencia es mio yo lo hice entonces organicemos esto   la brecha lo que sea mas apropiado los datos que falta busquemos para dejarlo listo
+```
+
+```
+Sí: corregí en README.md y README.en.md la fila de la foto del inicio (es mía, hecha por mí), registralo en AI_USAGE y prompts, y abrí un PR desde origin/main.
+```
+
+### Resultado breve
+- Se corrigió la fila "Foto del inicio" de `README.md` y `README.en.md`, y el punto 8c de `AI_USAGE.md`; se agregó el punto 14.
+- **Supuesto declarado:** Jennifer dijo que la foto es suya y que la hizo ella, pero no con qué herramienta. Se dejó pendiente que lo indique si usó IA, porque la política del evento lo exige.
+- No se tocó código ni imágenes.
+
+### Archivos tocados
+`README.md`, `README.en.md`, `AI_USAGE.md`, `prompts/readme-docs.md`.
