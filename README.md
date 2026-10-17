@@ -19,14 +19,26 @@
 
 > Plataforma web que le da a cada pequeño caficultor de **Antioquia y Marsella** una **wallet propia** para cobrar directo con **Interledger**: vendiendo en su tienda virtual (con INVIMA) o a la mejor cooperativa que le recomienda un agente (sin INVIMA).
 
-**[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)**
+**[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)** · **[🎬 Video](#-video-de-la-demo)**
 
 > ✅ **Estado actual: funcional sobre la billetera de prueba de Interledger.** El acceso es **real** (cuentas y sesión en Supabase) y los pagos se **ejecutan de verdad** contra la **testnet de Interledger**: mueven **fondos de prueba**, no dinero real. Los mocks (`USE_MOCKS=true`) son un modo demostración **opcional**, apagado cuando la variable falta. Para que una cuenta pague necesita una wallet de prueba y su token cargados en la base (ver [Cuentas y wallets](#-cuentas-y-wallets)). Pendientes y riesgos conocidos: [Limitaciones y roadmap](#-limitaciones-y-roadmap).
 
 ---
 
+<!-- video:inicio -->
+## 🎬 Video de la demo
+
+**[▶️ Ver el video de la demo (Google Vids)](https://docs.google.com/videos/d/1NL6LYNvKHF2JaKDvVcfk6ddmMe2FVQkPInuR-GCjE90/play?usp=sharing)**
+
+*Respaldo mientras el video se publica en YouTube.*
+
+---
+
+<!-- video:fin -->
+
 ## 📑 Tabla de contenidos
 
+- [🎬 Video de la demo](#-video-de-la-demo)
 - [✨ Qué hace](#-qué-hace)
 - [🎯 Funcionalidades](#-funcionalidades)
 - [🧩 Arquitectura](#-arquitectura)

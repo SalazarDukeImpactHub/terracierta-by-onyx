@@ -159,3 +159,14 @@ se esta demmroado mucho alvaro podriamos adelantar algo d eal revision del readm
 
 ### Resultado breve
 - Se corrigieron cuatro afirmaciones desactualizadas en los README y en `AI_USAGE.md`, en una rama local sin publicar. Quedan el enlace del video y la declaración de IA de los compañeros.
+
+---
+
+## Entrada 15 — Enlace al video
+
+```
+AUN NO ME SUBE EL VIDEO DE YOUTUBE PERO COMO RESPALDO Y EL TIEMPO ESTE ES EL LINK DE VIDS DONDE ESTA PARA VER AGREGALO AL REPO CUANDO ESTE YOUTUBE Y NOS DEJE LO AGREGAMOS (enlace de Google Vids)
+```
+
+### Resultado breve
+- Se agregó al README (ES y EN) la sección del video con el enlace de Google Vids como respaldo. Cuando exista el de YouTube se reemplaza.

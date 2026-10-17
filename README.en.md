@@ -19,7 +19,7 @@
 
 > A web platform that gives every small coffee grower in **Antioquia and Marsella** their own **wallet** to get paid directly with **Interledger**: by selling in their own online shop (if they have INVIMA, the Colombian food-safety registration) or to the best cooperative, recommended by an agent (if they don't).
 
-**[🧾 AI usage log](./AI_USAGE.md)** · **[💬 Prompt log](./prompts/)** *(both written in Spanish)* · **[🇪🇸 Español](./README.md)**
+**[🧾 AI usage log](./AI_USAGE.md)** · **[💬 Prompt log](./prompts/)** *(both written in Spanish)* · **[🇪🇸 Español](./README.md)** · **[🎬 Video](#-demo-video)**
 
 > ℹ️ The app's interface and the project documents are in **Spanish**. In this file, button and screen names appear in Spanish with an English gloss.
 
@@ -27,8 +27,20 @@
 
 ---
 
+<!-- video:inicio -->
+## 🎬 Demo video
+
+**[▶️ Watch the demo video (Google Vids)](https://docs.google.com/videos/d/1NL6LYNvKHF2JaKDvVcfk6ddmMe2FVQkPInuR-GCjE90/play?usp=sharing)**
+
+*Backup while the video is being published on YouTube.*
+
+---
+
+<!-- video:fin -->
+
 ## 📑 Table of contents
 
+- [🎬 Demo video](#-demo-video)
 - [✨ What it does](#-what-it-does)
 - [🎯 Features](#-features)
 - [🧩 Architecture](#-architecture)
