@@ -56,6 +56,11 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 ### 8. Identidad visual y páginas (`src/app/globals.css`, `layout.tsx`, `page.tsx`, `src/components/cabecera.tsx`, `pie.tsx`, `src/app/acceso/**`)
 - IA: tokens de Terracierta (brief §5.1 y valores medidos en la landing viva), fuentes, landing, acceso. No se crearon logos ni ilustraciones.
 
+### 8b. Logos de la marca y nombre del protocolo (`public/brand/*`, `src/app/icon.svg`, `src/components/marca.tsx`, `cabecera.tsx`, `pie.tsx`, `src/app/page.tsx`, `src/app/{acceso,registro}/page.tsx`)
+- **Los logos no los hizo la IA**: los entregó Jennifer (seis SVG) y se copiaron **sin modificar** a `public/brand/`. La IA solo decidió dónde ponerlos y escribió el componente.
+- IA: emblema en cabecera, pie, `/acceso` y `/registro`; sello en el encabezado del inicio como SVG **en línea** (para que el texto use las tipografías de la página: un SVG cargado como imagen no puede usar fuentes web y caería a Georgia; geometría y colores son los del archivo original, solo cambia la familia tipográfica); ícono de pestaña; logo horizontal en el README. **Pendiente de revisión humana.**
+- **Cambio de texto pedido por Jennifer:** "Open Payments" → "Interledger" donde nombra el protocolo o el módulo de pagos. **Supuesto declarado:** el nombre del evento "Hackatón Open Payments" se dejó igual (es su nombre oficial). También se cambiaron comentarios del stub `src/payments/index.ts`, que escribió el agente (la implementación real sigue siendo de Yamil).
+
 ### 9. Validación y seguridad (`src/lib/validacion.ts`, `validacion.test.ts`)
 - IA: esquemas zod, wallet address, URLs seguras, 21 pruebas.
 
@@ -67,7 +72,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 
 ## Files with minimal or no AI
 
-- `src/payments/...` — **servicio real de Open Payments: Yamil Andre La Barrera López (pagos).** (Hoy solo existe el stub del punto 3.)
+- `src/payments/...` — **servicio real de Interledger: Yamil Andre La Barrera López (pagos).** (Hoy solo existe el stub del punto 3.)
 - `src/auth/...` — **login y asignación de wallets: Álvaro Henao González (login).** (Hoy solo existe el stub del punto 3.)
 
 > Cuando entreguen, cada uno lista aquí sus rutas exactas y cuánta IA usó, por separado. **Cuánta IA usó cada uno es una declaración suya**: el agente no puede saberla.
@@ -130,6 +135,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 | 2026-10-16 | Sign in y sign up: seguridad (local) | `curl` con cookies fabricadas y con `?siguiente=` malicioso | Cookie con el id de una cuenta **registrada** sin firma, id de otra cuenta sin firma, uuid inventado, firma falsa y firma de otra cuenta: **las cinco → 307 a `/acceso`**. El id plano de una cuenta de ejemplo sigue entrando (compatibilidad declarada). Con sesión, `?siguiente=https://evil.test` y `//evil.test` en `/acceso` y `/registro` se ignoran (va al inicio del rol) y `/tienda` se respeta; sin sesión, el formulario descarta el destino malicioso. `/acceso` y `/registro` responden 200 |
 | 2026-10-16 | Sign in y sign up: builds y modo real (local) | `next build` con y sin `USE_MOCKS`; `next start` sin `USE_MOCKS`; búsqueda en `.next/static` | Ambos builds pasan (incluye `/registro`). En el bundle del navegador no aparece ningún JWT, `service_role`, `SUPABASE_SERVICE` ni la contraseña de demostración. Sin `USE_MOCKS`, `/acceso` y `/registro` responden 200 con el formulario de correo y contraseña **y sin la lista de cuentas de ejemplo**; `/tienda` y `/caficultor` dan 500 porque esa prueba corrió sin las variables de Supabase y el stub de `src/auth` lanza "no implementado" (**no es una regresión**: es lo esperado hasta que llegue el módulo real). **No se comparó el valor exacto de la llave de servicio** (esa shell no la tenía): la búsqueda fue por forma y por nombres |
 | 2026-10-16 | Sign in y sign up en producción (Vercel + Supabase en la nube) | Tras el merge del PR 14 y el redeploy: `curl` sobre `terracierta-by-onyx.vercel.app` y el navegador con el selector de cuentas de ejemplo | `/acceso`, `/registro` y `/tienda` responden 200; la pregunta del INVIMA no está en el HTML de `/registro?rol=comprador`; un uuid inventado y una firma falsa → 307 a `/acceso`; el id plano de una cuenta de ejemplo sigue entrando (compatibilidad declarada); con sesión, `?siguiente=https://evil.test` y `//evil.test` van al inicio del rol; la API de checkout sin sesión da 401. En el navegador, `/acceso` muestra el formulario de correo y contraseña y entrar como la caficultora de ejemplo lleva a "Con INVIMA: vendés en tu tienda". **No se creó ninguna cuenta en producción** (el registro no se probó ahí, para no ensuciar los datos de la nube) y no se escribió una contraseña en el formulario |
+| 2026-10-16 | Logos e "Interledger" (local) | `tsc`, `eslint`, `vitest`; navegador y `curl` sobre el servidor local | Tipos y lint sin errores; 86 unitarias pasan. Los 6 logos y `icon.svg` se sirven con `200 image/svg+xml`; las dos imágenes del emblema cargan (150 px de ancho natural); el texto del sello usa la fuente real de la página ("Cormorant Garamond"). En `/`, `/acceso`, `/registro`, `/tienda` y el pie **ya no queda "Open Payments"** salvo el nombre del evento. **No se verificó en producción** (todavía no está desplegado) **ni la vista móvil** (el sello del inicio se oculta bajo 1024 px por diseño). **Pendiente:** el navegador carga a la vez `favicon.ico` (el de plantilla de Next.js) e `icon.svg`; para que gane el logo hay que borrar `src/app/favicon.ico`, y borrar necesita aprobación |
 
 ### Lo que falló y lo que se corrigió
 
@@ -169,7 +175,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - **En la nube solo se verificó la estructura** (tablas, RLS, políticas, funciones, datos, bucket, permisos de `anon`). Las 35 pruebas de comportamiento de RLS (`test:rls`) y la Ruta A/B completas **no se han corrido contra Supabase en la nube**.
 
 - Edición de un producto ajeno **desde la interfaz** con un segundo caficultor con INVIMA (cubierto solo por el filtro `dueno_id` del código y por RLS en SQL).
-- Ruta B con **perfiles reales** (solo se probó con el login simulado) y con el pago real de Open Payments.
+- Ruta B con **perfiles reales** (solo se probó con el login simulado) y con el pago real de Interledger.
 - Doble pago de una oferta con el módulo **real**: un pago pendiente abandonado no se cancela; con el mock no hay riesgo, con dinero real hay que revisarlo al integrar.
 - Las coordenadas de los municipios del agente: aproximadas, sin contrastar con una fuente.
 - Integración real de pagos y login.
@@ -188,6 +194,7 @@ Ver [`/prompts/`](./prompts/) (un archivo por área):
 - [`supabase-nube.md`](./prompts/supabase-nube.md) — carga y verificación de Supabase en la nube.
 - [`comprador-con-login.md`](./prompts/comprador-con-login.md) — el comprador también inicia sesión y paga con su wallet de perfil.
 - [`sign-in-sign-up.md`](./prompts/sign-in-sign-up.md) — separación entre sign in y sign up, y sus pantallas.
+- [`identidad-logos.md`](./prompts/identidad-logos.md) — logos de la marca y "Interledger" en lugar de "Open Payments".
 
 ## Security
 
