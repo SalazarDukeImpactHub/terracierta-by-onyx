@@ -3,9 +3,9 @@ import { auth } from "@/adapters/auth";
 import { iniciarPagoDePedido } from "@/lib/pagos-service";
 
 /**
- * POST /api/pagos/iniciar — checkout de la tienda. Exige sesión de COMPRADOR: la wallet con la que se paga sale
- * de su perfil. Body: { productoId, cantidad }. El monto y la wallet del caficultor se calculan en el servidor
- * desde la base; lo que mande el navegador solo se usa para elegir producto y cantidad.
+ * POST /api/pagos/iniciar — checkout de la tienda. Exige sesión de comprador o cooperativa: la wallet con
+ * la que se paga sale del perfil. Body: { productoId, cantidad }. El monto y la wallet del caficultor se
+ * calculan en el servidor; el navegador solo elige producto y cantidad.
  */
 export async function POST(request: Request) {
   if (request.method !== "POST" || !request.headers.get("content-type")?.includes("application/json")) {
