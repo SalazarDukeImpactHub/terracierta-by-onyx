@@ -152,3 +152,32 @@ esto necesita mas personalidad estanmuy aburridos los cuadros con info important
 - Los dos cuadros se rediseñaron como sellos (doble marco del logo, cifra cobre en cursiva, rombo, leve inclinación). Textos sin cambios.
 - **Supuesto declarado:** "más personalidad" se resolvió con el lenguaje visual del logo en lugar de pedir más información; si se quiere otra dirección (ilustración, animación, otros textos) hay que indicarla.
 - Archivo: `src/app/page.tsx`.
+
+---
+
+## Entrada 8 — Quitar la barra roja
+
+- **Fecha/hora:** 2026-10-17 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+Jennifer compartió una captura de la barra roja "MODO DEMOSTRACIÓN · LOS PAGOS Y EL ACCESO SON SIMULADOS" sobre la cabecera.
+
+### Prompt (texto íntegro)
+
+```
+esa linea roja ya me molesta la quitamos lso comapñeros estan terminando lo otro
+```
+
+### Resultado breve
+- Se quitó la barra roja del diseño general.
+- **Aviso del agente:** mientras los pagos sigan simulados, quitar todo aviso puede hacer creer que son reales; propuso dejar una línea discreta en el pie.
+- Archivos: `src/app/layout.tsx`, `src/components/pie.tsx`.
+
+### Prompt de seguimiento (texto íntegro)
+
+```
+Quitá también la línea del pie y creá la rama fix/sin-barra-demo con commits y PR.
+```
+
+- Se quitó también la línea del pie: **no queda ningún aviso global de modo demostración**. Hay que decir en la presentación que los pagos son simulados mientras sigan así.
