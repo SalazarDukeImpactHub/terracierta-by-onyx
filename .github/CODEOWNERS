@@ -4,7 +4,7 @@
 # Por defecto, todo lo revisa Jennifer (dirección del proyecto).
 *                       @SalazarDukeImpactHub
 
-# Pagos con Open Payments — Yamil Andre La Barrera López
+# Pagos con Interledger — Yamil Andre La Barrera López
 /src/payments/          @0x15k
 
 # Autenticación (sign in / sign up) y asignación de wallets — Álvaro Henao González

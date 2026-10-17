@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./public/brand/terracierta-by-onyx-horizontal.svg" alt="Terracierta by Onyx" width="420">
+</p>
+
 # ☕ Terracierta by Onyx — Café con nombre propio
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
@@ -5,13 +9,13 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
-![Open Payments](https://img.shields.io/badge/Pagos-Open%20Payments-334132)
+![Interledger](https://img.shields.io/badge/Pagos-Interledger-334132)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
 ![Claude Code](https://img.shields.io/badge/Construido%20con-Claude%20Code-D97757?logo=anthropic&logoColor=white)
 ![Hackatón](https://img.shields.io/badge/Hackat%C3%B3n-Open%20Payments%20Medell%C3%ADn%202026-B0673C)
 ![Hecho en Colombia](https://img.shields.io/badge/Hecho%20en-Colombia%20🇨🇴-FCD116)
 
-> Plataforma web que le da a cada pequeño caficultor de **Antioquia y Marsella** una **wallet propia** para cobrar directo con **Open Payments**: vendiendo en su tienda virtual (con INVIMA) o a la mejor cooperativa que le recomienda un agente (sin INVIMA).
+> Plataforma web que le da a cada pequeño caficultor de **Antioquia y Marsella** una **wallet propia** para cobrar directo con **Interledger**: vendiendo en su tienda virtual (con INVIMA) o a la mejor cooperativa que le recomienda un agente (sin INVIMA).
 
 **[🌿 Conozca Terracierta](https://terracierta-landing.vercel.app/)** · **[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)**
 
@@ -84,7 +88,7 @@ flowchart TB
   L --> Q{¿Tiene INVIMA?}
   Q -->|Sí · Ruta A| T[Tienda y productos]
   T --> C([🛒 Comprador<br/>con cuenta y wallet])
-  C -->|Checkout| P[[Módulo de pagos<br/>Open Payments]]
+  C -->|Checkout| P[[Módulo de pagos<br/>Interledger]]
   Q -->|No · Ruta B| LO[Lote]
   LO --> A[🤖 Agente de match<br/>reglas y top 3]
   A -->|El caficultor elige| O[Oferta]
@@ -102,7 +106,7 @@ flowchart TB
   AD -->|false| PAY[src/payments<br/>módulo de pagos]
   AD -->|false| AUTH[src/auth<br/>módulo de login]
   UI --> DB[(Supabase<br/>Postgres, RLS y Storage)]
-  PAY -. llaves solo en el servidor .-> OP[Open Payments]
+  PAY -. llaves solo en el servidor .-> OP[Interledger]
 ```
 
 **Decisiones clave:**
@@ -137,7 +141,7 @@ flowchart TB
 | Lenguaje | **TypeScript** (strict) | Tipado en todo el proyecto |
 | Base de datos y Storage | **Supabase** (PostgreSQL + RLS) | Datos, seguridad por fila y fotos |
 | Validación | **Zod 4** | Entradas validadas en el servidor |
-| Pagos | **Open Payments** | De wallet a wallet *(módulo real en integración)* |
+| Pagos | **Interledger** | De wallet a wallet *(módulo real en integración)* |
 | Pruebas | **Vitest 4** + SQL | Unitarias, integración y RLS |
 | Hosting y CI/CD | **Vercel** | Preview por rama y deploy en cada push a `main` |
 
@@ -150,7 +154,7 @@ Ruta A:  Comprador ── paga al comprar ──────────▶ Wall
 Ruta B:  Cooperativa ── paga al aceptar la oferta ▶ Wallet del caficultor
 ```
 
-Los seis pasos técnicos de un pago con Open Payments, y qué hace cada uno hoy:
+Los seis pasos técnicos de un pago con Interledger, y qué hace cada uno hoy:
 
 | # | Paso | Módulo real *(compañero de pagos)* | Mock actual |
 |:-:|------|:-----------------------------------:|:-----------:|
@@ -238,7 +242,7 @@ En modo demostración `/acceso` también lista cinco cuentas de ejemplo (caficul
 
 1. Entre como **Caficultor sin INVIMA** (Jairo, Marsella) → **Cargar mi lote** → por ejemplo lavado, Caturra, 500 kg, Marsella.
 2. El agente muestra las 3 cooperativas. **Elija Cumbres Cafeteras**: es la que tiene cuenta demo.
-3. Salga y entre como **Cooperativa (cuenta demo)** → **Aceptar oferta** → **Pagar con Open Payments** → autorice.
+3. Salga y entre como **Cooperativa (cuenta demo)** → **Aceptar oferta** → **Pagar con Interledger** → autorice.
 4. El recibo muestra el pago de la wallet de la cooperativa a la del caficultor; el lote pasa a *Vendido*.
 
 ### ✅ Pruebas
@@ -265,7 +269,7 @@ SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key   # solo servidor, nunca con prefi
 # NEXT_PUBLIC_SITE_URL=http://localhost:3000    # opcional: en Vercel se toma de la URL del despliegue
 ```
 
-Las llaves de Open Payments las define el módulo de pagos y viven **solo en el servidor**.
+Las llaves de Interledger las define el módulo de pagos y viven **solo en el servidor**.
 
 ---
 
@@ -365,7 +369,7 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 Cumplimos la **Política de IA del evento**: todo está registrado mientras se trabaja, no al final.
 
 - **Herramienta:** *Claude Code* con el modelo *Claude Sonnet 5.5* escribió la página completa. **Jennifer Salazar Duke dirige y revisa cada decisión.**
-- **Qué no escribió la IA:** el servicio real de Open Payments y el login real son de los compañeros; sus archivos se listan aparte.
+- **Qué no escribió la IA:** el servicio real de Interledger y el login real son de los compañeros; sus archivos se listan aparte.
 - **Verificación:** cada tarea se corrió y probó, y el resultado real (incluidos los fallos y sus correcciones) está en [`AI_USAGE.md`](./AI_USAGE.md).
 - **Prompts:** el texto íntegro de cada instrucción, por área, en [`prompts/`](./prompts/).
 - **Código previo:** no se copió código de otros proyectos. La tienda de Luli se definió como referencia de patrones y **no se abrió ni se copió nada**.
@@ -376,7 +380,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 
 | Pendiente | Estado |
 |-----------|--------|
-| Pagos reales con Open Payments | Lo entrega el compañero de pagos en `src/payments` |
+| Pagos reales con Interledger | Lo entrega el compañero de pagos en `src/payments` |
 | Autenticación real (sign in / sign up) y asignación de wallets | Lo entrega el compañero de login en `src/auth`: `iniciarSesion` y `registrarse` (la página ya tiene las pantallas `/acceso` y `/registro`) |
 | Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. `tiene_invima` lo **registra el sign up** (solo caficultores; la página solo lo lee) |
 | Rol `comprador` y wallet asignada en el login real | El compañero de login debe admitir `comprador` en `profiles.rol`, asignar wallet al registrarse y respetar `?siguiente=` (cambio de contrato) |
@@ -396,7 +400,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Integrante | Rol |
 |------------|-----|
 | **Jennifer Salazar Duke** | Dirección del proyecto, producto y revisión |
-| **Yamil Andre La Barrera López** | Pagos con Open Payments (`src/payments`) |
+| **Yamil Andre La Barrera López** | Pagos con Interledger (`src/payments`) |
 | **Álvaro Henao González** | Autenticación (sign in / sign up) y asignación de wallets (`src/auth`) |
 | **Caren Briyid Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
 | **Astrid Carolina Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
