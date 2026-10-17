@@ -9,6 +9,12 @@
  * La protección de rutas por rol la arma la página encima de obtenerSesion (src/adapters/auth.ts).
  * La asignación de wallet ocurre en el registro; la página solo MUESTRA la wallet del perfil.
  *
+ * CAMBIO DE CONTRATO (2026-10-16): `rol` ahora es 'caficultor' | 'cooperativa' | 'comprador'. El comprador
+ * también inicia sesión y recibe wallet al registrarse: PAGA con la wallet de su perfil (el checkout ya no la pide).
+ * La página manda a `/acceso?siguiente=<ruta interna>` para pedir la cuenta y volver al producto que se iba a
+ * pagar: el login real debe respetar `siguiente` (src/lib/roles.ts → rutaSegura valida que sea una ruta interna).
+ * La tabla `profiles` también debe admitir rol 'comprador' (migración 20261017000000_comprador.sql).
+ *
  * Para integrar: reemplazar el cuerpo de estas funciones y poner USE_MOCKS=false.
  */
 import type { Perfil, Sesion } from "@/adapters/types";

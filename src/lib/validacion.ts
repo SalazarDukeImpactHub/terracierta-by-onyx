@@ -37,10 +37,10 @@ export const esquemaProducto = z.object({
     .max(100_000_000, "El precio es demasiado alto"),
 });
 
+// La wallet del comprador NO viene en el cuerpo: sale de su perfil (sesión). El navegador solo elige producto y cantidad.
 export const esquemaCheckout = z.object({
   productoId: z.string().uuid("Producto inválido"),
   cantidad: z.coerce.number().int().min(1, "Mínimo 1 unidad").max(20, "Máximo 20 unidades por pedido"),
-  walletComprador: walletAddress,
 });
 
 export const esquemaLote = z.object({

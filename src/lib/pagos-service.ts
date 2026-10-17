@@ -1,5 +1,5 @@
 import { pagos } from "@/adapters/payments";
-import type { EstadoPago, TipoPago } from "@/adapters/types";
+import type { EstadoPago, Perfil, TipoPago } from "@/adapters/types";
 import { SITE_URL } from "@/lib/env";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { esquemaCheckout, primerError } from "@/lib/validacion";
@@ -15,10 +15,25 @@ export type ResultadoInicio =
   | { ok: true; pagoId: string; redirectUrl: string }
   | { ok: false; error: string; status: number };
 
-export async function iniciarPagoDePedido(entrada: unknown): Promise<ResultadoInicio> {
+/**
+ * Checkout de la tienda. Paga el COMPRADOR con sesión: su wallet sale de su perfil (asignada al registrarse),
+ * nunca de lo que mande el navegador. El navegador solo elige producto y cantidad.
+ */
+export async function iniciarPagoDePedido(
+  entrada: unknown,
+  comprador: Pick<Perfil, "id" | "rol" | "wallet_address">,
+): Promise<ResultadoInicio> {
+  if (comprador.rol !== "comprador") {
+    return { ok: false, error: "Para comprar necesitás entrar con una cuenta de comprador", status: 403 };
+  }
+  const walletComprador = comprador.wallet_address;
+  if (!walletComprador) {
+    return { ok: false, error: "Tu cuenta todavía no tiene una wallet asignada", status: 409 };
+  }
+
   const parsed = esquemaCheckout.safeParse(entrada);
   if (!parsed.success) return { ok: false, error: primerError(parsed.error), status: 400 };
-  const { productoId, cantidad, walletComprador } = parsed.data;
+  const { productoId, cantidad } = parsed.data;
 
   const db = clienteAdmin();
   const { data: producto } = await db
@@ -37,13 +52,13 @@ export async function iniciarPagoDePedido(entrada: unknown): Promise<ResultadoIn
     return { ok: false, error: "Esta tienda todavía no puede recibir pagos", status: 409 };
   }
   if (vendedor.wallet_address === walletComprador) {
-    return { ok: false, error: "No podés pagarte a vos mismo: poné tu billetera de comprador", status: 400 };
+    return { ok: false, error: "No podés pagarte a vos mismo", status: 400 };
   }
 
   const monto = producto.precio_cop * cantidad;
   const { data: pedido, error: errPedido } = await db
     .from("pedidos")
-    .insert({ producto_id: producto.id, wallet_comprador: walletComprador, cantidad, monto })
+    .insert({ producto_id: producto.id, comprador_id: comprador.id, wallet_comprador: walletComprador, cantidad, monto })
     .select("id")
     .single();
   if (errPedido || !pedido) return { ok: false, error: "No pudimos crear el pedido", status: 500 };

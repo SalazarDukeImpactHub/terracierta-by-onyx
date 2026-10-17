@@ -42,7 +42,7 @@
 
 Terracierta by Onyx lo resuelve en cuatro pasos:
 
-1. **Ingrese** como caficultor y reciba su **wallet propia**: una dirección de cobro que cualquier billetera puede pagar.
+1. **Ingrese** con su cuenta (caficultor, cooperativa o comprador) y reciba su **wallet propia**: una dirección de cobro y de pago que cualquier billetera puede usar.
 2. **Declare** si tiene INVIMA. De eso depende su camino.
 3. **Ruta A, con INVIMA:** abra su tienda, publique sus productos y reciba el pago de cada comprador directo en su wallet.
 4. **Ruta B, sin INVIMA:** cargue su lote, elija entre las **3 mejores cooperativas** que le recomienda el agente, y la cooperativa le paga por la plataforma.
@@ -52,7 +52,7 @@ Tres entradas, según lo que busca cada quien:
 | Quién | Qué hace | Necesita cuenta |
 |-------|----------|:---------------:|
 | ☕ **Caficultor** | Vende en su tienda o a una cooperativa, y cobra en su wallet | Sí |
-| 🛒 **Comprador** | Compra en la tienda pública y paga desde su billetera | No |
+| 🛒 **Comprador** | Mira el catálogo sin cuenta; para **pagar** entra con su cuenta y paga desde su billetera | Para pagar |
 | 🏢 **Cooperativa** | Recibe ofertas por lotes, las acepta y las paga | Sí |
 
 ---
@@ -62,7 +62,8 @@ Tres entradas, según lo que busca cada quien:
 | Función | Detalle |
 |---------|---------|
 | 🏪 **Tienda pública** | Catálogo y detalle por caficultor, fotos en Supabase Storage. Solo se ve lo publicado |
-| 🛒 **Checkout sin registro** | El comprador solo indica su wallet address. **El monto y la wallet del caficultor los calcula el servidor** |
+| 🛒 **Checkout con cuenta** | Pagar exige iniciar sesión como comprador: **la wallet sale de su perfil**, no de un formulario. El catálogo sigue siendo público. **El monto y la wallet del caficultor los calcula el servidor** |
+| 🧾 **Mis compras** | El comprador ve su wallet, lo que pagó y el recibo de cada compra. Cada cuenta ve solo las suyas |
 | 💸 **Ciclo de pago completo** | Solicitud → autorización → ejecución → finalización, con estados `pendiente / completado / fallido` y ruta de retorno |
 | 🧾 **Recibo** | Pantalla compartida para pedidos y ofertas, con refresco automático mientras el pago está pendiente |
 | 🤖 **Agente de match** | Puntaje **determinista** (sin modelo de lenguaje) sobre precio, cercanía, método, variedad y capacidad. Devuelve el top 3 con el motivo |
@@ -82,7 +83,7 @@ flowchart TB
   F([☕ Caficultor]) --> L[Login<br/>wallet asignada]
   L --> Q{¿Tiene INVIMA?}
   Q -->|Sí · Ruta A| T[Tienda y productos]
-  T --> C([🛒 Comprador<br/>sin registro])
+  T --> C([🛒 Comprador<br/>con cuenta y wallet])
   C -->|Checkout| P[[Módulo de pagos<br/>Open Payments]]
   Q -->|No · Ruta B| LO[Lote]
   LO --> A[🤖 Agente de match<br/>reglas y top 3]
@@ -111,6 +112,9 @@ flowchart TB
 - **La seguridad la garantiza la base.** El RLS aísla a cada caficultor; las tablas de pedidos y pagos no tienen políticas de escritura para usuarios, solo las escribe el servidor.
 - **La plataforma no custodia dinero.** Muestra la cotización, pide el consentimiento y deja el recibo; el dinero va de wallet a wallet.
 - **El agente solo usa reglas.** Es explicable y no necesita llaves. Queda preparado para evolucionar (por ejemplo, que un modelo redacte el "por qué") sin cambiar el puntaje.
+- **Todos tienen cuenta y wallet para pagar o cobrar.** Caficultores, cooperativas **y compradores**. Mirar el café no necesita cuenta; pagar sí, y la wallet con la que se paga sale del perfil (nadie puede pagar con una wallet ajena).
+
+**Contrato con el login** (`src/adapters/types.ts`): `Rol = caficultor | cooperativa | comprador`; `obtenerPerfil()` devuelve la `wallet_address` asignada al registrarse. La página manda a `/acceso?siguiente=<ruta>` para pedir la cuenta y volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
 
 ---
 
@@ -206,15 +210,15 @@ npm run dev:local
 
 > 💡 `dev:local` lee las llaves **locales** de `supabase status` y se las pasa solo al proceso de Next. **No hace falta crear ningún `.env`.**
 
-En `/acceso` hay tres perfiles de ejemplo: caficultora con INVIMA, caficultor sin INVIMA y cooperativa demo.
+En `/acceso` hay cinco perfiles de ejemplo: caficultora con INVIMA, caficultor sin INVIMA, cooperativa demo y dos compradores (uno cuyo pago siempre falla, para mostrar ese estado).
 
 ### 🧪 Probar la Ruta A (con INVIMA)
 
-1. **Tienda** → tienda de Marta Ospina → un producto → ponga una wallet de comprador (por ejemplo `$wallet.example.test/yo`) → **Pagar**.
+1. **Tienda** → tienda de Marta Ospina → un producto → **Entrar para pagar** → elija **Comprador (cuenta demo)**. Vuelve al mismo producto, ya con su wallet: **Pagar**.
 2. En la billetera simulada, **Autorizar** (o **Rechazar**).
-3. La pantalla de retorno muestra los cuatro pasos y el recibo.
+3. La pantalla de retorno muestra los cuatro pasos y el recibo; en **Mis compras** (`/comprador`) queda la compra.
 4. Entre como Marta → **Pedidos y pagos recibidos**.
-5. Para ver un pago fallido, use una wallet de comprador que contenga `fail` (por ejemplo `$wallet.example.test/fail-yo`).
+5. Para ver un pago fallido, entre como **Comprador cuyo pago falla (demo)**: su wallet contiene `fail` y el mock hace que su pago termine en "No se pudo completar".
 
 ### 🧪 Probar la Ruta B (sin INVIMA)
 
@@ -233,7 +237,7 @@ npm run test:rls    # pruebas de RLS contra la base local (recrea la base antes 
 npm run db:reset    # recrea la base desde las migraciones y el seed
 ```
 
-Hoy: **53 pruebas** (40 unitarias y 13 de integración) y **35 verificaciones de RLS**.
+Hoy: **78 pruebas** (57 unitarias y 21 de integración) y **46 verificaciones de RLS**.
 
 ### 🔑 Variables de entorno
 
@@ -264,15 +268,16 @@ Vercel no puede llegar al Supabase de su computador: hace falta un proyecto de *
    ```
    > 💡 Si la CLI está iniciada con **otra cuenta** de Supabase y no ve su proyecto, no hace falta cambiar de cuenta: en el *SQL Editor* del dashboard pegue las 4 migraciones de `supabase/migrations/` (en orden) y luego `supabase/seed.sql`. Cada migración **nueva** se aplica igual, en orden, en el proyecto de la nube.
 
-   Para **comprobar** que quedó bien, ejecute `supabase/tests/cloud-verify.sql` en el *SQL Editor*: devuelve 12 filas con el valor esperado entre paréntesis (7 tablas con RLS, 10 políticas, 2 funciones, 3 perfiles, 4 cooperativas, 3 productos, el bucket de fotos y los permisos de `anon`).
+   Para **comprobar** que quedó bien, ejecute `supabase/tests/cloud-verify.sql` en el *SQL Editor*: devuelve 15 filas con el valor esperado entre paréntesis (7 tablas con RLS, 11 políticas, 2 funciones, 5 perfiles, 4 cooperativas, 3 productos, el rol `comprador`, el bucket de fotos y los permisos de `anon`).
 
-   Y para comprobar el **comportamiento** del RLS (no solo que exista), ejecute `supabase/tests/rls.sql` en el *SQL Editor* con el seed limpio: 35 verificaciones con cuatro actores que terminan en `ROLLBACK`, así que no dejan datos. Si todo está bien, devuelve la fila `RLS: todas las pruebas pasaron`.
+   Y para comprobar el **comportamiento** del RLS (no solo que exista), ejecute `supabase/tests/rls.sql` en el *SQL Editor* con el seed limpio: 46 verificaciones con seis actores que terminan en `ROLLBACK`, así que no dejan datos. Si todo está bien, devuelve la fila `RLS: todas las pruebas pasaron`.
 
    **Scripts para la nube** (se generan desde las migraciones y el seed, así nunca quedan desactualizados; salen en `supabase/.temp/`, ignorada por git):
 
    | Comando | Qué genera |
    |---------|------------|
    | `npm run cloud:setup` | Migraciones + seed en una transacción, para un proyecto **nuevo y vacío** (una sola vez) |
+   | `npm run cloud:update -- <migración>` | **Una migración nueva** (y sus datos de ejemplo) para un proyecto que ya tiene las anteriores. Ej.: `npm run cloud:update -- 20261017000000_comprador` |
    | `npm run cloud:reset` | Reinicia la **demo**: borra los datos de las 7 tablas y recarga el seed. No toca el esquema ni las fotos de Storage |
 3. **Vercel:** *Add New → Project* → importe `SalazarDukeImpactHub/terracierta-by-onyx` (framework Next.js, carpeta raíz).
 4. **Variables** (*Settings → Environment Variables*, en Production **y** Preview):
@@ -298,13 +303,14 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 
 | Carpeta / archivo | Qué contiene |
 |-------------------|--------------|
-| `src/app/` | Rutas: landing, acceso, caficultor, tienda, cooperativa, pago y API de pagos |
+| `src/app/` | Rutas: landing, acceso, caficultor, tienda, comprador, cooperativa, pago y API de pagos |
 | `src/components/` | Cabecera, pie, formularios, recibo, fotos de producto |
 | `src/adapters/` | **Contratos** + mocks + selector `USE_MOCKS`. La interfaz solo habla con esta capa |
 | `src/payments/` | ⛔ **Stub** del módulo de pagos *(compañero de pagos)* |
 | `src/auth/` | ⛔ **Stub** del módulo de login y wallets *(compañero de login)* |
 | `src/lib/match.ts` | Agente de match: puntaje, desglose y motivo |
 | `src/lib/ruta-b.ts` | Lote, elección de cooperativa, aceptar oferta |
+| `src/lib/roles.ts` | Home de cada rol y `rutaSegura` (a dónde volver tras entrar, solo rutas internas) |
 | `src/lib/pagos-service.ts` | Crear el pago desde datos de la base, sincronizar estado, pedidos y ofertas |
 | `src/lib/validacion.ts` | Esquemas Zod, wallet address, URLs seguras |
 | `supabase/` | Migraciones (tablas, RLS, vista pública, Storage), `seed.sql` y `tests/rls.sql` |
@@ -318,14 +324,16 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas implementadas y verificadas:
 
 - **Monto y wallet receptora desde el servidor.** Una petición manipulada con `monto` y `walletReceptor` falsos salió con el precio de la base y la wallet real.
-- **Row Level Security en las 7 tablas.** Cada caficultor ve y edita solo lo suyo; el catálogo público lee solo `publicado = true`. **35 verificaciones en SQL** con cuatro actores distintos.
+- **Row Level Security en las 7 tablas.** Cada caficultor ve y edita solo lo suyo; el catálogo público lee solo `publicado = true`. **46 verificaciones en SQL** con seis actores distintos (sin sesión, caficultora, caficultor sin INVIMA, cooperativa y dos compradores).
 - **Escrituras sensibles solo desde el servidor.** Pedidos, pagos y ofertas no tienen políticas de escritura para usuarios.
 - **Vista pública sin wallets.** La tienda se arma con una vista que expone solo `id`, `nombre` y `municipio`.
 - **Sin INVIMA no se abre tienda**, también a nivel de base de datos.
 - **Validación en el servidor.** Zod en cada entrada; wallet address `https://` o `$`; precios y cantidades acotados.
 - **Datos escapados.** El HTML escrito en nombres y descripciones se muestra como texto; las URLs de foto solo aceptan `http(s)`.
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
-- **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro.
+- **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro; un comprador solo ve sus compras.
+- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores y cooperativas; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora.
+- **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan.
 - **Llaves solo en el servidor.** La llave de servicio no aparece en el bundle del navegador (verificado) ni en el repo.
 - **Sin custodia.** La plataforma nunca toca el dinero.
 
@@ -352,6 +360,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Pagos reales con Open Payments | Lo entrega el compañero de pagos en `src/payments` |
 | Login real y asignación de wallets | Lo entrega el compañero de login en `src/auth` |
 | Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. Falta acordar quién escribe `tiene_invima` |
+| Rol `comprador` y wallet asignada en el login real | El compañero de login debe admitir `comprador` en `profiles.rol`, asignar wallet al registrarse y respetar `?siguiente=` (cambio de contrato) |
 | Moneda y unidades menores del monto | Por confirmar con el módulo de pagos (hoy: COP entero) |
 | Cooperativas sin cuenta | Solo la **cuenta demo** puede aceptar y pagar ofertas; las demás son precargadas |
 | Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar al integrar |

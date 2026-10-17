@@ -13,10 +13,11 @@ begin;
 reset role;
 insert into public.pagos (id, tipo, referencia_id, monto, wallet_pagador, wallet_receptor)
   values ('test_pago_1', 'pedido', 'cccccccc-0001-4000-8000-000000000001', 38000,
-          'https://wallet.example.test/comprador', 'https://wallet.example.test/marta-ospina');
-insert into public.pedidos (id, producto_id, wallet_comprador, cantidad, monto, pago_id)
+          'https://wallet.example.test/andres-giraldo', 'https://wallet.example.test/marta-ospina');
+-- El pedido lo hizo el comprador Andrés (cuenta con wallet propia)
+insert into public.pedidos (id, producto_id, comprador_id, wallet_comprador, cantidad, monto, pago_id)
   values ('cccccccc-0001-4000-8000-000000000001', 'bbbbbbbb-0001-4000-8000-000000000001',
-          'https://wallet.example.test/comprador', 1, 38000, 'test_pago_1');
+          '44444444-4444-4444-8444-444444444444', 'https://wallet.example.test/andres-giraldo', 1, 38000, 'test_pago_1');
 insert into public.lotes (id, caficultor_id, metodo, variedad, kg, municipio)
   values ('dddddddd-0001-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'lavado', 'Castillo', 300, 'Andes');
 insert into public.ofertas (id, lote_id, cooperativa_id, precio_kg, total)
@@ -163,6 +164,48 @@ begin
   if filas <> 0 then raise exception 'FALLÓ: Cumbres pudo editar otra cooperativa'; end if;
   raise notice 'OK    [Cumbres NO edita cooperativas ajenas]';
 end $$;
+
+-- ======================= ANDRÉS (comprador, hizo el pedido de prueba) =======================
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"44444444-4444-4444-8444-444444444444","role":"authenticated"}', true);
+
+select pg_temp.esperar('Andrés ve su compra', pg_temp.cuenta('public.pedidos'), 1);
+select pg_temp.esperar('Andrés ve el pago que hizo', pg_temp.cuenta('public.pagos'), 1);
+select pg_temp.esperar('Andrés ve solo su perfil', pg_temp.cuenta('public.profiles'), 1);
+select pg_temp.esperar('Andrés no ve lotes', pg_temp.cuenta('public.lotes'), 0);
+select pg_temp.esperar('Andrés no ve ofertas', pg_temp.cuenta('public.ofertas'), 0);
+select pg_temp.esperar('Andrés ve el catálogo publicado (no el borrador)', pg_temp.cuenta('public.productos'), 2);
+
+do $$
+declare filas int;
+begin
+  begin
+    insert into public.pedidos (producto_id, comprador_id, wallet_comprador, monto)
+      values ('bbbbbbbb-0001-4000-8000-000000000001', '44444444-4444-4444-8444-444444444444', 'https://wallet.example.test/andres-giraldo', 1000);
+    raise exception 'FALLÓ: un comprador pudo insertar un pedido directo (debe hacerlo solo el servidor)';
+  exception when insufficient_privilege then raise notice 'OK    [el comprador NO escribe pedidos directo]';
+  end;
+
+  update public.pedidos set monto = 1 where id = 'cccccccc-0001-4000-8000-000000000001';
+  get diagnostics filas = row_count;
+  if filas <> 0 then raise exception 'FALLÓ: un comprador pudo modificar un pedido'; end if;
+  raise notice 'OK    [el comprador NO modifica pedidos]';
+
+  begin
+    insert into public.productos (dueno_id, nombre, precio_cop) values ('44444444-4444-4444-8444-444444444444', 'Un comprador no vende', 5000);
+    raise exception 'FALLÓ: un comprador pudo crear un producto';
+  exception when insufficient_privilege then raise notice 'OK    [el comprador NO crea productos]';
+  end;
+end $$;
+
+-- ======================= SOFÍA (otra compradora, sin compras) =======================
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"55555555-5555-4555-8555-555555555555","role":"authenticated"}', true);
+
+select pg_temp.esperar('Sofía no ve la compra de Andrés', pg_temp.cuenta('public.pedidos'), 0);
+select pg_temp.esperar('Sofía no ve el pago de Andrés', pg_temp.cuenta('public.pagos'), 0);
 
 reset role;
 rollback;

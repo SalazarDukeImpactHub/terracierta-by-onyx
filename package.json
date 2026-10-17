@@ -8,6 +8,7 @@
     "db:reset": "supabase db reset",
     "test:db": "node scripts/test-db.mjs",
     "cloud:setup": "node scripts/cloud-sql.mjs setup",
+    "cloud:update": "node scripts/cloud-sql.mjs update",
     "cloud:reset": "node scripts/cloud-sql.mjs reset",
     "test:rls": "supabase db reset && docker exec -i supabase_db_terracierta-by-onyx psql -U postgres -v ON_ERROR_STOP=1 -f - < supabase/tests/rls.sql",
     "build": "next build",

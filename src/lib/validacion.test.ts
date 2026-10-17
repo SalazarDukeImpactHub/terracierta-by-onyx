@@ -45,7 +45,12 @@ describe("esquemaProducto", () => {
 });
 
 describe("esquemaCheckout", () => {
-  const base = { productoId: "bbbbbbbb-0001-4000-8000-000000000001", cantidad: 2, walletComprador: "https://w.example.test/yo" };
+  const base = { productoId: "bbbbbbbb-0001-4000-8000-000000000001", cantidad: 2 };
+  it("ignora una wallet que mande el navegador: el pago sale con la wallet del perfil", () => {
+    const r = esquemaCheckout.parse({ ...base, walletComprador: "https://evil.test/yo", monto: 1 });
+    expect(r).toEqual({ productoId: base.productoId, cantidad: 2 });
+    expect("walletComprador" in r).toBe(false);
+  });
   it("acepta un checkout válido", () => {
     expect(esquemaCheckout.safeParse(base).success).toBe(true);
   });

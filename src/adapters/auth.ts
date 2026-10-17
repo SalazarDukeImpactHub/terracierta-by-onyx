@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { USE_MOCKS } from "@/lib/env";
+import { rutaDeRol } from "@/lib/roles";
 import * as mock from "@/adapters/mocks/auth";
 import type { AuthAdapter, Perfil, Rol } from "@/adapters/types";
 
@@ -28,7 +29,7 @@ export const auth: AuthAdapter = {
 export async function requerirRol(rol: Rol): Promise<Perfil> {
   const sesion = await auth.obtenerSesion();
   if (!sesion) redirect("/acceso");
-  if (sesion.rol !== rol) redirect(sesion.rol === "cooperativa" ? "/cooperativa" : "/caficultor");
+  if (sesion.rol !== rol) redirect(rutaDeRol(sesion.rol));
   const perfil = await auth.obtenerPerfil();
   if (!perfil) redirect("/acceso");
   return perfil;
