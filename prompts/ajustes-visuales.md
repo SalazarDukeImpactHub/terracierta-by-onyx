@@ -45,3 +45,25 @@ Opción A: café tostado para fondos oscuros y botones en cobre. Aplicalo en una
 - Fondos oscuros (pie, encabezado del inicio, recuadros) en café tostado `#2b2118` / `#3d2e22` y botones en cobre; se eliminó `btn-bosque`. El verde queda en los logos y en detalles de éxito.
 - **Supuesto declarado:** los dos tonos de café los eligió el agente; cambiarlos es editar dos variables en `src/app/globals.css`.
 - Archivos: `src/app/globals.css`, `pie.tsx`, `src/app/page.tsx`, y los formularios y páginas que usaban `btn-bosque` o recuadros verdes.
+
+---
+
+## Entrada 3 — Sin sello y mejor alineación
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+Jennifer compartió dos capturas: el pie (grano con el nombre y el lema) y el encabezado del inicio con el sello a la derecha sobre la foto.
+
+### Prompt (texto íntegro)
+
+```
+se ve raro no se ve alineado mejoremoslo  y a la foto quitemosle este logo  para que se vea toda al foto
+```
+
+### Resultado breve
+- **Sello fuera del inicio:** la foto se ve completa; el velo oscuro ahora solo cubre el lado del texto. Se eliminó el componente `Sello` porque ya no lo usa nadie (los archivos del sello siguen en `public/brand/`).
+- **Pie alineado:** el grano queda centrado con "TERRACIERTA / BY ONYX", como en el logo; el lema va debajo, alineado al borde del grano, y el texto de la derecha comparte la base.
+- **Supuesto declarado:** "no se ve alineado" se entendió como el pie (grano desalineado con el texto de su bloque) y el sello flotando a un costado en el inicio; si era otra cosa, hay que indicarlo.
+- Archivos: `src/app/page.tsx`, `src/components/pie.tsx`, `src/components/marca.tsx`.
