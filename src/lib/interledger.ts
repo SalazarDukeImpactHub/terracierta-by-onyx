@@ -1,4 +1,4 @@
-import { clienteAdmin } from "@/lib/supabase/admin";
+import { borrarCookieIlp, leerCookieIlp, urlLoginInterledger } from "@/lib/login-interledger";
 
 const ORIGEN = "https://wallet.interledger-test.dev";
 
@@ -170,10 +170,6 @@ function api(): string {
   return process.env.INTERLEDGER_API_URL || "https://api-wallet.interledger-test.dev";
 }
 
-function cookieDe(token: string): string {
-  return token.includes("=") ? token : `testnet.cookie=${token}`;
-}
-
 export function saldo(balance: string, escala: number, moneda: string): string {
   const valor = Number(balance) / 10 ** escala;
   try {
@@ -192,26 +188,6 @@ export function fecha(iso: string | null | undefined): string {
     timeStyle: "short",
     timeZone: "America/Bogota",
   }).format(fechaValor);
-}
-
-async function entrarBilletera(): Promise<string | null> {
-  const email = process.env.INTERLEDGER_EMAIL;
-  const password = process.env.INTERLEDGER_PASSWORD;
-  if (!email || !password) return null;
-  const respuesta = await fetch(`${api()}/login`, {
-    method: "POST",
-    cache: "no-store",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      origin: ORIGEN,
-      referer: `${ORIGEN}/`,
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!respuesta.ok) return null;
-  const cookie = respuesta.headers.getSetCookie?.().find((c) => c.startsWith("testnet.cookie="));
-  return cookie?.split(";")[0] ?? null;
 }
 
 async function pedir(cookie: string, ruta: string, init?: RequestInit): Promise<{ status: number; cuerpo: unknown }> {
@@ -237,6 +213,27 @@ async function pedir(cookie: string, ruta: string, init?: RequestInit): Promise<
 function resultado<T>(cuerpo: unknown): T | null {
   if (!cuerpo || typeof cuerpo !== "object" || !("result" in cuerpo)) return null;
   return (cuerpo as { result: T }).result;
+}
+
+/** Abre sesión en la billetera solo para ejecutar un pago ya aceptado. No se guarda en la base. */
+export async function sesionDeBilletera(): Promise<string> {
+  const email = process.env.INTERLEDGER_EMAIL;
+  const password = process.env.INTERLEDGER_PASSWORD;
+  if (!email || !password) throw new PagoInterledgerError("No se pudo entrar a la billetera para completar el pago.");
+  const login = await fetch(`${api()}/login`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      origin: ORIGEN,
+      referer: `${ORIGEN}/`,
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  const cookie = login.headers.getSetCookie?.().find((c) => c.startsWith("testnet.cookie="))?.split(";")[0];
+  if (!login.ok || !cookie) throw new PagoInterledgerError("No se pudo entrar a la billetera para completar el pago.");
+  return cookie;
 }
 
 function mapearCuenta(cuenta: CuentaApi): CuentaBilletera {
@@ -424,6 +421,16 @@ export class PagoInterledgerError extends Error {
   }
 }
 
+/** No hay sesión de la billetera. La app manda al login y, al entrar, a la confirmación de este cobro. */
+export class LoginInterledgerError extends PagoInterledgerError {
+  readonly login: string;
+  constructor(_volver: string) {
+    super("Hay que entrar a Interledger para pagar.");
+    this.name = "LoginInterledgerError";
+    this.login = urlLoginInterledger("/pago/decidir");
+  }
+}
+
 interface DireccionPago {
   id: string;
   url: string;
@@ -443,13 +450,14 @@ function mensajeApi(cuerpo: unknown, respaldo: string): string {
   return respaldo;
 }
 
-async function cookieValida(cookie: string | null): Promise<string | null> {
+async function cookieValida(volver: string): Promise<string> {
+  const cookie = await leerCookieIlp();
   if (cookie) {
-    const prueba = await pedir(cookieDe(cookie), "/wallet-addresses");
-    if (prueba.status === 200) return cookieDe(cookie);
+    const prueba = await pedir(cookie, "/wallet-addresses");
+    if (prueba.status === 200) return cookie;
+    await borrarCookieIlp();
   }
-  const nueva = await entrarBilletera();
-  return nueva ? cookieDe(nueva) : null;
+  throw new LoginInterledgerError(volver);
 }
 
 /**
@@ -463,28 +471,21 @@ export async function pagarEntreBilleteras(params: {
   walletReceptor: string;
   monto: number;
   descripcion: string;
+  volver: string;
 }): Promise<{ pagoId: string; descripcion: string; estado: "pendiente" | "completado" | "fallido" }> {
   const origen = normalizarWallet(params.walletPagador);
   const destino = normalizarWallet(params.walletReceptor);
   if (origen === destino) throw new PagoInterledgerError("El pago tiene que salir de una billetera y llegar a otra.");
 
-  const { data: perfiles } = await clienteAdmin().from("profiles").select("id").eq("wallet_address", origen);
-  const ids = (perfiles ?? []).map((p) => p.id);
-  let token: string | null = null;
-  if (ids.length) {
-    const { data: usuarios } = await clienteAdmin().from("usuarios").select("id, token").in("id", ids);
-    token = usuarios?.find((u) => u.token)?.token ?? null;
-  }
-
-  const cookie = await cookieValida(token);
-  if (!cookie) throw new PagoInterledgerError("No se pudo entrar a la billetera que envía el pago.");
-  if (ids.length) await clienteAdmin().from("usuarios").update({ token: cookie }).in("id", ids);
+  const cookie = await cookieValida(params.volver);
 
   const direcciones = resultado<DireccionPago[]>((await pedir(cookie, "/wallet-addresses")).cuerpo) ?? [];
-  const emisora = direcciones.find((d) => normalizarWallet(d.url) === origen);
-  if (!emisora) throw new PagoInterledgerError("La billetera de origen no está en esta cuenta de Interledger.");
+  const propias = direcciones.filter((d) => normalizarWallet(d.url) !== destino);
+  const emisora = propias.find((d) => normalizarWallet(d.url) === origen) ?? propias[0];
+  if (!emisora) throw new PagoInterledgerError("La cuenta con la que entraste no tiene otra billetera para pagarle a este vendedor.");
+  const origenReal = normalizarWallet(emisora.url);
 
-  const documento = await fetch(origen, { headers: { accept: "application/json" }, cache: "no-store" });
+  const documento = await fetch(origenReal, { headers: { accept: "application/json" }, cache: "no-store" });
   const publico = documento.ok ? ((await documento.json()) as { assetCode?: string; assetScale?: number }) : {};
   const moneda = publico.assetCode || "COP";
   const escala = typeof publico.assetScale === "number" ? publico.assetScale : 2;
@@ -552,15 +553,11 @@ export async function pagarEntreBilleteras(params: {
 }
 
 /** Confirma en los movimientos si el envío ya se completó. */
-export async function estadoPagoInterledger(pagoId: string, descripcion: string, walletPagador: string): Promise<"pendiente" | "completado" | "fallido"> {
-  const origen = normalizarWallet(walletPagador);
-  const { data: perfiles } = await clienteAdmin().from("profiles").select("id").eq("wallet_address", origen);
-  const ids = (perfiles ?? []).map((p) => p.id);
-  const { data: usuarios } = ids.length
-    ? await clienteAdmin().from("usuarios").select("token").in("id", ids)
-    : { data: [] as { token: string | null }[] };
-  const cookie = await cookieValida(usuarios?.find((u) => u.token)?.token ?? null);
+export async function estadoPagoInterledger(pagoId: string, descripcion: string, _walletPagador: string): Promise<"pendiente" | "completado" | "fallido"> {
+  const cookie = await leerCookieIlp();
   if (!cookie) return "pendiente";
+  const prueba = await pedir(cookie, "/wallet-addresses");
+  if (prueba.status !== 200) return "pendiente";
 
   const movimientos = await pedir(cookie, "/transactions?page=0&pageSize=20&orderByDate=DESC");
   const filas = resultado<{ results?: { id: string; description?: string | null; status?: string; paymentId?: string }[] }>(movimientos.cuerpo)?.results ?? [];
@@ -574,18 +571,12 @@ export async function estadoPagoInterledger(pagoId: string, descripcion: string,
   return "pendiente";
 }
 
-/** Lee la billetera de Interledger con la cookie de usuarios.token. Si venció, entra de nuevo y la actualiza. */
-export async function infoInterledger(usuarioId: string, token: string | null): Promise<InfoBilletera | null> {
-  if (!token && !process.env.INTERLEDGER_EMAIL) return null;
+/** Lee la billetera con la cookie de esta visita. Si no hay, devuelve null para redirigir al login. */
+export async function infoInterledger(): Promise<InfoBilletera | null> {
+  const cookie = await leerCookieIlp();
+  if (!cookie) return null;
   try {
-    if (token) {
-      const info = await leerTodo(cookieDe(token));
-      if (info) return info;
-    }
-    const nueva = await entrarBilletera();
-    if (!nueva) return { ...vacia(), error: "No se pudo entrar a la billetera de Interledger." };
-    await clienteAdmin().from("usuarios").update({ token: nueva }).eq("id", usuarioId);
-    return (await leerTodo(nueva)) ?? { ...vacia(), error: "No se pudo leer la billetera de Interledger." };
+    return (await leerTodo(cookie)) ?? { ...vacia(), error: "No se pudo leer la billetera de Interledger." };
   } catch {
     return { ...vacia(), error: "No se pudo leer la billetera de Interledger." };
   }

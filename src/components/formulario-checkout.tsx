@@ -13,7 +13,7 @@ export type SesionCheckout =
 
 /**
  * Checkout. Pagar exige tener cuenta: la billetera con la que se paga sale del perfil del comprador (asignada al
- * registrarse), no de un campo de texto. El catálogo sigue siendo público; la cuenta se pide solo acá.
+ * registrarse), no de un campo de texto. El catálogo sigue siendo público; la cuenta se pide solo aquí.
  * El total que se muestra es informativo: el servidor recalcula el monto desde la base.
  */
 export function FormularioCheckout({
@@ -36,9 +36,9 @@ export function FormularioCheckout({
   if (sesion.tipo === "anonimo") {
     return (
       <div className="grid gap-4 border border-linea bg-crema-2 p-5">
-        <p className="font-titulo text-2xl">Para pagar, entrá con tu cuenta</p>
+        <p className="font-titulo text-2xl">Para pagar, entra con tu cuenta</p>
         <p className="text-apagado">
-          El pago sale de tu billetera y llega a la del caficultor. Podés entrar como comprador o como cooperativa.
+          El pago sale de tu billetera y llega a la del caficultor. Puedes entrar como comprador o como cooperativa.
           Mirar el café no necesita cuenta.
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -58,7 +58,7 @@ export function FormularioCheckout({
       <div className="grid gap-4 border border-linea bg-crema-2 p-5">
         <p className="font-titulo text-2xl">Entraste como {sesion.nombre}</p>
         <p className="text-apagado">
-          Tu cuenta es de <strong>caficultor</strong>. Para comprar este café entrá como comprador o como cooperativa.
+          Tu cuenta es de <strong>caficultor</strong>. Para comprar este café entra como comprador o como cooperativa.
         </p>
         <form action={cambiarDeCuenta}>
           <input type="hidden" name="siguiente" value={volverA} />
@@ -85,14 +85,17 @@ export function FormularioCheckout({
         return;
       }
       const datos = (await respuesta.json()) as { redirectUrl?: string; error?: string };
-      if (!respuesta.ok || !datos.redirectUrl) {
-        setError(datos.error ?? "No pudimos iniciar el pago");
-        setEnviando(false);
+      if (datos.redirectUrl) {
+        if (datos.redirectUrl.startsWith("https://wallet.interledger-test.dev/")) {
+          sessionStorage.setItem("tc_vuelta_pago", "1");
+        }
+        window.location.assign(datos.redirectUrl);
         return;
       }
-      window.location.assign(datos.redirectUrl);
+      setError(datos.error ?? "No pudimos iniciar el pago");
+      setEnviando(false);
     } catch {
-      setError("No pudimos conectar. Revisá tu internet e intentá de nuevo.");
+      setError("No pudimos conectar. Revisa tu internet e intenta de nuevo.");
       setEnviando(false);
     }
   }
@@ -115,7 +118,7 @@ export function FormularioCheckout({
       </div>
 
       <div className="border border-linea bg-crema-2 p-4">
-        <p className="etiqueta">Pagás desde tu wallet · {sesion.nombre}</p>
+        <p className="etiqueta">Pagas desde tu wallet · {sesion.nombre}</p>
         {sesion.wallet ? (
           <p className="mt-1 break-all font-medium">{sesion.wallet}</p>
         ) : (
@@ -136,6 +139,7 @@ export function FormularioCheckout({
         </p>
       )}
 
+      <p className="text-sm text-apagado">Primero se abre el login de Interledger. Con atrás del navegador eliges si aceptas o rechazas.</p>
       <button type="submit" className="btn self-start" disabled={enviando || !sesion.wallet}>
         {enviando ? "Iniciando pago…" : "Pagar con Interledger"}
       </button>

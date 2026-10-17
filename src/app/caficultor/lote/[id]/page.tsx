@@ -88,7 +88,7 @@ export default async function CooperativasParaMiLote({
           <div className="rombo my-10" aria-hidden="true">
             ◆
           </div>
-          <h2 className="text-3xl">Las 3 cooperativas que mejor te calzan</h2>
+          <h2 className="text-3xl">Las 3 cooperativas que mejor te encajan</h2>
           <p className="mt-2 max-w-2xl text-apagado">
             El análisis mira precio, cercanía, método, variedad y capacidad. La primera es la mejor opción para este lote.
           </p>

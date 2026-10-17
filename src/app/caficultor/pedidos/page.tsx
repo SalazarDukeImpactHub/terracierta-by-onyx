@@ -95,7 +95,7 @@ export default async function PedidosYPagos() {
       <h2 className="mt-10 text-3xl">Historial</h2>
       <div className="mt-4">
         {ventas.length === 0 ? (
-          <p className="border border-linea bg-[#fbf8f1] p-6 text-apagado">Cuando alguien compre en tu tienda, el pedido aparece acá.</p>
+          <p className="border border-linea bg-[#fbf8f1] p-6 text-apagado">Cuando alguien compre en tu tienda, el pedido aparece aquí.</p>
         ) : (
           <ListaVentas ventas={ventas} />
         )}

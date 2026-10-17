@@ -65,8 +65,8 @@ async function ResumenTienda({ perfil }: { perfil: Perfil }) {
               <h1 className="mt-1 text-3xl">{ficha?.tienda_nombre || "Todavía sin nombre"}</h1>
               <p className="mt-2 text-sm text-apagado">
                 {tiendaLista
-                  ? "El nombre y el logo ya están listos. Publicá productos para que te compren."
-                  : "Definí el nombre y el logo para poder publicar."}
+                  ? "El nombre y el logo ya están listos. Publica productos para que te compren."
+                  : "Define el nombre y el logo para poder publicar."}
               </p>
             </div>
             <FotoProducto
@@ -93,9 +93,9 @@ async function ResumenTienda({ perfil }: { perfil: Perfil }) {
           {perfil.wallet_address ? (
             <p className="mt-3 break-all text-sm">{perfil.wallet_address}</p>
           ) : (
-            <p className="mt-3 text-sm text-apagado">Todavía no tenés una billetera asignada.</p>
+            <p className="mt-3 text-sm text-apagado">Todavía no tienes una billetera asignada.</p>
           )}
-          <p className="mt-3 text-sm text-apagado">El dinero de cada venta entra directo acá. Terracierta no lo guarda.</p>
+          <p className="mt-3 text-sm text-apagado">El dinero de cada venta entra directo aquí. Terracierta no lo guarda.</p>
         </section>
       </div>
 
@@ -108,7 +108,7 @@ async function ResumenTienda({ perfil }: { perfil: Perfil }) {
         </div>
         {(pedidos ?? []).length === 0 ? (
           <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">
-            Cuando alguien compre en tu tienda, la venta aparece acá con el nombre del cliente.
+            Cuando alguien compre en tu tienda, la venta aparece aquí con el nombre del cliente.
           </p>
         ) : (
           <ul className="mt-4 divide-y divide-linea border border-linea bg-[#fbf8f1]">
@@ -152,9 +152,9 @@ async function ResumenLote({ perfil }: { perfil: Perfil }) {
     <div className="grid gap-8">
       <section className="border border-linea bg-[#fbf8f1] p-6">
         <p className="etiqueta">Tu camino</p>
-        <h1 className="mt-1 text-3xl">Vendé el lote a una cooperativa</h1>
+        <h1 className="mt-1 text-3xl">Vende el lote a una cooperativa</h1>
         <p className="mt-2 max-w-2xl text-apagado">
-          Cargá el café que tenés. Te mostramos las 3 cooperativas que mejor calzan, cuál es la mejor y por qué.
+          Carga el café que tienes. Te mostramos las 3 cooperativas que mejor encajan, cuál es la mejor y por qué.
         </p>
         <Link href="/caficultor/lote" className="btn mt-6">
           Cargar un lote
@@ -164,7 +164,7 @@ async function ResumenLote({ perfil }: { perfil: Perfil }) {
       <section>
         <h2 className="text-3xl">Lotes recientes</h2>
         {(lotes ?? []).length === 0 ? (
-          <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">Todavía no cargaste ningún lote.</p>
+          <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">Todavía no has cargado ningún lote.</p>
         ) : (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {(lotes ?? []).map((l) => (

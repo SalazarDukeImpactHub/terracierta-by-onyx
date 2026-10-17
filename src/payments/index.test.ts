@@ -15,7 +15,7 @@ const input = { tipo: "pedido" as const, referenciaId: "pedido-1", montoCop: 150
 it("envía el dinero entre billeteras con la descripción del pedido y no devuelve URL de consentimiento", async () => {
   ilp.pagar.mockResolvedValue({ pagoId: "q_test", descripcion: "Terracierta pedido pedido-1", estado: "completado" });
   expect(await iniciarPago(input)).toMatchObject({ pagoId: "q_test", estado: "completado", redirectUrl: null, detalle: { paso: "finalizacion", simulado: false } });
-  expect(ilp.pagar).toHaveBeenCalledExactlyOnceWith({ walletPagador: "wallet-comprador", walletReceptor: input.walletReceptor, monto: 15000, descripcion: "Terracierta pedido pedido-1" });
+  expect(ilp.pagar).toHaveBeenCalledExactlyOnceWith({ walletPagador: "wallet-comprador", walletReceptor: input.walletReceptor, monto: 15000, descripcion: "Terracierta pedido pedido-1", volver: "/pago/retorno" });
 });
 
 it("deja el pago pendiente mientras la billetera no lo confirme y lo marca fallido si lo rechaza", async () => {

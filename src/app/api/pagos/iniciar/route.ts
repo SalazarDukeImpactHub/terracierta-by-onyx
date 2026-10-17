@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/adapters/auth";
 import { iniciarPagoDePedido } from "@/lib/pagos-service";
+import { rutaSegura } from "@/lib/roles";
 
 /**
  * POST /api/pagos/iniciar — checkout de la tienda. Exige sesión de comprador o cooperativa: la wallet con
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   const perfil = await auth.obtenerPerfil().catch(() => null);
-  if (!perfil) return NextResponse.json({ error: "Entrá con tu cuenta para pagar" }, { status: 401 });
+  if (!perfil) return NextResponse.json({ error: "Entra con tu cuenta para pagar" }, { status: 401 });
 
   let cuerpo: unknown;
   try {
@@ -22,7 +23,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
-  const resultado = await iniciarPagoDePedido(cuerpo, perfil);
-  if (!resultado.ok) return NextResponse.json({ error: resultado.error }, { status: resultado.status });
+  const referido = request.headers.get("referer");
+  let volver = "/tienda";
+  if (referido) {
+    try {
+      const url = new URL(referido);
+      volver = rutaSegura(`${url.pathname}${url.search}`) ?? volver;
+    } catch {
+      volver = "/tienda";
+    }
+  }
+
+  const resultado = await iniciarPagoDePedido(cuerpo, perfil, volver);
+  if (!resultado.ok) {
+    if (resultado.login) return NextResponse.json({ redirectUrl: resultado.login });
+    return NextResponse.json({ error: resultado.error }, { status: resultado.status });
+  }
   return NextResponse.json({ pagoId: resultado.pagoId, redirectUrl: resultado.redirectUrl });
 }

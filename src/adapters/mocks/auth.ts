@@ -147,7 +147,7 @@ export type ResultadoRegistroMock = { ok: true; id: string; rol: Rol } | { ok: f
 /** Sign up simulado: crea el perfil con wallet de ejemplo. `tiene_invima` solo se guarda si el rol es caficultor. */
 export async function registrarMock(datos: DatosRegistro): Promise<ResultadoRegistroMock> {
   if (datos.rol === "cooperativa") {
-    return { ok: false, error: "Las cooperativas están precargadas: usá la cuenta de la cooperativa de ejemplo." };
+    return { ok: false, error: "Las cooperativas están precargadas: usa la cuenta de la cooperativa de ejemplo." };
   }
   const email = normalizarCorreo(datos.correo);
   if (PERFILES_DEMO.some((p) => p.correo === email)) return { ok: false, error: "Ese correo ya está registrado" };
@@ -165,7 +165,7 @@ export async function registrarMock(datos: DatosRegistro): Promise<ResultadoRegi
       tiene_invima: datos.rol === "caficultor" ? datos.tieneInvima : false,
       wallet_address: walletDeEjemplo(datos.nombre, id),
     });
-  if (error) return { ok: false, error: "No pudimos crear tu cuenta. Probá de nuevo." };
+  if (error) return { ok: false, error: "No pudimos crear tu cuenta. Intenta de nuevo." };
   return { ok: true, id, rol: datos.rol };
 }
 

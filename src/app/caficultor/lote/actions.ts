@@ -29,7 +29,7 @@ export async function crearLote(_previo: EstadoFormulario, formData: FormData): 
     .insert({ ...parsed.data, caficultor_id: perfil.id })
     .select("id")
     .single();
-  if (error || !data) return { error: "No pudimos guardar tu lote. Probá de nuevo." };
+  if (error || !data) return { error: "No pudimos guardar tu lote. Intenta de nuevo." };
 
   revalidatePath("/caficultor/lote");
   redirect(`/caficultor/lote/${data.id}`);

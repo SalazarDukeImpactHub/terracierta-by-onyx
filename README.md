@@ -213,7 +213,7 @@ Puntaje de **0 a 100**, calculado en `src/lib/match.ts`, siempre igual para el m
 | 🌱 Variedad | 10 | ¿Recibe la variedad del lote? |
 | 📦 Capacidad | 15 | ¿Le alcanza para los kilos del lote? |
 
-Una cooperativa **solo se puede elegir** si acepta el método y la variedad y tiene capacidad. Si hay menos de tres, se completan con las que no calzan, marcadas con el motivo.
+Una cooperativa **solo se puede elegir** si acepta el método y la variedad y tiene capacidad. Si hay menos de tres, se completan con las que no encajan, marcadas con el motivo.
 
 **Ejemplo real** *(lote de 500 kg Caturra lavado, Marsella, con los datos de ejemplo)*:
 

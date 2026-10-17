@@ -50,7 +50,7 @@ export function SelectorRol({ roles }: { roles: OpcionRol[] }) {
 
   return (
     <div className="mt-7 max-w-xl sm:mt-9">
-      <p className="etiqueta !text-crema/70">Elegí cómo entrás</p>
+      <p className="etiqueta !text-crema/70">Elige cómo entras</p>
 
       <div role="tablist" aria-label="Tu rol en Terracierta" className="mt-3 grid grid-cols-3 gap-2">
         {roles.map((r, i) => {

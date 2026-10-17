@@ -23,7 +23,7 @@ async function conAuth(accion: () => Promise<ResultadoAuth>): Promise<ResultadoA
     return await accion();
   } catch (e) {
     console.error("[auth] el módulo de autenticación falló:", e instanceof Error ? e.message : e);
-    return { ok: false, error: "No pudimos conectar con el acceso. Probá de nuevo en un momento." };
+    return { ok: false, error: "No pudimos conectar con el acceso. Intenta de nuevo en un momento." };
   }
 }
 

@@ -91,7 +91,7 @@ export async function elegirCooperativaParaLote(
     .insert({ lote_id: lote.id, cooperativa_id: elegida.cooperativaId, precio_kg: elegida.precioKg, total: elegida.total })
     .select("id")
     .single();
-  if (error || !data) return { ok: false, error: "No pudimos crear la oferta. Probá de nuevo." };
+  if (error || !data) return { ok: false, error: "No pudimos crear la oferta. Intenta de nuevo." };
 
   await db.from("lotes").update({ estado: "con_ofertas" }).eq("id", lote.id).eq("caficultor_id", caficultorId);
   return { ok: true, ofertaId: data.id };

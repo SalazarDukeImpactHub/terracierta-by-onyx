@@ -56,7 +56,7 @@ export function FormularioProducto({ valores = {} }: { valores?: Valores }) {
         />
       </div>
 
-      <CampoArchivo id="foto" name="foto" accept="image/jpeg,image/png,image/webp" etiqueta="Elegir foto" ayuda="JPG, PNG o WebP · hasta 2 MB. Si no elegís una, se conserva la actual." />
+      <CampoArchivo id="foto" name="foto" accept="image/jpeg,image/png,image/webp" etiqueta="Elegir foto" ayuda="JPG, PNG o WebP · hasta 2 MB. Si no eliges una, se conserva la actual." />
 
       {estado.error && (
         <p role="alert" className="border border-cereza bg-cereza/10 px-3 py-2 text-cereza">

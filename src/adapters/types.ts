@@ -60,8 +60,6 @@ export interface Perfil {
   municipio: string;
   tiene_invima: boolean;
   wallet_address: string | null;
-  /** Se carga a mano en la base. El registro lo deja vacío. */
-  token?: string | null;
   tipo_documento?: string | null;
   numero_documento?: string | null;
 }

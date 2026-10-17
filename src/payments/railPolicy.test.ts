@@ -40,7 +40,7 @@ it("el checkout con cookie no contacta la API ni envía dinero si no puede entra
   vi.stubEnv("INTERLEDGER_PASSWORD", "");
   const fetch = vi.fn(() => { throw new Error("No se permiten solicitudes externas"); });
   vi.stubGlobal("fetch", fetch);
-  await expect(iniciarPago({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: "wallet-comprador", urlRetorno: origin + "/pago/retorno" })).rejects.toMatchObject({ name: "PagoInterledgerError", message: expect.stringMatching(/entrar a la billetera/) });
+  await expect(iniciarPago({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: "wallet-comprador", urlRetorno: origin + "/pago/retorno" })).rejects.toMatchObject({ name: "LoginInterledgerError", message: expect.stringMatching(/entrar a Interledger/) });
   expect(fetch).not.toHaveBeenCalled();
 });
 

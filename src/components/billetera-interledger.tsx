@@ -25,8 +25,8 @@ function Dato({ etiquetaTexto, valor }: { etiquetaTexto: string; valor: string |
   );
 }
 
-export async function BilleteraInterledger({ usuarioId, token }: { usuarioId: string; token?: string | null }) {
-  const info = await infoInterledger(usuarioId, token ?? null);
+export async function BilleteraInterledger() {
+  const info = await infoInterledger();
   if (!info) return null;
 
   return (

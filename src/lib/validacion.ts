@@ -2,13 +2,13 @@ import { z } from "zod";
 
 /**
  * Wallet address de Interledger: URL https (https://host/ruta) o payment pointer ($host/ruta).
- * Se normaliza el payment pointer a https. Validar acá evita guardar basura o URLs peligrosas
+ * Se normaliza el payment pointer a https. Validar aquí evita guardar basura o URLs peligrosas
  * (javascript:, data:, etc.).
  */
 export const walletAddress = z
   .string()
   .trim()
-  .min(1, "Pegá la dirección de tu billetera")
+  .min(1, "Escribe la dirección de tu billetera")
   .max(300, "La dirección es demasiado larga")
   .transform((v) => (v.startsWith("$") ? `https://${v.slice(1)}` : v))
   .refine((v) => {
@@ -31,7 +31,7 @@ export const esquemaProducto = z.object({
   nombre: textoLimpio(3, 80, "El nombre"),
   descripcion: z.string().trim().max(600, "La descripción admite hasta 600 caracteres").default(""),
   precio_cop: z.coerce
-    .number({ error: "Poné un precio en pesos" })
+    .number({ error: "Escribe un precio en pesos" })
     .int("El precio va en pesos enteros")
     .min(1000, "El precio mínimo es $1.000")
     .max(100_000_000, "El precio es demasiado alto"),
@@ -44,13 +44,13 @@ export const esquemaCheckout = z.object({
 });
 
 export const esquemaLote = z.object({
-  metodo: z.enum(["lavado", "honey", "natural"], { error: "Elegí el método" }),
+  metodo: z.enum(["lavado", "honey", "natural"], { error: "Elige el método" }),
   variedad: textoLimpio(2, 60, "La variedad"),
   kg: z.coerce.number().int().min(1, "Mínimo 1 kg").max(100_000, "Cantidad demasiado alta"),
   municipio: textoLimpio(2, 60, "El municipio"),
 });
 
-const correo = z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo");
+const correo = z.string().trim().toLowerCase().email("Escribe un correo válido").max(120, "El correo es demasiado largo");
 
 function fechaNacimientoValida(valor: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
@@ -74,7 +74,7 @@ export const TIPOS_DOCUMENTO = [
 /** Sign in: solo correo y contraseña. El mensaje de error es el mismo para cualquier fallo (no revela si el correo existe). */
 export const esquemaInicioSesion = z.object({
   correo,
-  contrasena: z.string().min(1, "Escribí tu contraseña").max(200, "La contraseña es demasiado larga"),
+  contrasena: z.string().min(1, "Escribe tu contraseña").max(200, "La contraseña es demasiado larga"),
 });
 
 /**
@@ -84,10 +84,10 @@ export const esquemaInicioSesion = z.object({
  */
 export const esquemaRegistro = z
   .object({
-    rol: z.enum(["caficultor", "comprador"], { error: "Elegí si sos caficultor o comprador" }),
+    rol: z.enum(["caficultor", "comprador"], { error: "Elige si eres caficultor o comprador" }),
     nombres: textoLimpio(2, 60, "Los nombres"),
     apellidos: textoLimpio(2, 60, "Los apellidos"),
-    tipo_documento: z.enum(["CC", "CE", "TI", "PA", "PPT", "NIT"], { error: "Elegí el tipo de documento" }),
+    tipo_documento: z.enum(["CC", "CE", "TI", "PA", "PPT", "NIT"], { error: "Elige el tipo de documento" }),
     numero_documento: z
       .string()
       .trim()
@@ -102,7 +102,7 @@ export const esquemaRegistro = z
   })
   .superRefine((d, ctx) => {
     if (d.rol === "caficultor" && !d.tieneInvima) {
-      ctx.addIssue({ code: "custom", path: ["tieneInvima"], message: "Contanos si tenés INVIMA" });
+      ctx.addIssue({ code: "custom", path: ["tieneInvima"], message: "Cuéntanos si tienes INVIMA" });
     }
   })
   .transform((d) => ({

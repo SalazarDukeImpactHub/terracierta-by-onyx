@@ -1,7 +1,7 @@
 /**
  * Pagos reales contra la billetera de prueba de Interledger.
  * El dinero sale de la wallet del pagador y entra en la del receptor.
- * La cookie de sesión vive en usuarios.token; nunca se manda al navegador.
+ * La sesión de la billetera vive en la cookie del navegador. Si falta, hay que entrar a Interledger.
  */
 import type { ConsultarPagoOutput, IniciarPagoInput, IniciarPagoOutput } from "@/adapters/types";
 import { clienteAdmin } from "@/lib/supabase/admin";
@@ -9,11 +9,20 @@ import { estadoPagoInterledger, pagarEntreBilleteras } from "@/lib/interledger";
 
 export async function iniciarPago(input: IniciarPagoInput): Promise<IniciarPagoOutput> {
   const descripcion = `Terracierta ${input.tipo} ${input.referenciaId}`;
+  const vuelta = (() => {
+    try {
+      const url = new URL(input.urlRetorno);
+      return `${url.pathname}${url.search}`;
+    } catch {
+      return "/";
+    }
+  })();
   const envio = await pagarEntreBilleteras({
     walletPagador: input.walletPagador,
     walletReceptor: input.walletReceptor,
     monto: input.montoCop,
     descripcion,
+    volver: vuelta,
   });
   return {
     pagoId: envio.pagoId,

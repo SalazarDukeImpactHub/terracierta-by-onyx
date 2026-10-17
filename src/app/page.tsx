@@ -9,7 +9,7 @@ interface RolInicio {
   href: string;
   accion: string;
   registro: string | null;
-  /** En el selector del encabezado, el botón principal es crear la cuenta (quien llega acá casi siempre es nuevo). */
+  /** En el selector del encabezado, el botón principal es crear la cuenta (quien llega aquí casi siempre es nuevo). */
   principalEsRegistro?: boolean;
 }
 
@@ -18,7 +18,7 @@ const ROLES: RolInicio[] = [
     id: "caficultor",
     etiqueta: "Caficultor",
     titulo: "Soy caficultor",
-    texto: "Al crear tu cuenta recibís tu wallet propia. Con INVIMA, abrí tu tienda; sin INVIMA, mirá a qué cooperativa venderle tu lote.",
+    texto: "Al crear tu cuenta recibes tu wallet propia. Con INVIMA, abre tu tienda; sin INVIMA, mira a qué cooperativa venderle tu lote.",
     href: "/acceso",
     accion: "Iniciar sesión",
     registro: "/registro?rol=caficultor",
@@ -28,7 +28,7 @@ const ROLES: RolInicio[] = [
     id: "comprador",
     etiqueta: "Comprador",
     titulo: "Quiero comprar café",
-    texto: "Mirá el café de cada finca sin cuenta. Para pagar, creá tu cuenta de comprador y usá tu billetera.",
+    texto: "Mira el café de cada finca sin cuenta. Para pagar, crea tu cuenta de comprador y usa tu billetera.",
     href: "/tienda",
     accion: "Ver la tienda",
     registro: "/registro?rol=comprador",
@@ -37,7 +37,7 @@ const ROLES: RolInicio[] = [
     id: "cooperativa",
     etiqueta: "Cooperativa",
     titulo: "Soy cooperativa",
-    texto: "Revisá las ofertas por lotes que te recomendamos y pagá desde la plataforma.",
+    texto: "Revisa las ofertas por lotes que te recomendamos y paga desde la plataforma.",
     href: "/acceso",
     accion: "Iniciar sesión",
     registro: null,
@@ -67,7 +67,7 @@ const CIFRAS = [
 
 const PASOS = [
   "El caficultor recibe una wallet propia: una dirección de cobro que cualquier billetera puede pagar.",
-  "Con INVIMA publica su tienda; sin INVIMA carga su lote y le mostramos las 3 cooperativas que mejor le calzan.",
+  "Con INVIMA publica su tienda; sin INVIMA carga su lote y le mostramos las 3 cooperativas que mejor le encajan.",
   "El pagador ve la cotización exacta y aprueba antes de pagar. El dinero va de wallet a wallet.",
   "Queda el recibo y un historial de ingresos propio.",
 ];
@@ -97,7 +97,7 @@ export default function Inicio() {
               </em>
             </h1>
             <p className="mt-4 max-w-2xl text-base text-crema/85 sm:mt-6 sm:text-lg">
-              Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
+              Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Aquí cada uno tiene
               su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
             </p>
             <SelectorRol roles={ROLES.map(paraSelector)} />

@@ -14,7 +14,7 @@ export default async function Tiendas() {
       <p className="etiqueta">Tienda</p>
       <h1 className="mt-2 text-4xl">Café con nombre propio</h1>
       <p className="mt-3 max-w-2xl text-apagado">
-        Cada tienda es de un caficultor con INVIMA. Mirás el catálogo sin cuenta. Para pagar, entrá como comprador
+        Cada tienda es de un caficultor con INVIMA. Miras el catálogo sin cuenta. Para pagar, entra como comprador
         o como cooperativa: el dinero sale de tu billetera y llega a la del caficultor.
       </p>
 

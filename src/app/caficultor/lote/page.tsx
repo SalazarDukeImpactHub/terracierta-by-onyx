@@ -28,7 +28,7 @@ export default async function MiLote() {
       <p className="etiqueta">Sin INVIMA</p>
       <h1 className="mt-1 text-4xl">Cargar mi lote</h1>
       <p className="mt-2 max-w-2xl text-apagado">
-        Contanos qué café tenés y te mostramos las 3 cooperativas que mejor te calzan. Vos elegís; la cooperativa te paga directo a
+        Cuéntanos qué café tienes y te mostramos las 3 cooperativas que mejor te encajan. Tú eliges; la cooperativa te paga directo a
         tu wallet.
       </p>
 
@@ -38,7 +38,7 @@ export default async function MiLote() {
         <div>
           <h2 className="text-2xl">Mis lotes</h2>
           {(lotes ?? []).length === 0 ? (
-            <p className="mt-3 border border-linea bg-crema-2 p-5 text-apagado">Todavía no cargaste ningún lote.</p>
+            <p className="mt-3 border border-linea bg-crema-2 p-5 text-apagado">Todavía no has cargado ningún lote.</p>
           ) : (
             <ul className="mt-3 grid gap-3">
               {(lotes ?? []).map((l) => (

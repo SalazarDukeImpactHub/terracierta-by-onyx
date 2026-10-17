@@ -60,7 +60,10 @@ describe("pasarela protegida y simulación sin red", () => {
     expect(response.status).toBe(201);
     expect(response.headers.get("cache-control")).toBe("no-store");
     const body = await response.json();
-    expect(JSON.stringify(body)).not.toMatch(/Marsella|EUR|mock_outgoing_/);
+    const { ciphertext, iv, ...metadatos } = body as { ciphertext?: string; iv?: string };
+    expect(typeof ciphertext).toBe("string");
+    expect(typeof iv).toBe("string");
+    expect(JSON.stringify(metadatos)).not.toMatch(/Marsella|EUR|mock_outgoing_/);
     const result = await clientOpen(sealed, body) as { reciboPqc: HybridReceipt };
     expect(result).toMatchObject({ estado: "completado", quoteId: quote.quoteId, isReceive: true, simulado: true });
     expect(verifyReceipt(result.reciboPqc, bundle.signature.publicKeys).valid).toBe(true);
