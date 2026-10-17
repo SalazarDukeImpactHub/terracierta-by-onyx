@@ -1,0 +1,45 @@
+.game { margin: 1.75rem 0 0; border-block: 1px solid var(--linea); padding: 1rem 0; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: .9rem; }
+.header button { font: inherit; color: var(--cobre-oscuro); cursor: pointer; min-height: 44px; padding: .25rem .5rem; text-decoration: underline; text-underline-offset: 4px; }
+.header button:hover { color: var(--bosque); }
+.header button:disabled { cursor: wait; color: var(--apagado); }
+.header button[aria-pressed="true"] { color: var(--bosque); font-weight: 600; }
+.assumption { color: var(--apagado); font-size: .8rem; margin-top: .5rem; }
+.context { display: grid; gap: .6rem; margin-top: .9rem; font-size: .8rem; }
+.context dt { color: var(--tinta); font-weight: 600; }
+.context dd { color: var(--apagado); }
+.target { margin-top: 1rem; font-size: .8rem; color: var(--apagado); }
+.target code { overflow-wrap: anywhere; font-size: .7rem; }
+.target button { min-height: 44px; color: var(--cobre-oscuro); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.target button:disabled { color: var(--apagado); cursor: wait; }
+.world { height: 145px; position: relative; overflow: hidden; }
+.road { position: absolute; top: 83px; left: 25px; right: 25px; border-top: 2px dashed var(--linea); }
+.start, .finish { position: absolute; bottom: 2px; font-size: .8rem; color: var(--apagado); }
+.start { left: 0; } .finish { right: 0; }
+.packet, .copy { position: absolute; width: 32px; height: 32px; top: 51px; left: 10px; display: grid; place-items: center; background: var(--bosque); color: var(--crema); border-radius: 3px; font-size: .7rem; }
+.packet::before, .copy::before { content: ""; position: absolute; top: 0; bottom: 0; left: 13px; width: 5px; background: var(--crema); opacity: .25; }
+.packet span, .copy span { z-index: 1; }
+.copy { opacity: 1; background: var(--cereza); }
+.shield { position: absolute; left: calc(68% - 22px); top: 26px; width: 44px; color: var(--bosque); }
+.blocked { position: absolute; top: 105px; left: 35%; right: 0; text-align: center; font-size: .72rem; color: var(--cereza); opacity: 0; }
+.caption { font-size: .75rem; color: var(--apagado); margin-top: .6rem; min-height: 1.6em; }
+.world[data-state="viajando"] { animation: journey 2.4s linear both; }
+.world[data-state="viajando"] .packet { animation: hop 2.4s cubic-bezier(.2,.6,.3,1) both; }
+.world[data-state="viajando"][data-accepted="false"] .copy { animation: intercept 2.4s ease-out both; }
+.world[data-state="viajando"][data-accepted="true"] .copy { animation: hop 2.4s cubic-bezier(.2,.6,.3,1) both; }
+.world[data-state="viajando"] .shield { animation: defend 2.4s ease-out both; }
+.world[data-state="viajando"] .blocked, .world[data-state="completado"] .blocked { opacity: 1; }
+.world[data-state="completado"] .packet { left: calc(100% - 42px); }
+.world[data-state="completado"][data-accepted="true"] .copy { left: calc(100% - 42px); }
+.world[data-state="completado"][data-accepted="false"] .copy { left: calc(68% - 60px); opacity: .3; transform: rotate(-20deg); }
+.world[data-shield="false"] .shield { opacity: .15; }
+.world[data-accepted="true"] .blocked { color: var(--cereza); }
+.world[data-accepted="false"] .blocked { color: var(--bosque); }
+.evidence { margin-top: .8rem; color: var(--apagado); font-size: .8rem; }
+.evidence summary { cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.evidence pre { overflow-x: auto; font-size: .75rem; padding-block: .8rem; }
+@keyframes journey { from, to { opacity: 1; } }
+@keyframes hop { 0% { left: 10px; transform: translateY(0); } 25% { transform: translateY(-18px) rotate(-8deg); } 50% { transform: translateY(0); } 75% { transform: translateY(-18px) rotate(8deg); } 100% { left: calc(100% - 42px); transform: translateY(0); } }
+@keyframes intercept { 0%, 18% { left: 20%; opacity: 0; transform: translateY(0); } 28% { opacity: 1; } 51% { left: calc(68% - 44px); opacity: 1; transform: translateY(0); } 74%, 100% { left: calc(68% - 70px); opacity: 0; transform: translateY(25px) rotate(-30deg); } }
+@keyframes defend { 45%, 65% { transform: scale(1); } 53% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .world, .packet, .copy, .shield { animation: none !important; } }

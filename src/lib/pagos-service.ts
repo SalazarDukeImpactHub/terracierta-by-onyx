@@ -23,8 +23,8 @@ export async function iniciarPagoDePedido(
   entrada: unknown,
   comprador: Pick<Perfil, "id" | "rol" | "wallet_address">,
 ): Promise<ResultadoInicio> {
-  if (comprador.rol !== "comprador") {
-    return { ok: false, error: "Para comprar necesitás entrar con una cuenta de comprador", status: 403 };
+  if (comprador.rol !== "comprador" && comprador.rol !== "cooperativa") {
+    return { ok: false, error: "Para comprar necesitás entrar como comprador o como cooperativa", status: 403 };
   }
   const walletComprador = comprador.wallet_address;
   if (!walletComprador) {
@@ -128,7 +128,8 @@ async function iniciarYRegistrar(input: {
   } catch (e) {
     console.error("[pagos] iniciarPago falló:", e instanceof Error ? e.message : e);
     await db.from(tablaReferencia).update({ estado: estadoFallido }).eq("id", input.referenciaId);
-    return { ok: false, error: "No pudimos iniciar el pago. Probá de nuevo en un momento.", status: 502 };
+    const mensaje = e instanceof Error && e.name === "PagoInterledgerError" ? e.message : "No pudimos iniciar el pago. Probá de nuevo en un momento.";
+    return { ok: false, error: mensaje, status: 502 };
   }
 
   const { error } = await db.from("pagos").insert({
@@ -139,8 +140,12 @@ async function iniciarYRegistrar(input: {
     wallet_pagador: input.walletPagador,
     wallet_receptor: input.walletReceptor,
     estado: resultado.estado,
+    detalle_json: resultado.detalle ?? {},
   });
   if (error) return { ok: false, error: "No pudimos registrar el pago", status: 500 };
+  if (resultado.estado === "completado" || resultado.estado === "fallido") {
+    await aplicarAReferencia(input.tipo, input.referenciaId, resultado.estado);
+  }
 
   await db.from(tablaReferencia).update({ pago_id: resultado.pagoId }).eq("id", input.referenciaId);
 
@@ -155,7 +160,7 @@ export interface VistaPago {
   monto: number;
   walletReceptor: string;
   concepto: string;
-  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean };
+  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean; canalPqc?: boolean; reciboPqc?: unknown };
 }
 
 /**

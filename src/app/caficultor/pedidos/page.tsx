@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requerirRol } from "@/adapters/auth";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { formatoCop } from "@/lib/validacion";
+import { ListaVentas, type VentaVista } from "./lista-ventas";
 
-export const metadata: Metadata = { title: "Pedidos y pagos" };
+export const metadata: Metadata = { title: "Ventas" };
 export const dynamic = "force-dynamic";
 
-const ETIQUETA_ESTADO: Record<string, { texto: string; clase: string }> = {
-  pagado: { texto: "Pagado ✦", clase: "text-bosque" },
-  pendiente: { texto: "Pendiente", clase: "text-apagado" },
-  fallido: { texto: "Fallido", clase: "text-cereza" },
+const ROL: Record<string, string> = {
+  comprador: "Comprador",
+  cooperativa: "Cooperativa",
+  caficultor: "Caficultor",
 };
 
 export default async function PedidosYPagos() {
@@ -20,84 +20,99 @@ export default async function PedidosYPagos() {
 
   const { data } = await clienteAdmin()
     .from("pedidos")
-    .select("id, cantidad, monto, estado, wallet_comprador, creado_en, pago_id, productos!inner(nombre, dueno_id)")
+    .select("id, cantidad, monto, estado, creado_en, pago_id, comprador_id, productos!inner(nombre, dueno_id)")
     .eq("productos.dueno_id", perfil.id)
     .order("creado_en", { ascending: false });
   const pedidos = data ?? [];
 
-  const cobrado = pedidos.filter((p) => p.estado === "pagado").reduce((s, p) => s + p.monto, 0);
-  const pagados = pedidos.filter((p) => p.estado === "pagado").length;
-  const pendientes = pedidos.filter((p) => p.estado === "pendiente").length;
+  const ids = [...new Set(pedidos.map((p) => p.comprador_id).filter((id): id is string => Boolean(id)))];
+  const { data: perfiles } = ids.length
+    ? await clienteAdmin().from("profiles").select("id, nombre, rol").in("id", ids)
+    : { data: [] as { id: string; nombre: string; rol: string }[] };
+  const quien = new Map((perfiles ?? []).map((p) => [p.id, p]));
+
+  const ventas: VentaVista[] = pedidos.map((p) => {
+    const persona = p.comprador_id ? quien.get(p.comprador_id) : undefined;
+    const estado = p.estado === "pagado" || p.estado === "fallido" ? p.estado : "pendiente";
+    return {
+      id: p.id,
+      fecha: new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Bogota" }).format(new Date(p.creado_en)),
+      producto: (p.productos as unknown as { nombre: string }).nombre,
+      cantidad: p.cantidad,
+      monto: p.monto,
+      estado,
+      cliente: persona?.nombre ?? "Cliente",
+      rolCliente: ROL[persona?.rol ?? ""] ?? "Cliente",
+      pagoId: p.pago_id,
+    };
+  });
+
+  const pagadas = ventas.filter((v) => v.estado === "pagado");
+  const cobrado = pagadas.reduce((s, v) => s + v.monto, 0);
+  const clientes = agruparClientes(ventas);
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-14">
-      <Link href="/caficultor" className="etiqueta hover:text-tinta">
-        ← Mi cuenta
-      </Link>
-      <h1 className="mt-3 text-4xl">Pedidos y pagos recibidos</h1>
-
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">{formatoCop(cobrado)}</p>
-          <p className="mt-1 text-sm text-crema/80">cobrado en tu wallet</p>
-        </div>
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">{pagados}</p>
-          <p className="mt-1 text-sm text-crema/80">pagos completados</p>
-        </div>
-        <div className="bg-cafe-claro p-5 text-crema">
-          <p className="font-titulo text-4xl">{pendientes}</p>
-          <p className="mt-1 text-sm text-crema/80">pendientes de autorización</p>
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="etiqueta">Tienda</p>
+          <h1 className="mt-1 text-4xl">Ventas y clientes</h1>
         </div>
       </div>
 
-      {pedidos.length === 0 ? (
-        <p className="mt-8 border border-linea bg-crema-2 p-6 text-apagado">
-          Todavía no recibiste pedidos. Cuando alguien compre en tu tienda, aparece acá.
-        </p>
-      ) : (
-        <div className="mt-8 overflow-x-auto border border-linea">
-          <table className="w-full min-w-[40rem] text-left">
-            <thead className="bg-crema-2">
-              <tr className="etiqueta">
-                <th className="px-4 py-3 font-semibold">Fecha</th>
-                <th className="px-4 py-3 font-semibold">Producto</th>
-                <th className="px-4 py-3 font-semibold">Comprador (wallet)</th>
-                <th className="px-4 py-3 text-right font-semibold">Monto</th>
-                <th className="px-4 py-3 font-semibold">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pedidos.map((p) => {
-                const est = ETIQUETA_ESTADO[p.estado] ?? ETIQUETA_ESTADO.pendiente;
-                const producto = (p.productos as unknown as { nombre: string }).nombre;
-                return (
-                  <tr key={p.id} className="border-t border-linea align-top">
-                    <td className="px-4 py-3 text-sm">
-                      {new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Bogota" }).format(
-                        new Date(p.creado_en),
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {p.cantidad} × {producto}
-                    </td>
-                    <td className="max-w-[14rem] break-all px-4 py-3 text-sm">{p.wallet_comprador}</td>
-                    <td className="px-4 py-3 text-right font-titulo text-xl text-cobre-oscuro">{formatoCop(p.monto)}</td>
-                    <td className={`px-4 py-3 font-semibold ${est.clase}`}>
-                      {est.texto}
-                      {p.pago_id && (
-                        <Link href={`/pago/retorno?pago_id=${encodeURIComponent(p.pago_id)}`} className="mt-1 block text-xs font-normal text-cobre-oscuro underline">
-                          ver recibo
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="border border-linea bg-[#fbf8f1] p-5">
+          <p className="font-titulo text-3xl text-cobre-oscuro">{formatoCop(cobrado)}</p>
+          <p className="mt-1 text-sm text-apagado">cobrado</p>
         </div>
+        <div className="border border-linea bg-[#fbf8f1] p-5">
+          <p className="font-titulo text-3xl text-cobre-oscuro">{pagadas.length}</p>
+          <p className="mt-1 text-sm text-apagado">ventas pagadas</p>
+        </div>
+        <div className="border border-linea bg-[#fbf8f1] p-5">
+          <p className="font-titulo text-3xl text-cobre-oscuro">{clientes.length}</p>
+          <p className="mt-1 text-sm text-apagado">clientes</p>
+        </div>
+      </div>
+
+      <h2 className="mt-10 text-3xl">Clientes</h2>
+      {clientes.length === 0 ? (
+        <p className="mt-4 border border-linea bg-[#fbf8f1] p-6 text-apagado">Todavía no hay compras pagadas.</p>
+      ) : (
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {clientes.map((c) => (
+            <li key={c.clave} className="border border-linea bg-[#fbf8f1] p-5">
+              <p className="font-titulo text-2xl">{c.nombre}</p>
+              <p className="etiqueta mt-1">{c.rol}</p>
+              <p className="mt-3 text-sm text-apagado">
+                {c.compras} {c.compras === 1 ? "compra" : "compras"} · {formatoCop(c.total)}
+              </p>
+            </li>
+          ))}
+        </ul>
       )}
-    </section>
+
+      <h2 className="mt-10 text-3xl">Historial</h2>
+      <div className="mt-4">
+        {ventas.length === 0 ? (
+          <p className="border border-linea bg-[#fbf8f1] p-6 text-apagado">Cuando alguien compre en tu tienda, el pedido aparece acá.</p>
+        ) : (
+          <ListaVentas ventas={ventas} />
+        )}
+      </div>
+    </div>
   );
+}
+
+function agruparClientes(ventas: VentaVista[]) {
+  const mapa = new Map<string, { clave: string; nombre: string; rol: string; compras: number; total: number }>();
+  for (const venta of ventas) {
+    if (venta.estado !== "pagado") continue;
+    const clave = `${venta.cliente}-${venta.rolCliente}`;
+    const actual = mapa.get(clave) ?? { clave, nombre: venta.cliente, rol: venta.rolCliente, compras: 0, total: 0 };
+    actual.compras += 1;
+    actual.total += venta.monto;
+    mapa.set(clave, actual);
+  }
+  return [...mapa.values()].sort((a, b) => b.total - a.total);
 }

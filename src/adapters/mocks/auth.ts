@@ -15,21 +15,43 @@ import type { CredencialesInicio, DatosRegistro, Perfil, ResultadoAuth, Rol, Ses
  * MOCK de autenticación (USE_MOCKS=true). Simula sign in y sign up mientras llega el módulo real (src/auth).
  * Esto NO es autenticación segura: existe para recorrer la demostración.
  *
- *  - Sign in: correo + contraseña. Las cuentas de ejemplo usan la contraseña `CONTRASENA_DEMO` (se verifica).
+ *  - Sign in: correo + contraseña. Cada cuenta de ejemplo tiene la suya (se verifica).
  *    Las cuentas creadas en modo demostración NO guardan la contraseña, así que no se verifica (solo se exige que no esté vacía).
  *  - Sign up: crea el perfil (con su wallet de ejemplo y, si es caficultor, su INVIMA) e inicia sesión.
  *  - La sesión es una cookie FIRMADA (HMAC con un secreto del servidor): no se puede fabricar a mano.
  */
 
 const COOKIE = "tc_demo_perfil";
-export const CONTRASENA_DEMO = "demo1234";
 
 export const PERFILES_DEMO = [
-  { id: "11111111-1111-4111-8111-111111111111", etiqueta: "Caficultora con INVIMA", correo: "marta@terracierta.demo", ruta: "/caficultor" },
-  { id: "22222222-2222-4222-8222-222222222222", etiqueta: "Caficultor sin INVIMA", correo: "jairo@terracierta.demo", ruta: "/caficultor" },
-  { id: "33333333-3333-4333-8333-333333333333", etiqueta: "Cooperativa (cuenta demo)", correo: "cumbres@terracierta.demo", ruta: "/cooperativa" },
-  { id: "44444444-4444-4444-8444-444444444444", etiqueta: "Comprador (cuenta demo)", correo: "andres@terracierta.demo", ruta: "/comprador" },
-  { id: "55555555-5555-4555-8555-555555555555", etiqueta: "Comprador cuyo pago falla (demo)", correo: "sofia@terracierta.demo", ruta: "/comprador" },
+  {
+    id: "40088dae-afd2-4ec3-9946-dbb8b245e474",
+    etiqueta: "Caficultor con INVIMA (Alvaro, tienda Finca Henao)",
+    correo: "al.henao1256@gmail.com",
+    contrasena: "2026grupoonyX$",
+    ruta: "/caficultor",
+  },
+  {
+    id: "6b1c0a11-7e2a-4c11-9a11-000000000001",
+    etiqueta: "Comprador (Camila Restrepo)",
+    correo: "camila.restrepo@terracierta.test",
+    contrasena: "Terracierta1",
+    ruta: "/comprador",
+  },
+  {
+    id: "33333333-3333-4333-8333-333333333333",
+    etiqueta: "Cooperativa (Cumbres Cafeteras)",
+    correo: "cooperativa@terracierta.test",
+    contrasena: "Terracierta1",
+    ruta: "/cooperativa",
+  },
+  {
+    id: "22222222-2222-4222-8222-222222222222",
+    etiqueta: "Caficultor sin INVIMA (Jairo Montoya)",
+    correo: "jairo@terracierta.test",
+    contrasena: "Terracierta1",
+    ruta: "/caficultor",
+  },
 ] as const;
 
 const IDS_DEMO: readonly string[] = PERFILES_DEMO.map((p) => p.id);
@@ -45,7 +67,7 @@ async function leerPerfil(id: string): Promise<Perfil | null> {
 }
 
 /**
- * Id de la sesión actual. Se acepta (a) la cookie firmada, o (b) el id plano de una de las 5 cuentas de ejemplo
+ * Id de la sesión actual. Se acepta (a) la cookie firmada, o (b) el id plano de una cuenta de ejemplo
  * (compatibilidad con las pruebas de la demo). Cualquier otra cosa se ignora.
  */
 async function idDeCookie(): Promise<string | null> {
@@ -69,7 +91,7 @@ export async function autenticarMock(correo: string, contrasena: string): Promis
 
   const demo = PERFILES_DEMO.find((p) => p.correo === email);
   if (demo) {
-    if (contrasena !== CONTRASENA_DEMO) return null;
+    if (contrasena !== demo.contrasena) return null;
     const perfil = await leerPerfil(demo.id);
     return perfil ? { id: perfil.id, rol: perfil.rol } : null;
   }
