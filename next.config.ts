@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@interledger/open-payments"],
   // Cache Components / partialPrefetching venían activados por el scaffold;
   // no adoptamos ese modelo (obliga a envolver todo dato dinámico en Suspense).
   turbopack: {

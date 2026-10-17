@@ -124,7 +124,7 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
             <dd className="font-titulo text-2xl text-cobre-oscuro">{formatoCop(vista.monto)}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="etiqueta">Wallet de destino</dt>
+            <dt className="etiqueta">Wallet de destino (caficultor)</dt>
             <dd className="break-all">{vista.walletReceptor}</dd>
           </div>
           <div>

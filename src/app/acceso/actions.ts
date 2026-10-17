@@ -16,7 +16,7 @@ export interface EstadoFormulario {
 
 const texto = (f: FormData, campo: string) => String(f.get(campo) ?? "");
 
-/** Llama al módulo de autenticación sin dejar que una caída rompa la página. */
+/** Llama al módulo de autenticación sin dejar que una caída (p. ej. el módulo real aún sin integrar) rompa la página. */
 async function conAuth(accion: () => Promise<ResultadoAuth>): Promise<ResultadoAuth> {
   try {
     return await accion();
@@ -26,7 +26,7 @@ async function conAuth(accion: () => Promise<ResultadoAuth>): Promise<ResultadoA
   }
 }
 
-/** SIGN IN: correo y contraseña. Detecta rol, perfil, wallet e INVIMA solo. */
+/** SIGN IN: correo y contraseña. Detecta rol, perfil, wallet e INVIMA solo; la página no pregunta nada más. */
 export async function iniciarSesionAccion(_previo: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const valores = { correo: texto(formData, "correo") };
   const parsed = esquemaInicioSesion.safeParse({ correo: valores.correo, contrasena: texto(formData, "contrasena") });
@@ -37,15 +37,11 @@ export async function iniciarSesionAccion(_previo: EstadoFormulario, formData: F
   redirect(rutaSegura(texto(formData, "siguiente")) ?? rutaDeRol(r.rol));
 }
 
-/** SIGN UP: documento, identidad, municipio y, si es caficultor, INVIMA. Crea la cuenta e inicia sesión. */
+/** SIGN UP: solicita los datos de la persona (incluido el INVIMA si es caficultor), crea la cuenta e inicia sesión. */
 export async function registrarseAccion(_previo: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const valores = {
     rol: texto(formData, "rol"),
-    nombres: texto(formData, "nombres"),
-    apellidos: texto(formData, "apellidos"),
-    tipo_documento: texto(formData, "tipo_documento"),
-    numero_documento: texto(formData, "numero_documento"),
-    fecha_nacimiento: texto(formData, "fecha_nacimiento"),
+    nombre: texto(formData, "nombre"),
     municipio: texto(formData, "municipio"),
     correo: texto(formData, "correo"),
     tieneInvima: texto(formData, "tieneInvima"),

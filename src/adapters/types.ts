@@ -25,8 +25,6 @@ export interface IniciarPagoOutput {
   /** Pantalla de la billetera donde el pagador autoriza. null = no hace falta consentimiento interactivo. */
   redirectUrl: string | null;
   estado: EstadoPago;
-  /** Se guarda en pagos.detalle_json para confirmar el envío después. */
-  detalle?: Record<string, unknown>;
 }
 
 export interface ConsultarPagoOutput {
@@ -60,10 +58,6 @@ export interface Perfil {
   municipio: string;
   tiene_invima: boolean;
   wallet_address: string | null;
-  /** Se carga a mano en la base. El registro lo deja vacío. */
-  token?: string | null;
-  tipo_documento?: string | null;
-  numero_documento?: string | null;
 }
 
 /**
@@ -87,12 +81,6 @@ export interface DatosRegistro {
   nombre: string;
   municipio: string;
   tieneInvima: boolean;
-  /** El registro real los pide aparte del nombre completo. */
-  nombres?: string;
-  apellidos?: string;
-  tipo_documento?: string;
-  numero_documento?: string;
-  fecha_nacimiento?: string;
 }
 
 /**

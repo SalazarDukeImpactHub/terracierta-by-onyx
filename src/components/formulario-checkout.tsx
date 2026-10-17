@@ -9,7 +9,7 @@ import { formatoCop } from "@/lib/validacion";
 export type SesionCheckout =
   | { tipo: "anonimo" }
   | { tipo: "otro-rol"; nombre: string; rol: string }
-  | { tipo: "pagador"; rol: "comprador" | "cooperativa"; nombre: string; wallet: string | null };
+  | { tipo: "comprador"; nombre: string; wallet: string | null };
 
 /**
  * Checkout. Pagar exige tener cuenta: la billetera con la que se paga sale del perfil del comprador (asignada al
@@ -38,8 +38,8 @@ export function FormularioCheckout({
       <div className="grid gap-4 border border-linea bg-crema-2 p-5">
         <p className="font-titulo text-2xl">Para pagar, entrá con tu cuenta</p>
         <p className="text-apagado">
-          El pago sale de tu billetera y llega a la del caficultor. Podés entrar como comprador o como cooperativa.
-          Mirar el café no necesita cuenta.
+          Cada persona tiene su billetera. Entrando, tu pago sale de tu wallet y queda en tus compras. Mirar el café no
+          necesita cuenta.
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <Link href={rutaAcceso} className="btn self-start">
@@ -58,7 +58,7 @@ export function FormularioCheckout({
       <div className="grid gap-4 border border-linea bg-crema-2 p-5">
         <p className="font-titulo text-2xl">Entraste como {sesion.nombre}</p>
         <p className="text-apagado">
-          Tu cuenta es de <strong>caficultor</strong>. Para comprar este café entrá como comprador o como cooperativa.
+          Tu cuenta es de <strong>{sesion.rol}</strong>. Para comprar café necesitás una cuenta de <strong>comprador</strong>.
         </p>
         <form action={cambiarDeCuenta}>
           <input type="hidden" name="siguiente" value={volverA} />
@@ -122,7 +122,7 @@ export function FormularioCheckout({
           <p className="mt-1 text-cereza">Tu cuenta todavía no tiene una wallet asignada.</p>
         )}
         <p className="mt-2 text-sm text-apagado">
-          El dinero sale de esta billetera y entra en la del caficultor. La plataforma no lo custodia.
+          Vas a aprobar el pago en tu billetera antes de que se cobre. No guardamos claves.
         </p>
       </div>
 
