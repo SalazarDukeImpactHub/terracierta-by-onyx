@@ -1,0 +1,12 @@
+.flow { margin: 1.25rem 0 .25rem; }
+.track { position: relative; height: 93px; }
+.path { position: absolute; left: 0; right: 0; top: 49px; border-top: 2px dashed var(--linea); }
+.parcel { position: absolute; top: 17px; width: 32px; height: 32px; background: var(--bosque); color: var(--crema); border-radius: 3px; display: grid; place-items: center; font-size: .68rem; transition: left .6s cubic-bezier(.2,.7,.3,1); }
+.parcel::before { content: ""; position: absolute; inset: 0 13px; background: var(--crema); opacity: .22; }
+.parcel span { position: relative; }
+.parcel[data-waiting="true"] { animation: waiting 1.5s ease-in-out infinite; }
+.start, .middle, .end { position: absolute; bottom: 4px; font-size: .75rem; color: var(--apagado); }
+.start { left: 0; } .middle { left: calc(66.67% - 18px); } .end { right: 0; }
+.flow figcaption { color: var(--apagado); font-size: .8rem; text-align: center; }
+@keyframes waiting { 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .parcel { transition: none; animation: none !important; } }

@@ -17,7 +17,7 @@ where n.nspname = 'public' and p.proname in ('es_dueno_del_lote', 'cooperativa_t
 union all
 select '5. perfiles (esperado 5: 1 caficultor sin INVIMA, 1 con INVIMA, 1 cooperativa, 2 compradores)', count(*)::text from public.profiles
 union all
-select '6. cooperativas (esperado 4)', count(*)::text from public.cooperativas
+select '6. cooperativas (esperado 7)', count(*)::text from public.cooperativas
 union all
 select '7. productos / publicados (esperado 3 / 2)',
        count(*)::text || ' / ' || (count(*) filter (where publicado))::text from public.productos

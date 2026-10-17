@@ -50,22 +50,53 @@ export const esquemaLote = z.object({
   municipio: textoLimpio(2, 60, "El municipio"),
 });
 
+const correo = z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo");
+
+function fechaNacimientoValida(valor: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+  const [anio, mes, dia] = valor.split("-").map(Number);
+  const fecha = new Date(anio, mes - 1, dia);
+  if (fecha.getFullYear() !== anio || fecha.getMonth() !== mes - 1 || fecha.getDate() !== dia) return false;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  return fecha <= hoy && anio >= 1900;
+}
+
+export const TIPOS_DOCUMENTO = [
+  { id: "CC", nombre: "Cédula de ciudadanía" },
+  { id: "CE", nombre: "Cédula de extranjería" },
+  { id: "TI", nombre: "Tarjeta de identidad" },
+  { id: "PA", nombre: "Pasaporte" },
+  { id: "PPT", nombre: "Permiso por protección temporal" },
+  { id: "NIT", nombre: "NIT" },
+] as const;
+
 /** Sign in: solo correo y contraseña. El mensaje de error es el mismo para cualquier fallo (no revela si el correo existe). */
 export const esquemaInicioSesion = z.object({
-  correo: z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo"),
+  correo,
   contrasena: z.string().min(1, "Escribí tu contraseña").max(200, "La contraseña es demasiado larga"),
 });
 
 /**
- * Sign up: la pantalla /registro SOLICITA los datos. Solo caficultor y comprador se registran solos
- * (las cooperativas están precargadas). `tieneInvima` solo cuenta para caficultores y es OBLIGATORIO para ellos.
+ * Sign up: la pantalla /registro pide identidad, documento y municipio.
+ * Solo caficultor y comprador se registran solos (las cooperativas están precargadas).
+ * `tieneInvima` solo cuenta para caficultores y es obligatorio para ellos.
  */
 export const esquemaRegistro = z
   .object({
     rol: z.enum(["caficultor", "comprador"], { error: "Elegí si sos caficultor o comprador" }),
-    nombre: textoLimpio(2, 80, "Tu nombre"),
+    nombres: textoLimpio(2, 60, "Los nombres"),
+    apellidos: textoLimpio(2, 60, "Los apellidos"),
+    tipo_documento: z.enum(["CC", "CE", "TI", "PA", "PPT", "NIT"], { error: "Elegí el tipo de documento" }),
+    numero_documento: z
+      .string()
+      .trim()
+      .min(5, "El número de documento es demasiado corto")
+      .max(20, "El número de documento es demasiado largo")
+      .regex(/^[0-9A-Za-z-]+$/, "El número de documento solo admite letras, números y un guion"),
+    fecha_nacimiento: z.string().refine(fechaNacimientoValida, "La fecha de nacimiento no es válida"),
     municipio: textoLimpio(2, 60, "Tu municipio"),
-    correo: z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo"),
+    correo,
     contrasena: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(200, "La contraseña es demasiado larga"),
     tieneInvima: z.enum(["si", "no"]).optional(),
   })
@@ -76,7 +107,7 @@ export const esquemaRegistro = z
   })
   .transform((d) => ({
     ...d,
-    // Solo los caficultores declaran INVIMA; para el resto siempre es false aunque llegue el campo.
+    nombre: `${d.nombres} ${d.apellidos}`,
     tieneInvima: d.rol === "caficultor" && d.tieneInvima === "si",
   }));
 

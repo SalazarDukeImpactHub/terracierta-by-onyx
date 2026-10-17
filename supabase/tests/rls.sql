@@ -120,7 +120,7 @@ select pg_temp.esperar('Jairo no ve pedidos de Marta', pg_temp.cuenta('public.pe
 select pg_temp.esperar('Jairo no ve pagos de Marta', pg_temp.cuenta('public.pagos'), 0);
 select pg_temp.esperar('Jairo ve su lote', pg_temp.cuenta('public.lotes'), 1);
 select pg_temp.esperar('Jairo ve la oferta sobre su lote', pg_temp.cuenta('public.ofertas'), 1);
-select pg_temp.esperar('Jairo ve las 4 cooperativas', pg_temp.cuenta('public.cooperativas'), 4);
+select pg_temp.esperar('Jairo ve las 7 cooperativas', pg_temp.cuenta('public.cooperativas'), 7);
 
 do $$
 declare filas int;

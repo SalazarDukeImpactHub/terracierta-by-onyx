@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/adapters/auth";
-import { CONTRASENA_DEMO, PERFILES_DEMO } from "@/adapters/mocks/auth";
+import { PERFILES_DEMO } from "@/adapters/mocks/auth";
 import { FormularioAcceso } from "@/components/formulario-acceso";
 import { Marca } from "@/components/marca";
 import { USE_MOCKS } from "@/lib/env";
@@ -48,15 +48,19 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
         <div className="mt-10 border border-linea bg-crema-2 p-5">
           <p className="etiqueta !text-cereza">Modo demostración</p>
           <p className="mt-2 text-sm text-apagado">
-            El acceso real llega con el módulo de autenticación. Mientras tanto podés iniciar sesión con una cuenta de ejemplo
-            (contraseña <code className="font-semibold text-tinta">{CONTRASENA_DEMO}</code>) o entrar rápido con un clic. Las cuentas
-            que crees acá no guardan la contraseña, así que no se verifica.
+            Estas cuentas entran con su correo y su contraseña, o con un clic. El pago sale de la billetera de cada una.
           </p>
 
-          <ul className="mt-3 grid gap-1 text-sm">
+          <ul className="mt-4 grid gap-3">
             {PERFILES_DEMO.map((p) => (
-              <li key={p.id}>
-                <code className="text-tinta">{p.correo}</code> <span className="text-apagado">· {p.etiqueta}</span>
+              <li key={p.id} className="border border-linea bg-crema px-4 py-3">
+                <p className="font-titulo text-lg leading-snug">{p.etiqueta}</p>
+                <p className="mt-1 text-sm">
+                  <code className="text-tinta">{p.correo}</code>
+                </p>
+                <p className="text-sm">
+                  <code className="text-tinta">{p.contrasena}</code>
+                </p>
               </li>
             ))}
           </ul>

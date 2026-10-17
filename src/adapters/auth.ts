@@ -1,31 +1,25 @@
 import { redirect } from "next/navigation";
-import { USE_MOCKS } from "@/lib/env";
-import { rutaDeRol } from "@/lib/roles";
-import * as mock from "@/adapters/mocks/auth";
 import type { AuthAdapter, Perfil, Rol } from "@/adapters/types";
+import { rutaDeRol } from "@/lib/roles";
 
 /**
- * Punto único de acceso a sesión y perfil. USE_MOCKS=true -> perfiles de ejemplo; false -> /src/auth real.
+ * Punto único de acceso a sesión y perfil. El login vive en /src/auth
+ * (correo, contraseña y cookie). USE_MOCKS solo sigue aplicando a los pagos.
  */
 export const auth: AuthAdapter = {
   async iniciarSesion(credenciales) {
-    if (USE_MOCKS) return mock.iniciarSesion(credenciales);
     return (await import("@/auth")).iniciarSesion(credenciales);
   },
   async registrarse(datos) {
-    if (USE_MOCKS) return mock.registrarse(datos);
     return (await import("@/auth")).registrarse(datos);
   },
   async obtenerSesion() {
-    if (USE_MOCKS) return mock.obtenerSesion();
     return (await import("@/auth")).obtenerSesion();
   },
   async obtenerPerfil() {
-    if (USE_MOCKS) return mock.obtenerPerfil();
     return (await import("@/auth")).obtenerPerfil();
   },
   async cerrarSesion() {
-    if (USE_MOCKS) return mock.cerrarSesion();
     return (await import("@/auth")).cerrarSesion();
   },
 };

@@ -1,0 +1,19 @@
+.flow { margin: 0; padding: 1.25rem 0 .5rem; }
+.stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; gap: .75rem; }
+.stages li { position: relative; text-align: center; color: var(--apagado); }
+.stages li:not(:last-child)::after { content: ""; position: absolute; top: 47px; left: calc(50% + 30px); width: calc(100% - 48px); height: 1px; background: var(--linea); }
+.object { height: 90px; width: 78px; position: relative; margin: 0 auto; perspective: 350px; }
+.object span { position: absolute; width: 49px; height: 49px; left: 14px; top: 18px; background: var(--crema-2); border: 1px solid var(--linea); transform: rotateX(54deg) rotateZ(-35deg); transition: background .4s, transform .4s; }
+.object span:nth-child(1) { top: 33px; }
+.object span:nth-child(2) { top: 25px; }
+.object b { position: absolute; top: 66px; left: 0; right: 0; font-size: .65rem; font-weight: 500; white-space: nowrap; }
+.stages li[data-state="active"] { color: var(--cobre-oscuro); }
+.stages li[data-state="active"] .object span { background: #e6c6a8; border-color: var(--cobre-oscuro); }
+.stages li[data-state="active"] .object span:nth-child(3) { animation: lift 1.2s ease-in-out 2; }
+.stages li[data-state="done"] { color: var(--bosque); }
+.stages li[data-state="done"] .object span { background: #a7b7a0; border-color: var(--bosque); }
+.label { display: block; font-size: .9rem; }
+.caption { margin-top: .8rem; color: var(--apagado); font-size: .75rem; text-align: center; }
+@keyframes lift { 50% { transform: translateY(-9px) rotateX(54deg) rotateZ(-35deg); } }
+@media (max-width: 400px) { .stages { gap: .25rem; } .object { width: 60px; } .object span { left: 8px; width: 42px; height: 42px; } .label { font-size: .8rem; } }
+@media (prefers-reduced-motion: reduce) { .object span { animation: none !important; transition: none; } }

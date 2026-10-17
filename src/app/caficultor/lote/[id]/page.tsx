@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 const NUMERAL = ["I", "II", "III"];
 
 const ESTADO_OFERTA: Record<string, { texto: string; ayuda: string; clase: string }> = {
-  propuesta: { texto: "Oferta enviada", ayuda: "Esperando que la cooperativa la acepte.", clase: "text-apagado" },
-  aceptada: { texto: "Oferta aceptada ✦", ayuda: "La cooperativa aceptó. Falta que haga el pago.", clase: "text-bosque" },
+  propuesta: { texto: "Solicitud enviada", ayuda: "La cooperativa ya recibió esta solicitud de venta. Si la acepta, paga el lote y el dinero entra en tu billetera.", clase: "text-apagado" },
+  aceptada: { texto: "Solicitud aceptada ✦", ayuda: "La cooperativa aceptó la compra. Falta que pague el lote.", clase: "text-bosque" },
   pagada: { texto: "Pagada ✦", ayuda: "El pago llegó a tu wallet.", clase: "text-bosque" },
   fallida: { texto: "Pago fallido", ayuda: "El pago no se completó. La cooperativa puede reintentarlo.", clase: "text-cereza" },
 };
@@ -41,7 +41,7 @@ export default async function CooperativasParaMiLote({
   const recomendaciones = vigente ? [] : await recomendacionesDelLote(lote);
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-14">
+    <section>
       <Link href="/caficultor/lote" className="etiqueta hover:text-tinta">
         ← Mis lotes
       </Link>
@@ -90,15 +90,22 @@ export default async function CooperativasParaMiLote({
           </div>
           <h2 className="text-3xl">Las 3 cooperativas que mejor te calzan</h2>
           <p className="mt-2 max-w-2xl text-apagado">
-            Puntuamos por precio, cercanía, si reciben tu método y variedad, y si tienen capacidad para tus kilos. Elegí una y le
-            enviamos la oferta.
+            El análisis mira precio, cercanía, método, variedad y capacidad. La primera es la mejor opción para este lote.
           </p>
+          {recomendaciones[0]?.elegible && (
+            <div className="mt-6 border border-cobre bg-crema-2 p-5">
+              <p className="etiqueta text-cobre-oscuro">La mejor opción</p>
+              <h3 className="mt-1 text-3xl">{recomendaciones[0].nombre}</h3>
+              <p className="mt-2">{recomendaciones[0].motivo}</p>
+              <p className="mt-2 font-titulo text-2xl text-cobre-oscuro">{formatoCop(recomendaciones[0].total)}</p>
+            </div>
+          )}
 
           <ol className="mt-6 grid gap-5 lg:grid-cols-3">
             {recomendaciones.map((r, i) => (
-              <li key={r.cooperativaId} className={`flex flex-col border bg-crema-2 p-5 ${r.elegible ? "border-linea" : "border-linea opacity-80"}`}>
+              <li key={r.cooperativaId} className={`flex flex-col border bg-crema-2 p-5 ${i === 0 && r.elegible ? "border-cobre" : "border-linea"} ${r.elegible ? "" : "opacity-80"}`}>
                 <div className="flex items-start justify-between">
-                  <span className="font-titulo text-4xl text-cobre">{NUMERAL[i]}</span>
+                  <span className="font-titulo text-4xl text-cobre">{i === 0 && r.elegible ? "Mejor" : NUMERAL[i]}</span>
                   <span className="text-right">
                     <span className="block font-titulo text-3xl leading-none">{r.puntaje}</span>
                     <span className="etiqueta">de 100</span>
@@ -120,7 +127,7 @@ export default async function CooperativasParaMiLote({
                     <input type="hidden" name="loteId" value={lote.id} />
                     <input type="hidden" name="cooperativaId" value={r.cooperativaId} />
                     <button type="submit" className="btn">
-                      Elegir esta cooperativa
+                      Enviar solicitud de venta
                     </button>
                   </form>
                 ) : (

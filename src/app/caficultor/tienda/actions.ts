@@ -74,10 +74,47 @@ export async function guardarProducto(_previo: EstadoFormulario, formData: FormD
   redirect("/caficultor/tienda");
 }
 
+/** Nombre y logo de la tienda. Sin nombre y logo no se puede publicar. */
+export async function guardarTienda(formData: FormData) {
+  const perfil = await requerirRol("caficultor");
+  if (!perfil.tiene_invima) redirect("/caficultor");
+
+  const nombre = String(formData.get("tienda_nombre") ?? "").trim();
+  if (nombre.length < 3 || nombre.length > 80) redirect("/caficultor/tienda?error=nombre");
+
+  let logoUrl: string | undefined;
+  const logo = formData.get("logo");
+  if (logo instanceof File && logo.size > 0) {
+    const extension = TIPOS_FOTO[logo.type];
+    if (!extension) redirect("/caficultor/tienda?error=logo");
+    if (logo.size > MAX_FOTO_BYTES) redirect("/caficultor/tienda?error=logo");
+    const bytes = new Uint8Array(await logo.arrayBuffer());
+    if (!coincideFirma(bytes, logo.type)) redirect("/caficultor/tienda?error=logo");
+    const ruta = `${perfil.id}/logo-${randomUUID()}.${extension}`;
+    const { error: errSubida } = await clienteAdmin().storage.from("productos-fotos").upload(ruta, bytes, { contentType: logo.type });
+    if (errSubida) redirect("/caficultor/tienda?error=logo");
+    logoUrl = clienteAdmin().storage.from("productos-fotos").getPublicUrl(ruta).data.publicUrl;
+  }
+
+  const cambios: Record<string, string> = { tienda_nombre: nombre };
+  if (logoUrl) cambios.tienda_logo_url = logoUrl;
+  const { error } = await clienteAdmin().from("profiles").update(cambios).eq("id", perfil.id);
+  if (error) redirect("/caficultor/tienda?error=guardar");
+
+  revalidatePath("/caficultor/tienda");
+  revalidatePath("/tienda");
+  revalidatePath(`/tienda/${perfil.id}`);
+  redirect("/caficultor/tienda");
+}
+
 /** Publica u oculta un producto propio. */
 export async function alternarPublicado(formData: FormData) {
   const perfil = await requerirRol("caficultor");
   if (!perfil.tiene_invima) redirect("/caficultor");
+  const { data: ficha } = await clienteAdmin().from("profiles").select("tienda_nombre, tienda_logo_url").eq("id", perfil.id).maybeSingle();
+  if (!ficha?.tienda_nombre || !ficha.tienda_logo_url) {
+    redirect("/caficultor/tienda?error=tienda");
+  }
   const id = String(formData.get("id") ?? "");
   if (!esUuid(id)) return;
 

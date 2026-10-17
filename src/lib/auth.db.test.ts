@@ -7,7 +7,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
  */
 const HAY_DB = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-const MARTA = "11111111-1111-4111-8111-111111111111";
+const ALVARO = "40088dae-afd2-4ec3-9946-dbb8b245e474";
+const CAMILA = "6b1c0a11-7e2a-4c11-9a11-000000000001";
 const COOPERATIVA = "33333333-3333-4333-8333-333333333333";
 
 describe.skipIf(!HAY_DB)("Sign up y sign in simulados (integración con la base local)", () => {
@@ -86,20 +87,20 @@ describe.skipIf(!HAY_DB)("Sign up y sign in simulados (integración con la base 
 
   it("un correo ya registrado se rechaza (incluidos los de las cuentas de ejemplo)", async () => {
     expect(await mock.registrarMock(datos("comprador@prueba.test"))).toEqual({ ok: false, error: "Ese correo ya está registrado" });
-    expect(await mock.registrarMock(datos("marta@terracierta.demo"))).toEqual({ ok: false, error: "Ese correo ya está registrado" });
+    expect(await mock.registrarMock(datos("al.henao1256@gmail.com"))).toEqual({ ok: false, error: "Ese correo ya está registrado" });
     expect(await mock.registrarMock(datos("  COMPRADOR@Prueba.test "))).toEqual({ ok: false, error: "Ese correo ya está registrado" });
   });
 
   it("SIGN IN detecta el rol solo, a partir del correo (cuentas de ejemplo con su contraseña)", async () => {
-    expect(await mock.autenticarMock("marta@terracierta.demo", mock.CONTRASENA_DEMO)).toEqual({ id: MARTA, rol: "caficultor" });
-    expect(await mock.autenticarMock("cumbres@terracierta.demo", mock.CONTRASENA_DEMO)).toEqual({ id: COOPERATIVA, rol: "cooperativa" });
-    expect(await mock.autenticarMock("  ANDRES@terracierta.demo ", mock.CONTRASENA_DEMO)).toMatchObject({ rol: "comprador" });
+    expect(await mock.autenticarMock("al.henao1256@gmail.com", "2026grupoonyX$")).toEqual({ id: ALVARO, rol: "caficultor" });
+    expect(await mock.autenticarMock("cooperativa@terracierta.test", "Terracierta1")).toEqual({ id: COOPERATIVA, rol: "cooperativa" });
+    expect(await mock.autenticarMock("  CAMILA.RESTREPO@terracierta.test ", "Terracierta1")).toEqual({ id: CAMILA, rol: "comprador" });
   });
 
   it("SIGN IN: una contraseña incorrecta de una cuenta de ejemplo, un correo desconocido o una contraseña vacía dan null", async () => {
-    expect(await mock.autenticarMock("marta@terracierta.demo", "otra-clave")).toBeNull();
-    expect(await mock.autenticarMock("nadie@prueba.test", mock.CONTRASENA_DEMO)).toBeNull();
-    expect(await mock.autenticarMock("marta@terracierta.demo", "")).toBeNull();
+    expect(await mock.autenticarMock("al.henao1256@gmail.com", "otra-clave")).toBeNull();
+    expect(await mock.autenticarMock("nadie@prueba.test", "Terracierta1")).toBeNull();
+    expect(await mock.autenticarMock("jairo@terracierta.test", "")).toBeNull();
   });
 
   it("SIGN IN con una cuenta creada en modo demostración la encuentra por su correo y detecta su rol e INVIMA", async () => {

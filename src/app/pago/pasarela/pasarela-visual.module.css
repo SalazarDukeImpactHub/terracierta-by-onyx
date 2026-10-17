@@ -1,0 +1,53 @@
+.shell { max-width: 1050px; margin: 0 auto; padding: 2.5rem 1.25rem 3.5rem; }
+.roleBar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; margin-bottom: 1.6rem; }
+.roleBar > p { font-size: .85rem; color: var(--apagado); }
+.roles { display: flex; gap: .3rem; flex-wrap: wrap; }
+.roles button { border: 1px solid transparent; border-radius: 2px; background: transparent; padding: .4rem .8rem; min-height: 42px; color: var(--apagado); cursor: pointer; font: inherit; font-size: .9rem; }
+.roles button[aria-pressed="true"] { color: var(--crema); background: var(--bosque); }
+.intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.25rem; }
+.intro h1 { font-size: clamp(2.4rem, 5vw, 3.7rem); }
+.intro p { color: var(--apagado); margin-top: .6rem; max-width: 45ch; }
+.account { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; border-block: 1px solid var(--linea); padding: 1rem 0; margin-top: 1.8rem; }
+.account p:first-child { font-size: .85rem; color: var(--apagado); }
+.account code { font-size: .78rem; overflow-wrap: anywhere; }
+.preview { font-size: .78rem; color: var(--apagado); }
+.quantum { margin-top: 2.25rem; }
+.sectionHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1.25rem; align-items: center; }
+.sectionHead h2 { font-size: clamp(1.7rem, 3vw, 2.1rem); }
+.sectionHead p { color: var(--apagado); font-size: .95rem; margin-top: .35rem; }
+.comparison { display: grid; grid-template-columns: 1fr 1fr; margin-top: 1rem; gap: 1.5rem; }
+.path { border-bottom: 1px solid var(--linea); text-align: center; padding: 1rem .5rem; }
+.pathTitle { font-size: 1.1rem; }
+.paperStage { height: 150px; position: relative; perspective: 600px; overflow: hidden; }
+.paper { position: absolute; left: calc(50% - 57px); top: 25px; width: 114px; height: 94px; background: #fbf8f1; border: 1px solid var(--cobre-oscuro); transform: rotateX(42deg) rotateZ(-20deg); box-shadow: 6px 12px 18px #2a33271a; transition: transform .7s, border-color .7s; }
+.paper span { display: block; width: 65%; margin: 12px auto 0; height: 2px; background: var(--linea); }
+.paper b { font-size: 10px; font-weight: 500; display: block; margin-top: 9px; }
+.backPaper { top: 35px; background: #c2ceb8; border-color: var(--bosque); }
+.ray { position: absolute; height: 2px; width: 75px; left: -75px; top: 66px; background: var(--cobre); opacity: 0; }
+.comparison[data-phase="running"] .ray { animation: approach .8s ease-in forwards; }
+.comparison[data-phase="done"] .paper { animation: settle .7s ease-out 1; }
+.path[data-outcome="unsafe"] .paper { border-color: var(--cereza); }
+.path[data-outcome="safe"] .paper { border-color: var(--bosque); }
+.stamp { position: absolute; bottom: 7px; left: 0; right: 0; color: var(--apagado); font-size: .72rem; letter-spacing: .06em; }
+.path[data-outcome="unsafe"] .stamp, .path[data-outcome="unsafe"] .outcome { color: var(--cereza); }
+.path[data-outcome="safe"] .stamp, .path[data-outcome="safe"] .outcome { color: var(--bosque); }
+.outcome { font-size: .95rem; }
+.disclaimer { color: var(--apagado); font-size: .78rem; margin-top: .8rem; }
+.evidence { margin-top: 1rem; font-size: .85rem; color: var(--apagado); }
+.evidence summary { cursor: pointer; color: var(--cobre-oscuro); text-decoration: underline; text-underline-offset: 4px; }
+.evidence p { margin-top: .8rem; max-width: 75ch; }
+.evidence a { text-decoration: underline; text-underline-offset: 3px; }
+.shorHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: baseline; margin-top: 1rem; }
+.shorHead h3 { font-size: 1.5rem; color: var(--tinta); }
+.shorHead strong { font-size: 1.6rem; font-family: var(--font-titulo); color: var(--cobre-oscuro); }
+.histogram { display: flex; gap: 1.5rem; align-items: end; margin: 1.5rem 0; max-width: 500px; }
+.histogram > div { flex: 1; min-width: 0; display: flex; align-items: center; flex-direction: column; gap: .35rem; }
+.histogram > div > div { background: var(--bosque); width: 100%; }
+.histogram code { font-size: .65rem; }
+.proof { overflow-x: auto; padding: 1rem 0; font-size: .75rem; }
+.footer { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 1.6rem; font-size: .85rem; color: var(--apagado); }
+.footer a { text-decoration: underline; text-underline-offset: 4px; }
+@keyframes approach { from { left: 0; opacity: 0; } 30% { opacity: 1; } to { left: 49%; opacity: 1; } }
+@keyframes settle { from { transform: translateY(-7px) rotateX(42deg) rotateZ(-20deg); } to { transform: rotateX(42deg) rotateZ(-20deg); } }
+@media (max-width: 500px) { .shell { padding-top: 1.5rem; } .comparison { gap: .5rem; } .pathTitle, .outcome { font-size: .85rem; } .histogram { gap: .6rem; } .sectionHead .btn { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .paper, .ray { animation: none !important; transition: none; } }

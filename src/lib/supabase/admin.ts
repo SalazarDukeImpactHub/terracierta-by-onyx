@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { requerirEnv } from "@/lib/env";
+import { claveServidorSupabase, requerirEnv } from "@/lib/env";
 
 /**
  * Cliente con la llave de servicio: se salta RLS. SOLO servidor (rutas, server actions,
@@ -7,7 +7,7 @@ import { requerirEnv } from "@/lib/env";
  * La llave no tiene prefijo NEXT_PUBLIC_, así que el navegador nunca la recibe.
  */
 export function clienteAdmin() {
-  return createClient(requerirEnv("NEXT_PUBLIC_SUPABASE_URL"), requerirEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+  return createClient(requerirEnv("NEXT_PUBLIC_SUPABASE_URL"), claveServidorSupabase(), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

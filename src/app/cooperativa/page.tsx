@@ -34,7 +34,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           <form action={aceptarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
-              Aceptar oferta
+              Aceptar solicitud de venta
             </button>
           </form>
         )}
@@ -42,7 +42,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           <form action={pagarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
-              {o.estado === "fallida" ? "Reintentar pago" : "Pagar con Interledger"}
+              {o.estado === "fallida" ? "Reintentar el pago" : "Pagar y completar la compra"}
             </button>
           </form>
         )}
@@ -88,7 +88,15 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
       <div className="mt-4 border border-linea bg-crema-2 p-4">
         <p className="etiqueta">Tu wallet para pagar</p>
         <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tenés una wallet asignada."}</p>
+        <p className="mt-2 text-sm text-apagado">
+          {perfil.token ? "La cookie de la billetera ya está guardada en esta cuenta." : "Esta cuenta todavía no tiene la cookie de la billetera."}
+        </p>
       </div>
+      <p className="mt-6">
+        <Link href="/tienda" className="btn">
+          Comprar café en la tienda
+        </Link>
+      </p>
 
       {error && (
         <p role="alert" className="mt-6 border border-cereza bg-cereza/10 px-3 py-2 text-cereza">
@@ -98,7 +106,7 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
 
       <Seccion
         titulo="Por responder"
-        vacio="No tenés ofertas nuevas. Cuando un caficultor te elija, aparece acá."
+        vacio="No tenés solicitudes nuevas. Cuando un caficultor te elija, la solicitud de venta aparece acá."
         ofertas={ofertas.filter((o) => o.estado === "propuesta")}
       />
       <Seccion

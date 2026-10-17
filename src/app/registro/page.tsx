@@ -34,7 +34,7 @@ export default async function Registro({ searchParams }: { searchParams: Promise
 
       {USE_MOCKS && (
         <p className="mt-4 border border-linea bg-crema-2 p-3 text-sm text-apagado">
-          <span className="etiqueta !text-cereza">Modo demostración</span> · Se crea una cuenta de ejemplo con una wallet simulada.
+          <span className="etiqueta !text-cereza">Modo demostración</span> · Los pagos son simulados. La cuenta que creás acá sí se guarda.
         </p>
       )}
 
