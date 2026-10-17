@@ -101,12 +101,18 @@ describe("checkout comercial con canal PQC obligatorio", () => {
   });
 });
 
-it("la cooperativa inicia su oferta protegida y no puede usar el inicio de comprador", async () => {
+// Política real: la cooperativa paga ofertas y también puede comprar en la tienda (comprador o cooperativa; ver pagos-service).
+it("la cooperativa inicia su oferta protegida y también puede comprar en la tienda", async () => {
   const f = fixture(); f.as("cooperativa");
   await expect(f.client.iniciarOferta(productoId)).resolves.toMatchObject({ canalPqc: true });
   expect(f.iniciarOferta).toHaveBeenCalledWith(productoId, expect.any(String));
-  await expect(f.client.iniciarPedido({ productoId, cantidad: 1 })).rejects.toMatchObject({ status: 403 });
-  expect(f.iniciarPedido).not.toHaveBeenCalled();
+  await expect(f.client.iniciarPedido({ productoId, cantidad: 1 })).resolves.toMatchObject({ pagoId: "op_checkout_123" });
+  expect(f.iniciarPedido).toHaveBeenCalledWith({ productoId, cantidad: 1 }, expect.objectContaining({ rol: "cooperativa" }));
+});
+it("el comprador no puede iniciar el pago de una oferta de cooperativa", async () => {
+  const f = fixture();
+  await expect(f.client.iniciarOferta(productoId)).rejects.toMatchObject({ status: 403 });
+  expect(f.iniciarOferta).not.toHaveBeenCalled();
 });
 it("el caficultor consulta pero no puede iniciar pagos ajenos a su rol", async () => {
   const f = fixture(); f.as("caficultor");
