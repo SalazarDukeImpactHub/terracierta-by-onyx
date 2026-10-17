@@ -60,6 +60,11 @@ function paraSelector(r: RolInicio): OpcionRol {
   };
 }
 
+const CIFRAS = [
+  { cifra: "1", texto: "wallet propia por caficultor, de wallet a wallet" },
+  { cifra: "0", texto: "dinero custodiado por la plataforma" },
+];
+
 const PASOS = [
   "El caficultor recibe una wallet propia: una dirección de cobro que cualquier billetera puede pagar.",
   "Con INVIMA publica su tienda; sin INVIMA carga su lote y le mostramos las 3 cooperativas que mejor le calzan.",
@@ -99,7 +104,7 @@ export default function Inicio() {
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2">
         <div>
-          <p className="etiqueta">Uno · Cómo funciona</p>
+          <p className="etiqueta">Cómo funciona</p>
           <h2 className="mt-2 text-4xl">Del lote a la billetera</h2>
           <ul className="cruces mt-6">
             {PASOS.map((p) => (
@@ -111,15 +116,22 @@ export default function Inicio() {
           <blockquote className="cita">
             Una dirección de cobro propia y portátil, que cualquier billetera puede pagar.
           </blockquote>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-cafe-claro p-5 text-crema">
-              <p className="font-titulo text-5xl">1</p>
-              <p className="mt-1 text-sm text-crema/80">wallet propia por caficultor, de wallet a wallet</p>
-            </div>
-            <div className="bg-cafe-claro p-5 text-crema">
-              <p className="font-titulo text-5xl">0</p>
-              <p className="mt-1 text-sm text-crema/80">dinero custodiado por la plataforma</p>
-            </div>
+          <div className="grid grid-cols-2 gap-5 pt-2">
+            {CIFRAS.map((c, i) => (
+              // Estilo sello (doble marco, como el logo) y apenas inclinado, como un sello de costal de café.
+              <div
+                key={c.cifra}
+                className={`border-2 border-cafe bg-crema-2 p-1.5 transition-transform duration-200 hover:rotate-0 ${i === 0 ? "-rotate-1" : "rotate-1"}`}
+              >
+                <div className="flex h-full flex-col items-center border border-cobre/70 px-4 py-6 text-center">
+                  <p className="font-titulo text-7xl font-medium italic leading-none text-cobre">{c.cifra}</p>
+                  <p aria-hidden="true" className="my-3 text-xs text-cobre">
+                    ◆
+                  </p>
+                  <p className="text-[0.72rem] font-semibold uppercase leading-relaxed tracking-[0.16em] text-tinta">{c.texto}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
