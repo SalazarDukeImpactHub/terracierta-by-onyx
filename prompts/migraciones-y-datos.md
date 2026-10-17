@@ -170,3 +170,14 @@ AUN NO ME SUBE EL VIDEO DE YOUTUBE PERO COMO RESPALDO Y EL TIEMPO ESTE ES EL LIN
 
 ### Resultado breve
 - Se agregó al README (ES y EN) la sección del video con el enlace de Google Vids como respaldo. Cuando exista el de YouTube se reemplaza.
+
+---
+
+## Entrada 16 — El video ya está en YouTube
+
+```
+https://youtu.be/x2wtAdvquYA YA ESTA EN YOUTUBE
+```
+
+### Resultado breve
+- Se reemplazó en los README el respaldo de Google Vids por el enlace de YouTube (video corto de la demo de pagos).
