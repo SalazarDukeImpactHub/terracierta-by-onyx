@@ -9,6 +9,7 @@ export interface TiendaPublica {
   id: string;
   nombre: string;
   municipio: string;
+  logo_url: string | null;
 }
 
 export interface ProductoPublico {
@@ -24,13 +25,13 @@ const ID_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export const esUuid = (v: string) => ID_UUID.test(v);
 
 export async function listarTiendas(): Promise<TiendaPublica[]> {
-  const { data } = await clienteAnon().from("tiendas_publicas").select("id, nombre, municipio").order("nombre");
+  const { data } = await clienteAnon().from("tiendas_publicas").select("id, nombre, municipio, logo_url").order("nombre");
   return data ?? [];
 }
 
 export async function obtenerTienda(id: string): Promise<TiendaPublica | null> {
   if (!esUuid(id)) return null;
-  const { data } = await clienteAnon().from("tiendas_publicas").select("id, nombre, municipio").eq("id", id).maybeSingle();
+  const { data } = await clienteAnon().from("tiendas_publicas").select("id, nombre, municipio, logo_url").eq("id", id).maybeSingle();
   return data;
 }
 

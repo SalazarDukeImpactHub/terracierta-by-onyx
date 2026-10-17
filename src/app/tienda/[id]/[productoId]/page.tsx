@@ -26,11 +26,10 @@ export default async function DetalleProducto({ params }: { params: Params }) {
   ]);
   if (!tienda || !producto) notFound();
 
-  // El catálogo es público; el pago exige cuenta de comprador y paga con la wallet de su perfil.
   const sesion: SesionCheckout = !perfil
     ? { tipo: "anonimo" }
-    : perfil.rol === "comprador"
-      ? { tipo: "comprador", nombre: perfil.nombre, wallet: perfil.wallet_address }
+    : perfil.rol === "comprador" || perfil.rol === "cooperativa"
+      ? { tipo: "pagador", rol: perfil.rol, nombre: perfil.nombre, wallet: perfil.wallet_address }
       : { tipo: "otro-rol", nombre: perfil.nombre, rol: perfil.rol };
 
   return (
