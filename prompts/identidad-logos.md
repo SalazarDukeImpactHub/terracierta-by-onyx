@@ -25,3 +25,27 @@ logos para agregar  donde podamos usarlo para darle mayor identidad. y cambiar d
 
 ### Archivos tocados
 `public/brand/*.svg`, `src/app/icon.svg`, `src/components/marca.tsx`, `cabecera.tsx`, `pie.tsx`, `src/app/page.tsx`, `src/app/acceso/page.tsx`, `src/app/registro/page.tsx`, `src/app/cooperativa/page.tsx`, `src/components/formulario-checkout.tsx`, `src/app/layout.tsx`, `src/lib/validacion.ts`, `src/adapters/mocks/payments.ts`, `src/payments/index.ts` (solo comentarios del stub), `.github/CODEOWNERS`, `README.md`, `AI_USAGE.md`.
+
+---
+
+## Entrada 2 — Los logos definitivos
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Prompt (texto íntegro)
+
+```
+el logo de las cerezas eliminar eso esta muy feo
+```
+
+Y, mientras el agente trabajaba, con una imagen de los logos que sí se usan (grano con "TERRACIERTA / BY ONYX" en versión clara y oscura, y el sello claro y oscuro):
+
+```
+estos son lso definitivos lso otros no
+```
+
+### Resultado breve
+- Se quitó el emblema de cerezas (`terracierta-marca.svg` y el logo horizontal): del encabezado, el pie, `/acceso`, `/registro`, el ícono de pestaña y el README; los dos archivos se borraron de `public/brand/`. Queda el **grano** (claro u oscuro según el fondo) y el **sello**.
+- **Supuesto declarado:** "eliminar" se entendió como quitarlo de la página y borrar esos dos archivos del repositorio; si se necesitan, están en el historial de git y en la carpeta de logos de Jennifer.
+- La cabecera ahora dice solo "by Onyx", como en la imagen de los logos definitivos.

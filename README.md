@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/brand/terracierta-by-onyx-horizontal.svg" alt="Terracierta by Onyx" width="420">
+  <img src="./public/brand/terracierta-grano-claro.svg" alt="Terracierta by Onyx" width="96">
 </p>
 
 # ☕ Terracierta by Onyx — Café con nombre propio
