@@ -1,10 +1,10 @@
 # ADR-001 — Riel de pagos reales y política de las cooperativas
 
-**Estado:** Borrador (no vinculante hasta que Jennifer Salazar Duke lo acepte)
+**Estado:** Aceptado el 2026-10-17 por Jennifer Salazar Duke (confirmado en el chat). Vinculante solo en lo recogido en «Decisión de Jennifer»; la «Propuesta original del agente» quedó superada y se conserva como historia.
 **Fecha:** 2026-10-17
-**Autores:** Dev System (agente de IA), a pedido de Jennifer Salazar Duke. Revisión humana pendiente.
+**Autores:** Dev System (agente de IA), a pedido de Jennifer Salazar Duke. Decisión y aceptación: Jennifer Salazar Duke.
 
-> Este documento **propone**; no decide. Ningún agente lo promueve a *Aceptado* por iniciativa propia (AGENTS.md §6).
+> Este documento nació como propuesta del agente. La decisión es la de Jennifer (sección «Decisión de Jennifer») y ella lo aceptó (AGENTS.md §6).
 > Lo que está marcado **[verificado]** se comprobó leyendo el código o corriendo algo; **[según el documento de Yamil]** viene de
 > `docs/handoff-pasarela-login.md` (commit `f18a7e7`) y no lo comprobé de forma independiente; **[no verificado]** es una hipótesis.
 
@@ -52,12 +52,12 @@ tampoco lo valida con login real ("Pendiente de validación real").
 
 ## Decisión de Jennifer (2026-10-17, dada en el chat)
 
-> Este bloque registra lo que Jennifer decidió. **El ADR sigue en *Borrador***: pasarlo a *Aceptado* requiere que ella lo confirme (AGENTS.md §6).
+> Este bloque registra lo que Jennifer decidió. Los puntos 1 a 3 son decisiones suyas; el punto 4 describe lo que ya está cargado en la base, no una elección aparte.
 
 1. **Riel oficial hoy: el de cookie (riel B)**, el que ya corre en `main` y en producción (`src/lib/interledger.ts`, `src/payments/index.ts`).
 2. **El SDK oficial + GNAP (riel A) queda como camino futuro**, no retirado: `src/payments/openPayments.ts`, `sdkAdapter.ts`, `settlement.ts`, `gateway.ts` y la pasarela `/pago/pasarela` se conservan, pero **no son el riel del checkout**. Mientras tanto, la pasarela sigue desactivada en producción (`/api/pasarela/key` responde 503).
 3. **Política de cooperativas = la del código actual [verificado]**: pueden pagar **ofertas** y también **comprar productos** de la tienda (`pagos-service.ts` y `checkoutHandlers.ts` aceptan `comprador` o `cooperativa`); el caficultor no puede iniciar pagos. Los tests se ajustaron a esto (PR 41).
-4. **Cooperativas con cuenta:** las siete quedan como datos de ejemplo, como estaba cargado en la base.
+4. **Cooperativas con cuenta (estado de hecho, no decisión nueva):** la base de la nube ya tiene las cooperativas del seed como datos de ejemplo; este ADR no cambia eso.
 
 ### Qué cambia en los tests (PR 41)
 - `src/payments/index.test.ts`: ahora prueba el riel de cookie (mock de `@/lib/interledger`), no el SDK.
@@ -119,9 +119,9 @@ Se pasa al SDK/GNAP cuando: (a) el estado de grants y llaves PQC esté **persist
 - [x] estructural candidata a ADR
 
 ## Estado de madurez
-- [x] provisional
+- [x] provisional (aceptada, pero sin validar con login real ni un pago real completo)
 - [ ] validada
-- [ ] escalar a ADR
+- [x] escalar a ADR (este documento)
 
 ## Referencias
 

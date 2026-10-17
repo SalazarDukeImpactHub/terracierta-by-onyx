@@ -123,7 +123,7 @@ flowchart TB
 **Decisiones clave:**
 
 - **El servidor decide el monto.** El navegador solo dice *qué producto y cuántas unidades*; el precio y la wallet receptora salen de la base. Nadie puede cambiar el cobro desde la consola.
-- **Los mocks solo se activan a propósito.** Únicamente con `USE_MOCKS=true`. Si la variable falta, la app usa los módulos reales: un despliegue olvidado no simula pagos en silencio. Ojo con el sentido contrario: hoy un pago entre dos wallets de Interledger es **real aunque** `USE_MOCKS` sea `true` (lo decide el dominio de la wallet). El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador)* propone reemplazarlo por una configuración explícita.
+- **Los mocks solo se activan a propósito.** Únicamente con `USE_MOCKS=true`. Si la variable falta, la app usa los módulos reales: un despliegue olvidado no simula pagos en silencio. Ojo con el sentido contrario: hoy un pago entre dos wallets de Interledger es **real aunque** `USE_MOCKS` sea `true` (lo decide el dominio de la wallet). El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(aceptado)* deja este riesgo registrado; una configuración explícita sigue pendiente.
 - **La seguridad la garantiza la base.** El RLS aísla a cada caficultor; las tablas de pedidos y pagos no tienen políticas de escritura para usuarios, solo las escribe el servidor.
 - **La plataforma no custodia dinero.** El pago va de wallet a wallet. En la pasarela (SDK oficial) el titular autoriza en su billetera; en el checkout de la tienda el pago sale con la sesión de la billetera de prueba guardada para esa cuenta (ver [Cómo viaja el dinero](#-cómo-viaja-el-dinero)).
 - **El agente solo usa reglas.** Es explicable y no necesita llaves. Queda preparado para evolucionar (por ejemplo, que un modelo redacte el "por qué") sin cambiar el puntaje.
@@ -178,7 +178,7 @@ Todo ocurre en la **testnet de Interledger**: el dinero es **de prueba**. Hoy ha
 
 El checkout valida en el servidor el monto, la wallet receptora y el rol; las llamadas a `/api/pagos/*` viajan por el canal cifrado ML-KEM-768. Si una wallet no es de Interledger y `USE_MOCKS=true`, el pago cae al mock y la pantalla lo declara como simulado.
 
-> ⚠️ **Dos recorridos, un solo objetivo.** Tener dos rieles es una situación de integración, no un diseño final. El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador, sin aceptar)* analiza unificarlos en el SDK oficial. La guía de la pasarela está en [`docs/pasarela-hackathon.md`](./docs/pasarela-hackathon.md) y la demostración para el jurado en [`docs/demo-pqc-jurado.md`](./docs/demo-pqc-jurado.md).
+> ⚠️ **Dos recorridos, un solo objetivo.** Tener dos rieles es una situación de integración, no un diseño final. El [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(aceptado)* fija el riel de cookie del checkout como oficial hoy y deja el SDK oficial como camino futuro. La guía de la pasarela está en [`docs/pasarela-hackathon.md`](./docs/pasarela-hackathon.md) y la demostración para el jurado en [`docs/demo-pqc-jurado.md`](./docs/demo-pqc-jurado.md).
 
 **Contrato que espera la página** (`src/adapters/types.ts`):
 
@@ -197,7 +197,7 @@ La ruta de retorno es `/pago/retorno?tipo=…&ref=…&pago_id=…`. Si la billet
 - **Para que una cuenta pague o cobre con Interledger** hacen falta dos datos que hoy se **cargan a mano en la base**: la dirección de su wallet de prueba (`profiles.wallet_address`, de `interledger-test.dev`) y, para pagar desde ella, la sesión de la billetera (`usuarios.token`). El formulario de registro nunca escribe el token.
 - **Datos de ejemplo (`seed.sql`):** sus wallets usan el dominio reservado `wallet.example.test`. Son **marcadores**, no billeteras de Interledger: con ellas el pago no es real. Hay que reemplazarlas por wallets de prueba para operar.
 - **Sin wallet o con una wallet que no es de Interledger,** el pago real no se completa: con `USE_MOCKS=true` cae al mock y sin esa variable el pago no sale.
-- **Cuenta de respaldo:** si el token de una cuenta venció o no existe, el módulo intenta entrar con `INTERLEDGER_EMAIL` / `INTERLEDGER_PASSWORD` (una cuenta compartida). El ADR-001 propone retirar este mecanismo.
+- **Cuenta de respaldo:** si el token de una cuenta venció o no existe, el módulo intenta entrar con `INTERLEDGER_EMAIL` / `INTERLEDGER_PASSWORD` (una cuenta compartida). El ADR-001 lo acepta como riesgo conocido del riel de cookie.
 
 ---
 
@@ -367,7 +367,7 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 | `src/payments/` | Módulo de pagos *(Yamil)*: checkout, pasarela con SDK oficial, canal y recibos post-cuánticos (`pqc/`) |
 | `src/auth/` | Módulo de cuentas *(Álvaro)*: registro, acceso y sesión; la lógica de sesión está en `src/lib/sesion.ts` |
 | `src/lib/interledger.ts` | Cliente de la API de Test Wallet: cotizar, enviar y confirmar pagos del checkout |
-| `docs/` | Pasarela, demostración para el jurado, ADR-001 (borrador), planes de integración e investigación de PQC |
+| `docs/` | Pasarela, demostración para el jurado, ADR-001 (aceptado), planes de integración e investigación de PQC |
 | `src/lib/match.ts` | Agente de match: puntaje, desglose y motivo |
 | `src/lib/ruta-b.ts` | Lote, elección de cooperativa, aceptar oferta |
 | `src/lib/roles.ts` | Home de cada rol y `rutaSegura` (a dónde volver tras entrar, solo rutas internas) |
@@ -392,7 +392,7 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 - **Datos escapados.** El HTML escrito en nombres y descripciones se muestra como texto; las URLs de foto solo aceptan `http(s)`.
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
 - **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro; un comprador solo ve sus compras.
-- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora. Hoy el checkout admite compradores **y** cooperativas; esa política está en revisión (ADR-001, borrador).
+- **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora. Hoy el checkout admite compradores **y** cooperativas; esa es la política vigente (ADR-001, aceptado).
 - **Canal cifrado post-cuántico.** Las llamadas de pago viajan con ML-KEM-768 + AES-256-GCM; la pasarela añade un token de un solo uso ligado a sesión y cotización, con vencimiento de cinco minutos. El cifrado protege el tramo navegador–servidor: **no autoriza** pagos ni vuelve post-cuántico a Interledger.
 - **Topes en la cuenta de prueba.** El checkout rechaza pagos de más de 25 EUR o cotizaciones que debiten más de 30 EUR.
 - **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan, también en `/acceso` y `/registro`.
@@ -421,16 +421,16 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 
 | Pendiente | Estado |
 |-----------|--------|
-| Dos recorridos de pago (checkout con la API de Test Wallet y pasarela con SDK oficial y GNAP) | Conviven. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(borrador)* propone unificar en el SDK oficial; la decisión es del equipo |
+| Dos recorridos de pago (checkout con la API de Test Wallet y pasarela con SDK oficial y GNAP) | Conviven. [ADR-001](./docs/decisions/ADR-001-riel-de-pagos-y-politica-de-cooperativas.md) *(aceptado)*: el riel oficial es el de cookie del checkout; la pasarela con SDK y GNAP queda como futuro hasta que persista su estado |
 | Pago real sin consentimiento explícito en el checkout | El checkout paga con la sesión de billetera guardada de la cuenta (o la de respaldo `INTERLEDGER_EMAIL`); la pasarela sí pide la autorización del titular |
 | Asignación de wallets | El registro **no asigna** wallet ni token: se cargan a mano en la base. Falta definir cómo se asignan |
 | Datos de ejemplo con wallets marcador | `seed.sql` usa `wallet.example.test`: no son billeteras de Interledger |
 | `tiene_invima` duplicado | El registro lo guarda en `usuarios` y en `profiles`; falta definir la fuente única |
 | Moneda y unidades menores del monto | Los precios están en COP y la wallet de prueba cobra en EUR: se convierte con la tasa de la Test Wallet y se aplican topes |
-| Política de cooperativas | Hoy el checkout admite cooperativas como compradoras, sin pantalla de compras propia; qué cooperativas tienen cuenta está por decidir (ADR-001, borrador) |
+| Política de cooperativas | Hoy el checkout admite cooperativas como compradoras, sin pantalla de compras propia; esa política está aceptada en el ADR-001; las cooperativas con cuenta son datos de ejemplo |
 | Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar |
 | Estado de la pasarela en serverless | Según la documentación de la pasarela, sus grants y llaves viven en memoria de un proceso: en Vercel (serverless) el flujo completo puede no cerrarse. Falta validarlo con login real |
-| Pruebas | `jsdom` no está declarada en `package.json`. Además, 2 pruebas de `src/payments/index.test.ts` esperan que el checkout delegue al SDK sin cookies, y hoy delega a la API de Test Wallet con cookie (la misma tensión del ADR-001). El resto de los fallos de la última corrida local venían de dependencias sin instalar (`npm install`) |
+| Pruebas | La suite pasa completa (216 pruebas, 0 fallos, 31 omitidas). Las de pagos usan mocks: no prueban un pago real |
 | Migraciones | Dos migraciones comparten el timestamp `20261017000000` (`comprador` y `usuarios`) |
 | Agente: coordenadas de municipios | Aproximadas; el agente evolucionará (por ejemplo, un modelo que redacte el motivo) |
 | Supabase en la nube + URL pública en Vercel | **Hecho.** Antes de presentar, revise las variables del despliegue ([Desplegar](#-desplegar-en-vercel)). `npm run cloud:reset` borra datos: confirme qué tablas toca (hay tablas nuevas, como `usuarios` y `sesiones`) antes de correrlo |
