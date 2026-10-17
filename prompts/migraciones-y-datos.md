@@ -148,3 +148,14 @@ no als extras no necesitamso solo las que ya son limpias y ordenadas todo debe q
 
 ### Resultado breve
 - Se despublicaron los productos de Marta en la nube (no se borraron) y se quitaron las dos cuentas extra. Ambos SQL se probaron en local antes y los ejecutó Jennifer; el agente no aplicó nada en la nube.
+
+---
+
+## Entrada 13 — El logo no se sube
+
+```
+otro detalle es  que cuando voy a subir ellogo de el caficultor tengo problemas sime suben la foto de productos de tienda pero no  el logo
+```
+
+### Resultado breve
+- Se reprodujo en local: las imágenes de más de 2 MB se rechazan y las de más de 3 MB rompen la página. Se agregó el ajuste de tamaño en el navegador y un mensaje claro para formatos no admitidos. Pendiente de probar en producción.
