@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Sello } from "@/components/marca";
 
 const ROLES = [
   {
@@ -50,8 +49,8 @@ export default function Inicio() {
           className="-z-20 object-cover object-[60%_50%]"
         />
         {/* Velo oscuro: deja el texto legible sobre la foto, más fuerte a la izquierda donde va el texto. */}
-        <div className="absolute inset-0 -z-10 bg-cafe/65 lg:bg-transparent lg:bg-gradient-to-r lg:from-cafe/90 lg:via-cafe/65 lg:to-cafe/30" />
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 sm:py-28 lg:grid-cols-[1fr_20rem]">
+        <div className="absolute inset-0 -z-10 bg-cafe/65 lg:bg-transparent lg:bg-gradient-to-r lg:from-cafe/85 lg:via-cafe/45 lg:to-transparent" />
+        <div className="mx-auto flex min-h-[30rem] max-w-6xl items-center px-5 py-20 sm:min-h-[36rem] sm:py-28">
           <div>
             <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
             <h1 className="mt-5 max-w-3xl text-5xl text-white sm:text-6xl">
@@ -69,9 +68,6 @@ export default function Inicio() {
                 Ver la tienda
               </Link>
             </div>
-          </div>
-          <div className="hidden bg-cafe/75 p-2 backdrop-blur-sm lg:block">
-            <Sello tono="oscuro" className="w-full" />
           </div>
         </div>
       </section>
