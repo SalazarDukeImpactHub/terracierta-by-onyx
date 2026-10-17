@@ -42,7 +42,7 @@ export function FormularioCheckout({
           necesita cuenta.
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link href={rutaAcceso} className="btn btn-bosque self-start">
+          <Link href={rutaAcceso} className="btn self-start">
             Entrar para pagar
           </Link>
           <Link href={`/registro?rol=comprador&siguiente=${encodeURIComponent(volverA)}`} className="text-sm text-cobre-oscuro underline">
@@ -136,7 +136,7 @@ export function FormularioCheckout({
         </p>
       )}
 
-      <button type="submit" className="btn btn-bosque self-start" disabled={enviando || !sesion.wallet}>
+      <button type="submit" className="btn self-start" disabled={enviando || !sesion.wallet}>
         {enviando ? "Iniciando pago…" : "Pagar con Interledger"}
       </button>
     </form>

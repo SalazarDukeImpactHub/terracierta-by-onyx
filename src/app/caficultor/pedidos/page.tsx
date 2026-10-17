@@ -32,20 +32,20 @@ export default async function PedidosYPagos() {
   return (
     <section className="mx-auto max-w-5xl px-5 py-14">
       <Link href="/caficultor" className="etiqueta hover:text-tinta">
-        ← Mi espacio
+        ← Mi cuenta
       </Link>
       <h1 className="mt-3 text-4xl">Pedidos y pagos recibidos</h1>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">{formatoCop(cobrado)}</p>
           <p className="mt-1 text-sm text-crema/80">cobrado en tu wallet</p>
         </div>
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">{pagados}</p>
           <p className="mt-1 text-sm text-crema/80">pagos completados</p>
         </div>
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">{pendientes}</p>
           <p className="mt-1 text-sm text-crema/80">pendientes de autorización</p>
         </div>

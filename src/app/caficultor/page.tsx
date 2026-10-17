@@ -5,7 +5,7 @@ import type { Perfil } from "@/adapters/types";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { formatoCop } from "@/lib/validacion";
 
-export const metadata: Metadata = { title: "Mi espacio" };
+export const metadata: Metadata = { title: "Mi cuenta" };
 export const dynamic = "force-dynamic";
 
 const ESTADO_LOTE: Record<string, string> = {
@@ -72,25 +72,25 @@ async function CaminoConInvima({ perfil }: { perfil: Perfil }) {
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">
             {publicados}
             <span className="text-2xl text-crema/70"> / {total}</span>
           </p>
           <p className="mt-1 text-sm text-crema/80">productos publicados</p>
         </div>
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">{pagados.length}</p>
           <p className="mt-1 text-sm text-crema/80">pagos completados</p>
         </div>
-        <div className="bg-bosque p-5 text-crema">
+        <div className="bg-cafe-claro p-5 text-crema">
           <p className="font-titulo text-4xl">{formatoCop(cobrado)}</p>
           <p className="mt-1 text-sm text-crema/80">cobrado en tu wallet</p>
         </div>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/caficultor/tienda" className="btn btn-bosque">
+        <Link href="/caficultor/tienda" className="btn">
           Ir a mi tienda
         </Link>
         <Link href="/caficultor/pedidos" className="btn btn-borde">
@@ -123,7 +123,7 @@ async function CaminoSinInvima({ perfil }: { perfil: Perfil }) {
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/caficultor/lote" className="btn btn-bosque">
+        <Link href="/caficultor/lote" className="btn">
           Cargar mi lote
         </Link>
       </div>

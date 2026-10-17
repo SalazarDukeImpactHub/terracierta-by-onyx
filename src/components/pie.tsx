@@ -2,7 +2,7 @@ import { Marca } from "@/components/marca";
 
 export function Pie() {
   return (
-    <footer className="bg-bosque-hondo text-crema">
+    <footer className="bg-cafe text-crema">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-center gap-4">
           <Marca tono="oscuro" carga="lazy" tamano={56} className="shrink-0" />

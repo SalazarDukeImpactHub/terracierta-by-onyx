@@ -42,7 +42,7 @@ export default async function MisCompras() {
 
       <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
         <h2 className="text-3xl">Mis compras</h2>
-        <Link href="/tienda" className="btn btn-bosque">
+        <Link href="/tienda" className="btn">
           Ver la tienda
         </Link>
       </div>

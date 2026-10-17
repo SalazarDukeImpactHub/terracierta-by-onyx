@@ -69,7 +69,7 @@ export function FormularioProducto({ valores = {} }: { valores?: Valores }) {
       )}
 
       <div className="flex gap-3">
-        <button type="submit" className="btn btn-bosque" disabled={pendiente}>
+        <button type="submit" className="btn" disabled={pendiente}>
           {pendiente ? "Guardando…" : "Guardar producto"}
         </button>
         <Link href="/caficultor/tienda" className="btn btn-borde">
