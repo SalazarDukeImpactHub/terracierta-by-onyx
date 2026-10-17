@@ -8,6 +8,14 @@ import type { AuthAdapter, Perfil, Rol } from "@/adapters/types";
  * Punto único de acceso a sesión y perfil. USE_MOCKS=true -> perfiles de ejemplo; false -> /src/auth real.
  */
 export const auth: AuthAdapter = {
+  async iniciarSesion(credenciales) {
+    if (USE_MOCKS) return mock.iniciarSesion(credenciales);
+    return (await import("@/auth")).iniciarSesion(credenciales);
+  },
+  async registrarse(datos) {
+    if (USE_MOCKS) return mock.registrarse(datos);
+    return (await import("@/auth")).registrarse(datos);
+  },
   async obtenerSesion() {
     if (USE_MOCKS) return mock.obtenerSesion();
     return (await import("@/auth")).obtenerSesion();

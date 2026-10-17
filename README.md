@@ -80,7 +80,7 @@ Tres entradas, según lo que busca cada quien:
 
 ```mermaid
 flowchart TB
-  F([☕ Caficultor]) --> L[Login<br/>wallet asignada]
+  F([☕ Caficultor]) --> L[Sign up: datos e INVIMA<br/>wallet asignada]
   L --> Q{¿Tiene INVIMA?}
   Q -->|Sí · Ruta A| T[Tienda y productos]
   T --> C([🛒 Comprador<br/>con cuenta y wallet])
@@ -114,7 +114,16 @@ flowchart TB
 - **El agente solo usa reglas.** Es explicable y no necesita llaves. Queda preparado para evolucionar (por ejemplo, que un modelo redacte el "por qué") sin cambiar el puntaje.
 - **Todos tienen cuenta y wallet para pagar o cobrar.** Caficultores, cooperativas **y compradores**. Mirar el café no necesita cuenta; pagar sí, y la wallet con la que se paga sale del perfil (nadie puede pagar con una wallet ajena).
 
-**Contrato con el login** (`src/adapters/types.ts`): `Rol = caficultor | cooperativa | comprador`; `obtenerPerfil()` devuelve la `wallet_address` asignada al registrarse y, para los caficultores, `tiene_invima`: **el login lo pide y lo guarda al crear la cuenta** y la página solo lo lee (no hay ninguna pantalla que lo cambie). La página manda a `/acceso?siguiente=<ruta>` para pedir la cuenta y volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
+**Contrato con el login** (`src/adapters/types.ts`), con dos momentos distintos:
+
+| Función | Entrada | Salida | Qué hace |
+|---------|---------|--------|----------|
+| `registrarse` *(sign up)* | `correo`, `contrasena`, `rol`, `nombre`, `municipio`, `tieneInvima` | `{ ok, rol }` o `{ ok: false, error }` | **Solicita los datos**, crea la cuenta, **asigna la wallet**, guarda el perfil (el INVIMA solo si es caficultor) e inicia sesión |
+| `iniciarSesion` *(sign in)* | `correo`, `contrasena` | `{ ok, rol }` o `{ ok: false, error }` | Solo valida credenciales; **todo lo demás se detecta solo**. El error es genérico (no revela si el correo existe) |
+| `obtenerSesion` / `obtenerPerfil` | — | sesión o perfil con `wallet_address` y `tiene_invima` | La página solo **lee** el INVIMA; ninguna pantalla lo cambia |
+| `cerrarSesion` | — | — | — |
+
+`Rol = caficultor | cooperativa | comprador`. La página manda a `/acceso?siguiente=<ruta>` (o `/registro?...`) para volver al producto que se iba a pagar: el módulo de login debe respetar `siguiente` (solo rutas internas, ya validadas por `rutaSegura`).
 
 ---
 
@@ -210,7 +219,12 @@ npm run dev:local
 
 > 💡 `dev:local` lee las llaves **locales** de `supabase status` y se las pasa solo al proceso de Next. **No hace falta crear ningún `.env`.**
 
-En `/acceso` hay cinco perfiles de ejemplo: caficultora con INVIMA, caficultor sin INVIMA, cooperativa demo y dos compradores (uno cuyo pago siempre falla, para mostrar ese estado).
+Hay dos pantallas distintas, como en cualquier plataforma:
+
+- **`/registro` (sign up):** pide los datos de la persona (rol, nombre, municipio, correo y contraseña) y asigna su wallet. **Solo a los caficultores** les pregunta si tienen INVIMA, y ahí queda guardado. Las cooperativas están precargadas y no se registran solas.
+- **`/acceso` (sign in):** pide solo **correo y contraseña**; el rol, el perfil, la wallet y el INVIMA se detectan solos. Nunca vuelve a preguntar el INVIMA.
+
+En modo demostración `/acceso` también lista cinco cuentas de ejemplo (caficultora con INVIMA, caficultor sin INVIMA, cooperativa demo y dos compradores, uno cuyo pago siempre falla) con la contraseña `demo1234`, p. ej. `marta@terracierta.demo`. Son datos inventados, no secretos. Las cuentas que cree en `/registro` en este modo no guardan la contraseña: es una simulación para recorrer la demo.
 
 ### 🧪 Probar la Ruta A (con INVIMA)
 
@@ -237,7 +251,7 @@ npm run test:rls    # pruebas de RLS contra la base local (recrea la base antes 
 npm run db:reset    # recrea la base desde las migraciones y el seed
 ```
 
-Hoy: **78 pruebas** (57 unitarias y 21 de integración) y **46 verificaciones de RLS**.
+Hoy: **115 pruebas** (86 unitarias y 29 de integración) y **46 verificaciones de RLS**.
 
 ### 🔑 Variables de entorno
 
@@ -306,7 +320,7 @@ Cada push a `main` actualiza producción y cada rama o *pull request* genera su 
 
 | Carpeta / archivo | Qué contiene |
 |-------------------|--------------|
-| `src/app/` | Rutas: landing, acceso, caficultor, tienda, comprador, cooperativa, pago y API de pagos |
+| `src/app/` | Rutas: landing, acceso (sign in), registro (sign up), caficultor, tienda, comprador, cooperativa, pago y API de pagos |
 | `src/components/` | Cabecera, pie, formularios, recibo, fotos de producto |
 | `src/adapters/` | **Contratos** + mocks + selector `USE_MOCKS`. La interfaz solo habla con esta capa |
 | `src/payments/` | ⛔ **Stub** del módulo de pagos *(compañero de pagos)* |
@@ -336,7 +350,9 @@ Una plataforma que mueve cobros tiene que **pasar su propia auditoría**. Capas 
 - **Fotos validadas.** Tipo, tamaño (2 MB) y **firma real del archivo**: un texto disfrazado de PNG se rechaza.
 - **Protección por rol.** Sin sesión → `/acceso`; cada rol solo ve su espacio; un caficultor no ve los lotes de otro; un comprador solo ve sus compras.
 - **Checkout con sesión.** La API de pagos responde 401 sin sesión y 403 a caficultores y cooperativas; la wallet con la que se paga sale del perfil, así que una wallet que mande el navegador se ignora.
-- **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan.
+- **Sin redirecciones abiertas.** El parámetro `siguiente` solo acepta rutas internas: `https://…`, `//…` y `javascript:` se descartan, también en `/acceso` y `/registro`.
+- **Sesión simulada firmada.** En modo demostración la cookie de sesión va firmada con un secreto del servidor: un id suelto, una firma inventada o la firma de otra cuenta se rechazan. Sigue siendo una simulación, no la autenticación real.
+- **Registro acotado.** El rol que mande el navegador no puede ser cooperativa; el INVIMA solo cuenta si el rol es caficultor; la contraseña exige 8 caracteres o más; el error de sign in es el mismo para correo desconocido y contraseña errónea.
 - **Llaves solo en el servidor.** La llave de servicio no aparece en el bundle del navegador (verificado) ni en el repo.
 - **Sin custodia.** La plataforma nunca toca el dinero.
 
@@ -361,8 +377,8 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Pendiente | Estado |
 |-----------|--------|
 | Pagos reales con Open Payments | Lo entrega el compañero de pagos en `src/payments` |
-| Login real y asignación de wallets | Lo entrega el compañero de login en `src/auth` |
-| Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. `tiene_invima` lo **registra el login al crear la cuenta** (la página solo lo lee) |
+| Autenticación real (sign in / sign up) y asignación de wallets | Lo entrega el compañero de login en `src/auth`: `iniciarSesion` y `registrarse` (la página ya tiene las pantallas `/acceso` y `/registro`) |
+| Reemplazar la tabla `profiles` provisional por la real | Al integrar el login. `tiene_invima` lo **registra el sign up** (solo caficultores; la página solo lo lee) |
 | Rol `comprador` y wallet asignada en el login real | El compañero de login debe admitir `comprador` en `profiles.rol`, asignar wallet al registrarse y respetar `?siguiente=` (cambio de contrato) |
 | Moneda y unidades menores del monto | Por confirmar con el módulo de pagos (hoy: COP entero) |
 | Cooperativas sin cuenta | Solo la **cuenta demo** puede aceptar y pagar ofertas; las demás son precargadas |
@@ -381,7 +397,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 |------------|-----|
 | **Jennifer Salazar Duke** | Dirección del proyecto, producto y revisión |
 | **Yamil Andre La Barrera López** | Pagos con Open Payments (`src/payments`) |
-| **Álvaro Henao González** | Login y asignación de wallets (`src/auth`) |
+| **Álvaro Henao González** | Autenticación (sign in / sign up) y asignación de wallets (`src/auth`) |
 | **Caren Briyid Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
 | **Astrid Carolina Hoyos Estrada** | Administración y parte creativa · ideas y revisión de errores |
 

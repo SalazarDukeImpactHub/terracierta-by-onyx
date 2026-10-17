@@ -7,9 +7,9 @@
 # Pagos con Open Payments — Yamil Andre La Barrera López
 /src/payments/          @0x15k
 
-# Login y asignación de wallets — Álvaro Henao González
+# Autenticación (sign in / sign up) y asignación de wallets — Álvaro Henao González
 /src/auth/              @ahenao1256
 
-# El contrato entre la página y los módulos de pagos y login. Cambiarlo afecta a los dos:
+# El contrato entre la página y los módulos de pagos y autenticación. Cambiarlo afecta a los dos:
 # se acuerda antes (ver README → "Contrato con el login" y "Cómo viaja el dinero").
 /src/adapters/types.ts  @SalazarDukeImpactHub @0x15k @ahenao1256

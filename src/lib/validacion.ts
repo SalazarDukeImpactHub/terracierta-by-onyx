@@ -50,6 +50,36 @@ export const esquemaLote = z.object({
   municipio: textoLimpio(2, 60, "El municipio"),
 });
 
+/** Sign in: solo correo y contraseña. El mensaje de error es el mismo para cualquier fallo (no revela si el correo existe). */
+export const esquemaInicioSesion = z.object({
+  correo: z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo"),
+  contrasena: z.string().min(1, "Escribí tu contraseña").max(200, "La contraseña es demasiado larga"),
+});
+
+/**
+ * Sign up: la pantalla /registro SOLICITA los datos. Solo caficultor y comprador se registran solos
+ * (las cooperativas están precargadas). `tieneInvima` solo cuenta para caficultores y es OBLIGATORIO para ellos.
+ */
+export const esquemaRegistro = z
+  .object({
+    rol: z.enum(["caficultor", "comprador"], { error: "Elegí si sos caficultor o comprador" }),
+    nombre: textoLimpio(2, 80, "Tu nombre"),
+    municipio: textoLimpio(2, 60, "Tu municipio"),
+    correo: z.string().trim().toLowerCase().email("Escribí un correo válido").max(120, "El correo es demasiado largo"),
+    contrasena: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(200, "La contraseña es demasiado larga"),
+    tieneInvima: z.enum(["si", "no"]).optional(),
+  })
+  .superRefine((d, ctx) => {
+    if (d.rol === "caficultor" && !d.tieneInvima) {
+      ctx.addIssue({ code: "custom", path: ["tieneInvima"], message: "Contanos si tenés INVIMA" });
+    }
+  })
+  .transform((d) => ({
+    ...d,
+    // Solo los caficultores declaran INVIMA; para el resto siempre es false aunque llegue el campo.
+    tieneInvima: d.rol === "caficultor" && d.tieneInvima === "si",
+  }));
+
 export const TIPOS_FOTO: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",

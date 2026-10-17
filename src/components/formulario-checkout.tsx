@@ -41,9 +41,14 @@ export function FormularioCheckout({
           Cada persona tiene su billetera. Entrando, tu pago sale de tu wallet y queda en tus compras. Mirar el café no
           necesita cuenta.
         </p>
-        <Link href={rutaAcceso} className="btn btn-bosque self-start">
-          Entrar para pagar
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <Link href={rutaAcceso} className="btn btn-bosque self-start">
+            Entrar para pagar
+          </Link>
+          <Link href={`/registro?rol=comprador&siguiente=${encodeURIComponent(volverA)}`} className="text-sm text-cobre-oscuro underline">
+            Crear cuenta
+          </Link>
+        </div>
       </div>
     );
   }

@@ -33,9 +33,14 @@ export async function Cabecera() {
               </form>
             </>
           ) : (
-            <Link href="/acceso" className="btn !py-2">
-              Entrar
-            </Link>
+            <>
+              <Link href="/registro" className="hover:text-cobre-oscuro">
+                Registrarse
+              </Link>
+              <Link href="/acceso" className="btn !py-2">
+                Iniciar sesión
+              </Link>
+            </>
           )}
         </nav>
       </div>

@@ -2,16 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/adapters/auth";
-import { PERFILES_DEMO } from "@/adapters/mocks/auth";
+import { CONTRASENA_DEMO, PERFILES_DEMO } from "@/adapters/mocks/auth";
+import { FormularioAcceso } from "@/components/formulario-acceso";
 import { USE_MOCKS } from "@/lib/env";
 import { rutaDeRol, rutaSegura } from "@/lib/roles";
 import { entrarDemo } from "./actions";
 
-export const metadata: Metadata = { title: "Acceso" };
+export const metadata: Metadata = { title: "Iniciar sesión" };
 
 /**
- * Acceso para todos los roles: caficultor, cooperativa y comprador. `siguiente` (opcional, solo rutas internas)
- * es a dónde volver al entrar; por ejemplo, el producto que la persona iba a pagar.
+ * Sign in (iniciar sesión): correo y contraseña. La página no pregunta nada más: el rol, la wallet y el INVIMA se detectan
+ * solos al entrar. `siguiente` (opcional, solo rutas internas) es a dónde volver; por ejemplo, el producto que se iba a pagar.
  */
 export default async function Acceso({ searchParams }: { searchParams: Promise<{ siguiente?: string }> }) {
   const { siguiente: crudo } = await searchParams;
@@ -20,44 +21,63 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
   const sesion = await auth.obtenerSesion().catch(() => null);
   if (sesion) redirect(siguiente ?? rutaDeRol(sesion.rol));
 
+  const rutaRegistro = siguiente ? `/registro?siguiente=${encodeURIComponent(siguiente)}` : "/registro";
+
   return (
     <section className="mx-auto max-w-2xl px-5 py-16">
-      <p className="etiqueta">Acceso</p>
-      <h1 className="mt-2 text-4xl">{siguiente ? "Entrá para pagar" : "Entrá a tu espacio"}</h1>
+      <p className="etiqueta">{siguiente ? "Para pagar" : "Acceso"}</p>
+      <h1 className="mt-2 text-4xl">{siguiente ? "Iniciá sesión para pagar" : "Iniciá sesión"}</h1>
       <p className="mt-3 text-apagado">
         {siguiente
-          ? "Para pagar necesitás una cuenta: así tu billetera queda asociada a tus compras y a cada pago."
-          : "Cada persona tiene su cuenta y su billetera: caficultores, cooperativas y compradores."}
+          ? "Para pagar necesitás tu cuenta: así tu billetera queda asociada a tus compras y a cada pago."
+          : "Con tu correo y contraseña entrás a tu espacio: tu rol, tu billetera y tus datos se cargan solos."}
       </p>
 
-      {USE_MOCKS ? (
-        <>
-          <p className="mt-3 text-apagado">
-            El acceso real llega con el login de Supabase. Mientras tanto, entrá con uno de estos perfiles de ejemplo
-            para recorrer la demostración.
+      <FormularioAcceso siguiente={siguiente} />
+
+      <p className="mt-6 text-sm text-apagado">
+        ¿Todavía no tenés cuenta?{" "}
+        <Link href={rutaRegistro} className="text-cobre-oscuro underline">
+          Registrate
+        </Link>
+      </p>
+
+      {USE_MOCKS && (
+        <div className="mt-10 border border-linea bg-crema-2 p-5">
+          <p className="etiqueta !text-cereza">Modo demostración</p>
+          <p className="mt-2 text-sm text-apagado">
+            El acceso real llega con el módulo de autenticación. Mientras tanto podés iniciar sesión con una cuenta de ejemplo
+            (contraseña <code className="font-semibold text-tinta">{CONTRASENA_DEMO}</code>) o entrar rápido con un clic. Las cuentas
+            que crees acá no guardan la contraseña, así que no se verifica.
           </p>
-          <form action={entrarDemo} className="mt-8 grid gap-3">
+
+          <ul className="mt-3 grid gap-1 text-sm">
+            {PERFILES_DEMO.map((p) => (
+              <li key={p.id}>
+                <code className="text-tinta">{p.correo}</code> <span className="text-apagado">· {p.etiqueta}</span>
+              </li>
+            ))}
+          </ul>
+
+          <form action={entrarDemo} className="mt-5 grid gap-2">
             {siguiente && <input type="hidden" name="siguiente" value={siguiente} />}
+            <p className="etiqueta">Entrar rápido</p>
             {PERFILES_DEMO.map((p) => (
               <button
                 key={p.id}
                 type="submit"
                 name="perfil"
                 value={p.id}
-                className="flex items-center justify-between border border-tinta bg-crema-2 px-5 py-4 text-left hover:bg-crema"
+                className="flex items-center justify-between border border-tinta bg-crema px-4 py-2 text-left hover:bg-crema-2"
               >
-                <span className="font-titulo text-xl">{p.etiqueta}</span>
+                <span className="font-titulo text-lg">{p.etiqueta}</span>
                 <span aria-hidden="true" className="text-cobre">
                   ✦
                 </span>
               </button>
             ))}
           </form>
-        </>
-      ) : (
-        <p className="mt-3 text-apagado">
-          El formulario de acceso lo entrega el módulo de login (<code>src/auth</code>).
-        </p>
+        </div>
       )}
 
       <p className="mt-8 text-sm text-apagado">
