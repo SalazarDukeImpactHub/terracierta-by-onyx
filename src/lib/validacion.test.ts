@@ -1,5 +1,65 @@
 import { describe, expect, it } from "vitest";
-import { esquemaCheckout, esquemaProducto, formatoCop, urlSegura, walletAddress } from "./validacion";
+import {
+  esquemaCheckout,
+  esquemaInicioSesion,
+  esquemaProducto,
+  esquemaRegistro,
+  formatoCop,
+  urlSegura,
+  walletAddress,
+} from "./validacion";
+
+describe("esquemaInicioSesion (sign in)", () => {
+  it("acepta correo y contraseña, y normaliza el correo", () => {
+    expect(esquemaInicioSesion.parse({ correo: "  Ana@Example.TEST ", contrasena: "x" })).toEqual({
+      correo: "ana@example.test",
+      contrasena: "x",
+    });
+  });
+  it("rechaza un correo inválido y una contraseña vacía", () => {
+    expect(esquemaInicioSesion.safeParse({ correo: "no-es-correo", contrasena: "x" }).success).toBe(false);
+    expect(esquemaInicioSesion.safeParse({ correo: "a@b.co", contrasena: "" }).success).toBe(false);
+  });
+  it("no deja pasar campos de más (p. ej. un rol): el rol se detecta solo, no lo manda el navegador", () => {
+    const r = esquemaInicioSesion.parse({ correo: "a@b.co", contrasena: "x", rol: "cooperativa", tieneInvima: "si" });
+    expect(Object.keys(r).sort()).toEqual(["contrasena", "correo"]);
+  });
+});
+
+describe("esquemaRegistro (sign up)", () => {
+  const base = { nombre: "Ana Gómez", municipio: "Marsella", correo: "ana@example.test", contrasena: "clave-segura-1" };
+
+  it("un caficultor DEBE contestar si tiene INVIMA", () => {
+    const r = esquemaRegistro.safeParse({ ...base, rol: "caficultor" });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues[0].message).toBe("Contanos si tenés INVIMA");
+  });
+  it("un caficultor con INVIMA queda con tieneInvima = true", () => {
+    expect(esquemaRegistro.parse({ ...base, rol: "caficultor", tieneInvima: "si" }).tieneInvima).toBe(true);
+  });
+  it("un caficultor sin INVIMA queda con tieneInvima = false", () => {
+    expect(esquemaRegistro.parse({ ...base, rol: "caficultor", tieneInvima: "no" }).tieneInvima).toBe(false);
+  });
+  it("un comprador no responde INVIMA, y aunque el navegador lo mande queda en false", () => {
+    expect(esquemaRegistro.parse({ ...base, rol: "comprador" }).tieneInvima).toBe(false);
+    expect(esquemaRegistro.parse({ ...base, rol: "comprador", tieneInvima: "si" }).tieneInvima).toBe(false);
+  });
+  it("las cooperativas no se registran solas (están precargadas)", () => {
+    expect(esquemaRegistro.safeParse({ ...base, rol: "cooperativa" }).success).toBe(false);
+    expect(esquemaRegistro.safeParse({ ...base, rol: "administrador" }).success).toBe(false);
+  });
+  it("exige contraseña de 8+ caracteres, correo válido y nombre y municipio", () => {
+    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", contrasena: "corta" }).success).toBe(false);
+    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", correo: "x" }).success).toBe(false);
+    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", nombre: "" }).success).toBe(false);
+    expect(esquemaRegistro.safeParse({ ...base, rol: "comprador", municipio: " " }).success).toBe(false);
+  });
+  it("normaliza el correo y recorta los textos", () => {
+    const r = esquemaRegistro.parse({ ...base, rol: "comprador", correo: " ANA@Example.test ", nombre: "  Ana  " });
+    expect(r.correo).toBe("ana@example.test");
+    expect(r.nombre).toBe("Ana");
+  });
+});
 
 describe("walletAddress", () => {
   it("acepta una URL https", () => {

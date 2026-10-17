@@ -60,7 +60,41 @@ export interface Perfil {
   wallet_address: string | null;
 }
 
+/**
+ * Datos del SIGN IN (iniciar sesión). Solo correo y contraseña: con eso el módulo de autenticación detecta
+ * solo el rol, el perfil, la wallet y el INVIMA (después los devuelven obtenerSesion y obtenerPerfil).
+ */
+export interface CredencialesInicio {
+  correo: string;
+  contrasena: string;
+}
+
+/**
+ * Datos del SIGN UP (registro): es quien SOLICITA los datos de la persona. Los captura la pantalla /registro.
+ * `tieneInvima` solo se pregunta (y solo se guarda) cuando el rol es "caficultor"; para los demás es false.
+ * Las cooperativas están precargadas (cuenta demo), así que la pantalla de registro solo ofrece caficultor y comprador.
+ */
+export interface DatosRegistro {
+  correo: string;
+  contrasena: string;
+  rol: Rol;
+  nombre: string;
+  municipio: string;
+  tieneInvima: boolean;
+}
+
+/**
+ * Resultado de iniciarSesion y registrarse. Con `ok: true` YA HAY SESIÓN iniciada y `rol` dice dónde ir.
+ * `error` es un texto para mostrarle a la persona, en español. En el sign in debe ser genérico
+ * ("Correo o contraseña incorrectos"): no revela si el correo existe.
+ */
+export type ResultadoAuth = { ok: true; rol: Rol } | { ok: false; error: string };
+
 export interface AuthAdapter {
+  /** Sign in: correo + contraseña. Detecta rol, perfil, wallet e INVIMA automáticamente. */
+  iniciarSesion(credenciales: CredencialesInicio): Promise<ResultadoAuth>;
+  /** Sign up: crea la cuenta, asigna la wallet, guarda el perfil (con tiene_invima si es caficultor) e inicia sesión. */
+  registrarse(datos: DatosRegistro): Promise<ResultadoAuth>;
   obtenerSesion(): Promise<Sesion | null>;
   obtenerPerfil(): Promise<Perfil | null>;
   cerrarSesion(): Promise<void>;
