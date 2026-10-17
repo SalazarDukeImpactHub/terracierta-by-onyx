@@ -106,3 +106,27 @@ Sí: en la pestaña del caficultor dejá 'Crear cuenta' como botón principal e 
 ### Resultado breve
 - Caficultor: "Crear mi cuenta" como botón principal e "Iniciar sesión" como enlace. Comprador y cooperativa sin cambios. Una función `paraSelector` arma lo que muestra el selector a partir de la misma lista que usan las tarjetas.
 - Rama `feat/selector-rol` con commits y PR.
+
+---
+
+## Entrada 6 — Quitar la sección repetida
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+Jennifer compartió una captura de las tres tarjetas "¿Desde dónde llegás?", que repetían el selector de rol.
+
+### Prompts (texto íntegro)
+
+```
+pero debajo de lo que agregamso se ve esto como repetido eliminamos esa seccion o como seria
+```
+
+```
+Sí, eliminá la sección de las tarjetas, renumerá 'Cómo funciona' a 'Uno' y creá la rama feat/sin-tarjetas-repetidas con commits y PR.
+```
+
+### Resultado breve
+- Se eliminó la sección de tarjetas, el separador de rombo que la seguía y el campo `numeral` de los datos; "Cómo funciona" pasó a "Uno". El selector del encabezado es ahora la única entrada por rol.
+- Archivo: `src/app/page.tsx`.
