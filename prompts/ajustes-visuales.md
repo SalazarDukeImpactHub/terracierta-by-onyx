@@ -130,3 +130,25 @@ Sí, eliminá la sección de las tarjetas, renumerá 'Cómo funciona' a 'Uno' y 
 ### Resultado breve
 - Se eliminó la sección de tarjetas, el separador de rombo que la seguía y el campo `numeral` de los datos; "Cómo funciona" pasó a "Uno". El selector del encabezado es ahora la única entrada por rol.
 - Archivo: `src/app/page.tsx`.
+
+---
+
+## Entrada 7 — Cifras con más personalidad y quitar el "Uno"
+
+- **Fecha/hora:** 2026-10-16 · hora no registrada
+- **Quién:** Jennifer Salazar Duke
+
+### Contexto
+Jennifer compartió una captura de los dos cuadros oscuros de "1" y "0" junto a la cita.
+
+### Prompt (texto íntegro)
+
+```
+esto necesita mas personalidad estanmuy aburridos los cuadros con info importante  y si quitamos el uno siento que sobra como no hay mas
+```
+
+### Resultado breve
+- "Uno ·" fuera de la etiqueta (queda "Cómo funciona").
+- Los dos cuadros se rediseñaron como sellos (doble marco del logo, cifra cobre en cursiva, rombo, leve inclinación). Textos sin cambios.
+- **Supuesto declarado:** "más personalidad" se resolvió con el lenguaje visual del logo en lugar de pedir más información; si se quiere otra dirección (ilustración, animación, otros textos) hay que indicarla.
+- Archivo: `src/app/page.tsx`.
