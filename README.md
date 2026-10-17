@@ -375,8 +375,12 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 ## 👥 Equipo
 
 - **Jennifer Salazar Duke** — dirección del proyecto, producto y revisión
-- **[Nombre pendiente]** — pagos con Open Payments (`src/payments`)
-- **[Nombre pendiente]** — login y asignación de wallets (`src/auth`)
+- **Caren Briyid Hoyos Estrada**
+- **Astrid Carolina Hoyos Estrada**
+- **Yamil Andre La Barrera Lopez**
+- **Alvaro Henao Gonzalez**
+
+> Dos integrantes del equipo se encargan de los módulos de **pagos con Open Payments** (`src/payments`) y de **login con asignación de wallets** (`src/auth`). El rol de cada integrante se indica aquí cuando se confirme.
 
 ---
 

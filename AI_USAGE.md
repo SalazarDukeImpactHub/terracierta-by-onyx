@@ -57,7 +57,7 @@ Alcance: **todo el código del proyecto fue escrito con IA**, salvo lo listado e
 - IA: redactados por el agente; pendientes de revisión humana.
 - `README.md` reescrito al estilo del README de ejemplo que indicó Jennifer (`cavaltechackathon`), usado **solo como referencia de formato**; el contenido es propio.
 - `docs/*.jpg`: 7 capturas de la app corriendo en local, tomadas por el agente con el navegador integrado (datos de ejemplo, sin información real). **Ya no se muestran en el README**: Jennifer pidió agregarlas al final, con el diseño definitivo.
-- Pendiente de revisión humana: los nombres del equipo (hay marcadores `[Nombre pendiente]`) y la ortografía del apellido.
+- Nombres del equipo en el README: los dio Jennifer en el chat y se escribieron **tal cual los tecleó**, sin tildes. Pendiente de revisión humana: tildes y ortografía, y el rol de cada integrante.
 
 ## Files with minimal or no AI
 
