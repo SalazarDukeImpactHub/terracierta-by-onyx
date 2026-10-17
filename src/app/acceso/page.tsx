@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/adapters/auth";
 import { CONTRASENA_DEMO, PERFILES_DEMO } from "@/adapters/mocks/auth";
 import { FormularioAcceso } from "@/components/formulario-acceso";
+import { Marca } from "@/components/marca";
 import { USE_MOCKS } from "@/lib/env";
 import { rutaDeRol, rutaSegura } from "@/lib/roles";
 import { entrarDemo } from "./actions";
@@ -25,6 +26,7 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
 
   return (
     <section className="mx-auto max-w-2xl px-5 py-16">
+      <Marca tamano={56} className="mb-4" />
       <p className="etiqueta">{siguiente ? "Para pagar" : "Acceso"}</p>
       <h1 className="mt-2 text-4xl">{siguiente ? "Iniciá sesión para pagar" : "Iniciá sesión"}</h1>
       <p className="mt-3 text-apagado">

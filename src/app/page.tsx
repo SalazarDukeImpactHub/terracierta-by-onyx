@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Sello } from "@/components/marca";
 
 const ROLES = [
   {
@@ -38,23 +39,26 @@ export default function Inicio() {
   return (
     <>
       <section className="bg-bosque-hondo text-crema">
-        <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
-          <h1 className="mt-5 max-w-3xl text-5xl text-white sm:text-6xl">
-            Que el caficultor cobre directo, <em className="text-cobre">con nombre propio.</em>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-crema/85">
-            Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
-            su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/registro?rol=caficultor" className="btn">
-              Crear mi cuenta de caficultor
-            </Link>
-            <Link href="/tienda" className="btn btn-borde !border-crema !text-crema hover:!bg-crema hover:!text-tinta">
-              Ver la tienda
-            </Link>
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 sm:py-28 lg:grid-cols-[1fr_20rem]">
+          <div>
+            <p className="etiqueta !text-crema/70">Hackatón Open Payments · Medellín 2026</p>
+            <h1 className="mt-5 max-w-3xl text-5xl text-white sm:text-6xl">
+              Que el caficultor cobre directo, <em className="text-cobre">con nombre propio.</em>
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg text-crema/85">
+              Hoy muchos caficultores dependen de un intermediario que decide cuándo y cómo les paga. Acá cada uno tiene
+              su wallet y vende en su tienda o a la mejor cooperativa. Sin promesas grandes: un cobro que se puede ver.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/registro?rol=caficultor" className="btn">
+                Crear mi cuenta de caficultor
+              </Link>
+              <Link href="/tienda" className="btn btn-borde !border-crema !text-crema hover:!bg-crema hover:!text-tinta">
+                Ver la tienda
+              </Link>
+            </div>
           </div>
+          <Sello tono="oscuro" className="hidden w-full lg:block" />
         </div>
       </section>
 

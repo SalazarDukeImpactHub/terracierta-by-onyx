@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/adapters/auth";
 import { FormularioRegistro } from "@/components/formulario-registro";
+import { Marca } from "@/components/marca";
 import { USE_MOCKS } from "@/lib/env";
 import { rutaDeRol, rutaSegura } from "@/lib/roles";
 
@@ -24,6 +25,7 @@ export default async function Registro({ searchParams }: { searchParams: Promise
 
   return (
     <section className="mx-auto max-w-2xl px-5 py-16">
+      <Marca tamano={56} className="mb-4" />
       <p className="etiqueta">Registro</p>
       <h1 className="mt-2 text-4xl">Creá tu cuenta</h1>
       <p className="mt-3 text-apagado">

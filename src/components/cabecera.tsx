@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/adapters/auth";
 import { salir } from "@/app/acceso/actions";
+import { Marca } from "@/components/marca";
 import { rutaDeRol } from "@/lib/roles";
 
 export async function Cabecera() {
@@ -10,10 +11,13 @@ export async function Cabecera() {
   return (
     <header className="sticky top-0 z-30 border-b border-linea bg-crema/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-        <Link href="/" className="leading-none" aria-label="Terracierta by Onyx, inicio">
-          <span className="block font-titulo text-xl font-medium uppercase tracking-[0.28em]">Terracierta</span>
-          <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.22em] text-apagado">
-            by Onyx · Marsella · Antioquia
+        <Link href="/" className="flex items-center gap-3 leading-none" aria-label="Terracierta by Onyx, inicio">
+          <Marca tamano={44} className="shrink-0" />
+          <span>
+            <span className="block font-titulo text-xl font-medium uppercase tracking-[0.28em]">Terracierta</span>
+            <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.22em] text-apagado">
+              by Onyx · Marsella · Antioquia
+            </span>
           </span>
         </Link>
 
