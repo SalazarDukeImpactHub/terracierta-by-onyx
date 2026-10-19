@@ -53,4 +53,4 @@ export function createCheckoutHandlers(deps: Dependencies, channel: ReturnType<t
     }),
   };
 }
-export const getCheckoutHandlers = () => createCheckoutHandlers({ perfil: () => auth.obtenerPerfil(), iniciarPedido: iniciarPagoDePedido, iniciarOferta: iniciarPagoDeOferta, consultar: (id) => sincronizarPago(id) });
+export const getCheckoutHandlers = () => createCheckoutHandlers({ perfil: () => auth.obtenerPerfil(), iniciarPedido: iniciarPagoDePedido, iniciarOferta: iniciarPagoDeOferta, consultar: (id, wallet) => sincronizarPago(id, wallet) });

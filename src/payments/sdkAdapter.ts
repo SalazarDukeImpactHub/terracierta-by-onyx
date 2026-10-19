@@ -14,7 +14,7 @@ type RecordSdk = {
   sessionHash: string;
   state: string;
   expiresAt: number;
-  phase: "awaiting" | "verifying" | "sending" | "sent" | "uncertain";
+  phase: "awaiting" | "verifying" | "sending" | "sent" | "rejected" | "uncertain";
   output: ConsultarPagoOutput;
   canalPqc: boolean;
 };
@@ -32,6 +32,17 @@ export function createSdkAdapter(prepare: (input: ChargeInput, payerWallet?: str
     const payload = { pagoId: id, ...result, receiver: record.input.walletReceptor, amount: record.input.montoCop, canalPqc: record.canalPqc, issuedAt: new Date().toISOString() };
     record.output = { estado: result.estado, detalle: { ...payload, reciboPqc: result.estado === "completado" ? getPqcRuntime().signer.sign(payload) : null, emisor: "wallet-servidor-autorizada-gnap" } };
   }
+  function rejected(id: string, record: RecordSdk) {
+    record.phase = "rejected";
+    record.output = {
+      estado: "fallido",
+      detalle: { rail: "open-payments", paso: "autorizacion", motivo: "Pago rechazado en Interledger.", simulado: false },
+    };
+    record.prepared.clear();
+    const target = new URL(record.input.urlRetorno);
+    target.searchParams.set("pago_id", id);
+    return new Response(null, { status: 303, headers: { Location: target.href, "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
+  }
   return {
     async start(input: IniciarPagoInput, session: string) {
       prune();
@@ -48,7 +59,7 @@ export function createSdkAdapter(prepare: (input: ChargeInput, payerWallet?: str
       const authorization = await prepared.authorize(`${paymentOrigin()}/api/pasarela/retorno?checkoutState=${state}`);
       records.set(id, { input, prepared, canalPqc: hasProtectedCheckout(), sessionHash: hash(session), state, expiresAt: Date.now() + 10 * 60000, phase: "awaiting", output: { estado: "pendiente", detalle: { rail: "open-payments", canalPqc: hasProtectedCheckout(), paso: "autorizacion", quoteId: prepared.quote.quoteId, debitAmount: prepared.quote.debitAmount } } });
       flows.set(state, id);
-      return { pagoId: id, redirectUrl: authorization.redirectUrl, estado: "pendiente" as const };
+      return { pagoId: id, redirectUrl: authorization.redirectUrl, estado: "pendiente" as const, canalPqc: hasProtectedCheckout() };
     },
     async callback(request: Request) {
       prune();
@@ -56,7 +67,9 @@ export function createSdkAdapter(prepare: (input: ChargeInput, payerWallet?: str
       const id = flows.get(url.searchParams.get("checkoutState") ?? "");
       const record = id ? records.get(id) : undefined;
       const cookie = request.headers.get("cookie")?.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${checkoutCookie}=`))?.slice(checkoutCookie.length + 1) ?? "";
-      if (!id || !record || !cookie || record.sessionHash !== hash(cookie) || record.phase !== "awaiting" || !record.prepared.authorizeReturn) return Response.json({ error: "El retorno no corresponde a un pago pendiente de esta sesión." }, { status: 403 });
+      if (!id || !record || !cookie || record.sessionHash !== hash(cookie) || record.phase !== "awaiting") return Response.json({ error: "El retorno no corresponde a un pago pendiente de esta sesión." }, { status: 403 });
+      if (["access_denied", "request_denied"].includes(url.searchParams.get("error") ?? "")) return rejected(id, record);
+      if (!record.prepared.authorizeReturn) return Response.json({ error: "El retorno no corresponde a una autorización de esta sesión." }, { status: 403 });
       // Reclama el flujo antes de cualquier espera: otro callback no valida ni envía en paralelo.
       record.phase = "verifying";
       try {
@@ -70,6 +83,7 @@ export function createSdkAdapter(prepare: (input: ChargeInput, payerWallet?: str
         target.searchParams.set("pago_id", id);
         return new Response(null, { status: 303, headers: { Location: target.href, "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
       } catch (error) {
+        if (error instanceof PaymentError && error.code === "PAYMENT_DECLINED") return rejected(id, record);
         if (record.phase === "sending") { record.phase = "uncertain"; record.output = { estado: "pendiente", detalle: { rail: "open-payments", resultadoIncierto: true, motivo: "No se pudo confirmar el pago. Revisa la wallet antes de volver a pagar." } }; }
         else if (record.phase === "verifying") record.phase = "awaiting";
         return Response.json({ error: error instanceof PaymentError ? error.message : "No se pudo verificar la autorización del pago." }, { status: error instanceof PaymentError ? error.status : 502, headers: { "Cache-Control": "no-store" } });

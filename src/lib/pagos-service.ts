@@ -1,9 +1,6 @@
 import { pagos } from "@/adapters/payments";
 import type { EstadoPago, Perfil, TipoPago } from "@/adapters/types";
 import { SITE_URL } from "@/lib/env";
-import { LoginInterledgerError, PagoInterledgerError } from "@/lib/interledger";
-import { guardarCobro } from "@/lib/cobro-pendiente";
-import { urlLoginInterledger } from "@/lib/login-interledger";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { esquemaCheckout, primerError } from "@/lib/validacion";
 
@@ -16,36 +13,13 @@ import { esquemaCheckout, primerError } from "@/lib/validacion";
 
 export type ResultadoInicio =
   | { ok: true; pagoId: string; redirectUrl: string }
-  | { ok: false; error: string; status: number; login?: string };
+  | { ok: false; error: string; status: number };
 
-/**
- * Checkout de la tienda. Paga el COMPRADOR con sesión: su wallet sale de su perfil (asignada al registrarse),
- * nunca de lo que mande el navegador. El navegador solo elige producto y cantidad.
- */
-function esBilleteraInterledger(wallet: string): boolean {
-  return wallet.includes("interledger-test.dev") || wallet.includes("ilp.interledger");
-}
-
-async function confirmarEnLaApp(datos: {
-  tipo: "pedido" | "oferta";
-  productoId?: string;
-  cantidad?: number;
-  ofertaId?: string;
-  monto: number;
-  receptor: string;
-  descripcion: string;
-  pagadorId: string;
-  volver: string;
-}): Promise<ResultadoInicio> {
-  await guardarCobro(datos);
-  return { ok: false, error: "Entra a Interledger para pagar.", status: 401, login: urlLoginInterledger("/pago/decidir") };
-}
+/** El monto y las wallets siempre se consultan desde el perfil y la base de datos. */
 
 export async function iniciarPagoDePedido(
   entrada: unknown,
   comprador: Pick<Perfil, "id" | "rol" | "wallet_address">,
-  volver = "/tienda",
-  directo = false,
 ): Promise<ResultadoInicio> {
   if (comprador.rol !== "comprador" && comprador.rol !== "cooperativa") {
     return { ok: false, error: "Para comprar necesitas entrar como comprador o como cooperativa", status: 403 };
@@ -80,19 +54,6 @@ export async function iniciarPagoDePedido(
   }
 
   const monto = producto.precio_cop * cantidad;
-  const descripcion = `Terracierta · ${producto.nombre} · ${monto} COP`;
-  if (!directo && esBilleteraInterledger(walletComprador) && esBilleteraInterledger(vendedor.wallet_address)) {
-    return confirmarEnLaApp({
-      tipo: "pedido",
-      productoId: producto.id,
-      cantidad,
-      monto,
-      receptor: vendedor.wallet_address,
-      descripcion,
-      pagadorId: comprador.id,
-      volver,
-    });
-  }
   const { data: pedido, error: errPedido } = await db
     .from("pedidos")
     .insert({ producto_id: producto.id, comprador_id: comprador.id, wallet_comprador: walletComprador, cantidad, monto })
@@ -119,8 +80,6 @@ export async function iniciarPagoDePedido(
 export async function iniciarPagoDeOferta(
   ofertaId: string,
   perfilCooperativaId: string,
-  volver = "/cooperativa",
-  directo = false,
 ): Promise<ResultadoInicio> {
   const db = clienteAdmin();
   const { data: oferta } = await db
@@ -141,18 +100,6 @@ export async function iniciarPagoDeOferta(
   ]);
   if (!pagador?.wallet_address) return { ok: false, error: "Tu cooperativa no tiene una wallet asignada", status: 409 };
   if (!receptor?.wallet_address) return { ok: false, error: "El caficultor todavía no tiene wallet para cobrar", status: 409 };
-  const descripcion = `Terracierta · lote · ${oferta.total} COP`;
-  if (!directo && esBilleteraInterledger(pagador.wallet_address) && esBilleteraInterledger(receptor.wallet_address)) {
-    return confirmarEnLaApp({
-      tipo: "oferta",
-      ofertaId: oferta.id,
-      monto: oferta.total,
-      receptor: receptor.wallet_address,
-      descripcion,
-      pagadorId: perfilCooperativaId,
-      volver,
-    });
-  }
 
   return iniciarYRegistrar({
     tipo: "oferta",
@@ -180,13 +127,9 @@ async function iniciarYRegistrar(input: {
   try {
     resultado = await pagos.iniciarPago(input);
   } catch (e) {
-    if (e instanceof LoginInterledgerError) {
-      await db.from(tablaReferencia).delete().eq("id", input.referenciaId);
-      return { ok: false, error: e.message, status: 401, login: e.login };
-    }
     console.error("[pagos] iniciarPago falló:", e instanceof Error ? e.message : e);
     await db.from(tablaReferencia).update({ estado: estadoFallido }).eq("id", input.referenciaId);
-    const mensaje = e instanceof Error && e.name === "PagoInterledgerError" ? e.message : "No pudimos iniciar el pago. Intenta de nuevo en un momento.";
+    const mensaje = e instanceof Error && e.name === "PaymentError" ? e.message : "No pudimos iniciar el pago. Intenta de nuevo en un momento.";
     return { ok: false, error: mensaje, status: 502 };
   }
 
@@ -225,10 +168,10 @@ export interface VistaPago {
  * Consulta el estado al módulo de pagos y, si cambió de pendiente a final, actualiza `pagos` y la
  * referencia (pedido u oferta). Es idempotente: la transición solo se aplica una vez.
  */
-export async function sincronizarPago(pagoId: string): Promise<VistaPago | null> {
+export async function sincronizarPago(pagoId: string, wallet?: string | null): Promise<VistaPago | null> {
   const db = clienteAdmin();
   const { data: pago } = await db.from("pagos").select("*").eq("id", pagoId).maybeSingle();
-  if (!pago) return null;
+  if (!pago || (wallet && wallet !== pago.wallet_pagador && wallet !== pago.wallet_receptor)) return null;
 
   let estado = pago.estado as EstadoPago;
   let detalle = (pago.detalle_json ?? {}) as Record<string, unknown>;

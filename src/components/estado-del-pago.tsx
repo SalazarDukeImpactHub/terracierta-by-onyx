@@ -3,16 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatoCop } from "@/lib/validacion";
+import { CheckoutError, consultarCheckoutProtegido, type VerifiedPayment } from "@/payments/checkoutClient";
 
-interface Vista {
-  pagoId: string;
-  tipo: "pedido" | "oferta";
-  estado: "pendiente" | "completado" | "fallido";
-  monto: number;
-  walletReceptor: string;
-  concepto: string;
-  detalle: { paso?: string; recibo?: string; motivo?: string; simulado?: boolean };
-}
+type Vista = VerifiedPayment;
 
 const PASOS = ["Solicitud", "Autorización", "Ejecución", "Finalización"];
 
@@ -39,16 +32,14 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
 
     async function consultar() {
       try {
-        const r = await fetch(`/api/pagos/${encodeURIComponent(pagoId)}`, { cache: "no-store" });
-        if (!r.ok) throw new Error("No encontramos este pago");
-        const datos = (await r.json()) as Vista;
+        const datos = await consultarCheckoutProtegido(pagoId);
         if (!activo) return;
         setVista(datos);
         setError(null);
         if (datos.estado === "pendiente") temporizador = setTimeout(consultar, 1500);
       } catch (e) {
         if (!activo) return;
-        setError(e instanceof Error ? e.message : "Error al consultar el pago");
+        setError(e instanceof CheckoutError ? e.message : "Error al consultar el pago");
       }
     }
     consultar();
@@ -96,7 +87,7 @@ export function EstadoDelPago({ pagoId, volverA }: { pagoId: string; volverA: st
       <div className="mt-8 border border-linea bg-crema-2 p-6">
         {vista.estado === "completado" && (
           <>
-            <p className="etiqueta !text-bosque">Pago completado ✦</p>
+            <p className="etiqueta !text-bosque">Pago completado · recibo verificado ✦</p>
             <h2 className="mt-1 text-3xl">Recibo</h2>
           </>
         )}

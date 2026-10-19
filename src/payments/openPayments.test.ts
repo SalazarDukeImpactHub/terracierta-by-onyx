@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { OpenPaymentsClientError } from "@interledger/open-payments";
 import { createOpenPaymentsRail, verifyInteractionHash } from "./openPayments";
 import { mockWalletAddress, mockQuote, mockIncomingPayment, mockOutgoingPayment, mockGrant, mockPendingGrant, type AuthenticatedClient } from "@interledger/open-payments";
 
@@ -76,6 +77,24 @@ describe("riel SDK oficial y GNAP", () => {
     expect(f.outgoingComplete()).toBe(true);
     await expect(prepared.confirm()).rejects.toThrow();
     expect(f.outgoingCount()).toBe(1);
+  });
+
+  it("marca como rechazado el grant denegado por la wallet sin crear un outgoing payment", async () => {
+    const f = fixture();
+    const prepared = await createOpenPaymentsRail(f.client, sender).prepare(input);
+    await prepared.authorize("https://client.example/callback");
+    const request = f.grants[2] as { interact: { finish: { nonce: string } } };
+    const interactRef = "rejected-payment";
+    const hash = createHash("sha256")
+      .update([request.interact.finish.nonce, "server-nonce", interactRef, authServer].join("\n"))
+      .digest("base64");
+    await prepared.authorizeReturn(interactRef, hash);
+    vi.spyOn(f.client.grant, "continue").mockRejectedValue(
+      new OpenPaymentsClientError("Request denied", { status: 401, code: "request_denied", description: "Request denied" }),
+    );
+
+    await expect(prepared.confirm()).rejects.toMatchObject({ code: "PAYMENT_DECLINED", message: expect.stringMatching(/Rechazaste/) });
+    expect(f.outgoingCount()).toBe(0);
   });
 
   it("no crea cotizaciones ni pagos para montos que exceden el límite", async () => {
@@ -289,6 +308,36 @@ it.each([
   else f.client.quote.create = async () => mockQuote({ id: "https://ilp.interledger-test.dev/quotes/1", debitAmount: amount, receiveAmount: received });
   await expect(createOpenPaymentsRail(f.client, sender).prepare(input)).rejects.toThrow(/importe.*vendedor/);
   expect(f.grants.filter((grant) => grant.interact)).toHaveLength(0);
+  expect(f.outgoingCount()).toBe(0);
+});
+
+it("vuelve al estado del pago cuando el usuario rechaza la autorización en la wallet", async () => {
+  const { createSdkAdapter, checkoutCookie } = await import("./sdkAdapter");
+  const payerWallet = `https://ilp.interledger-test.dev/payer-${crypto.randomUUID()}`;
+  const recipientWallet = `https://ilp.interledger-test.dev/recipient-${crypto.randomUUID()}`;
+  const referenciaId = crypto.randomUUID();
+  const f = fixture("COP", "1500000", payerWallet, recipientWallet);
+  const origin = "http://127.0.0.1:3100";
+  vi.stubEnv("OPEN_PAYMENTS_REDIRECT_ORIGIN", origin);
+  vi.stubEnv("OPEN_PAYMENTS_MAX_RECEIVE", "15000");
+  vi.stubEnv("OPEN_PAYMENTS_MAX_DEBIT", "15000");
+  const adapter = createSdkAdapter((charge, wallet) => createOpenPaymentsRail(f.client, wallet!).prepare(charge), async () => {});
+  const started = await adapter.start({
+    tipo: "pedido",
+    referenciaId,
+    montoCop: 15000,
+    walletReceptor: recipientWallet,
+    walletPagador: payerWallet,
+    urlRetorno: `${origin}/pago/retorno?tipo=pedido&ref=${referenciaId}`,
+  }, "checkout-session");
+  const interaction = f.grants[2] as { interact: { finish: { uri: string } } };
+  const callback = new URL(interaction.interact.finish.uri);
+  callback.searchParams.set("error", "access_denied");
+  const response = await adapter.callback(new Request(callback, { headers: { Cookie: `${checkoutCookie}=checkout-session` } }));
+
+  expect(response.status).toBe(303);
+  expect(response.headers.get("Location")).toContain(`/pago/retorno?tipo=pedido&ref=${referenciaId}&pago_id=${started.pagoId}`);
+  expect(await adapter.consultar(started.pagoId)).toMatchObject({ estado: "fallido", detalle: { paso: "autorizacion" } });
   expect(f.outgoingCount()).toBe(0);
 });
 

@@ -25,7 +25,7 @@ export async function pagarOferta(formData: FormData) {
   const ofertaId = String(formData.get("ofertaId") ?? "");
   if (!esUuid(ofertaId)) redirect(volver("Oferta inválida"));
 
-  const r = await iniciarPagoDeOferta(ofertaId, perfil.id, "/cooperativa");
-  if (!r.ok) redirect(r.login ?? volver(r.error));
+  const r = await iniciarPagoDeOferta(ofertaId, perfil.id);
+  if (!r.ok) redirect(volver(r.error));
   redirect(r.redirectUrl);
 }

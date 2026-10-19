@@ -126,7 +126,15 @@ export function createOpenPaymentsRail(client: AuthenticatedClient, senderUrl: s
           fresh();
           if (!pending || !ref || sent) throw new PaymentError("Falta autorización verificada o el pago ya fue enviado.", 409);
           sent = true;
-          const continued = await client.grant.continue({ url: pending.continue.uri, accessToken: pending.continue.access_token.value }, { interact_ref: ref });
+          let continued;
+          try {
+            continued = await client.grant.continue({ url: pending.continue.uri, accessToken: pending.continue.access_token.value }, { interact_ref: ref });
+          } catch (error) {
+            if (error instanceof OpenPaymentsClientError && error.code === "request_denied") {
+              throw new PaymentError("Rechazaste el pago en Interledger.", 409, "PAYMENT_DECLINED");
+            }
+            throw error;
+          }
           if (!isFinalizedGrantWithAccessToken(continued)) throw new PaymentError("La wallet no confirmó la autorización del pago.", 403);
           grant = continued;
           outgoing = await client.outgoingPayment.create({ url: sender.resourceServer, accessToken: grant.access_token.value }, { walletAddress: sender.id, quoteId: quote.id, metadata: { description: input.description } });

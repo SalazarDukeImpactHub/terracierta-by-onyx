@@ -40,7 +40,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           </form>
         )}
         {(o.estado === "aceptada" || o.estado === "fallida") && (
-          <form action={pagarOferta} data-vuelta-pago="">
+          <form action={pagarOferta}>
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
               {o.estado === "fallida" ? "Reintentar el pago" : "Pagar y completar la compra"}

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cambiarDeCuenta } from "@/app/acceso/actions";
 import { formatoCop } from "@/lib/validacion";
+import { CheckoutError, iniciarCheckoutProtegido } from "@/payments/checkoutClient";
 
 export type SesionCheckout =
   | { tipo: "anonimo" }
@@ -31,6 +32,8 @@ export function FormularioCheckout({
   const [cantidad, setCantidad] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [incierto, setIncierto] = useState(false);
+  const bloqueado = useRef(false);
   const rutaAcceso = `/acceso?siguiente=${encodeURIComponent(volverA)}`;
 
   if (sesion.tipo === "anonimo") {
@@ -72,30 +75,26 @@ export function FormularioCheckout({
 
   async function pagar(e: React.FormEvent) {
     e.preventDefault();
+    if (bloqueado.current) return;
+    bloqueado.current = true;
     setError(null);
     setEnviando(true);
     try {
-      const respuesta = await fetch("/api/pagos/iniciar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productoId, cantidad }),
-      });
-      if (respuesta.status === 401) {
+      const resultado = await iniciarCheckoutProtegido({ productoId, cantidad });
+      window.location.assign(resultado.redirectUrl);
+    } catch (e) {
+      if (e instanceof CheckoutError && e.status === 401) {
+        bloqueado.current = false;
         router.push(rutaAcceso); // la sesión venció: volver a entrar y regresar a este producto
         return;
       }
-      const datos = (await respuesta.json()) as { redirectUrl?: string; error?: string };
-      if (datos.redirectUrl) {
-        if (datos.redirectUrl.startsWith("https://wallet.interledger-test.dev/")) {
-          sessionStorage.setItem("tc_vuelta_pago", "1");
-        }
-        window.location.assign(datos.redirectUrl);
-        return;
+      if (e instanceof CheckoutError && [400, 403, 404, 415, 429].includes(e.status)) {
+        bloqueado.current = false;
       }
-      setError(datos.error ?? "No pudimos iniciar el pago");
-      setEnviando(false);
-    } catch {
-      setError("No pudimos conectar. Revisa tu internet e intenta de nuevo.");
+      setError(e instanceof CheckoutError
+        ? e.message
+        : "No se pudo confirmar el inicio. Revisa tu wallet y el pedido antes de intentar de nuevo.");
+      setIncierto(bloqueado.current);
       setEnviando(false);
     }
   }
@@ -139,9 +138,9 @@ export function FormularioCheckout({
         </p>
       )}
 
-      <p className="text-sm text-apagado">Primero se abre el login de Interledger. Con atrás del navegador eliges si aceptas o rechazas.</p>
-      <button type="submit" className="btn self-start" disabled={enviando || !sesion.wallet}>
-        {enviando ? "Iniciando pago…" : "Pagar con Interledger"}
+      <p className="text-sm text-apagado">Interledger te pedirá iniciar sesión y autorizar o rechazar el pago. Al volver, verificaremos el resultado antes de confirmar la compra.</p>
+      <button type="submit" className="btn self-start" disabled={enviando || incierto || !sesion.wallet}>
+        {enviando ? "Preparando pago…" : incierto ? "Revisa el estado antes de volver a pagar" : "Pagar con Interledger"}
       </button>
     </form>
   );

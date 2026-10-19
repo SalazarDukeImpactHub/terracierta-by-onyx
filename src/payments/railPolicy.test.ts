@@ -1,7 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { createGateway } from "./gateway";
 import { clientOpen, clientSeal } from "./pqc/channel";
-import { iniciarPago } from "./index";
 
 vi.mock("@/lib/supabase/admin", () => ({
   clienteAdmin: () => ({ from: () => ({ select: () => ({ eq: async () => ({ data: [] }) }) }) }),
@@ -31,16 +30,6 @@ it("rechaza el riel retirado antes de contactar la API web, con y sin PQC", asyn
     const result = sealed ? await clientOpen(sealed, body) : body;
     expect(result).toMatchObject({ error: expect.stringMatching(/Open Payments/) });
   }
-  expect(fetch).not.toHaveBeenCalled();
-});
-
-// Riel oficial del checkout: cookie de la billetera de prueba (ADR-001). Sin sesión ni credenciales no se envía dinero.
-it("el checkout con cookie no contacta la API ni envía dinero si no puede entrar a la billetera", async () => {
-  vi.stubEnv("INTERLEDGER_EMAIL", "");
-  vi.stubEnv("INTERLEDGER_PASSWORD", "");
-  const fetch = vi.fn(() => { throw new Error("No se permiten solicitudes externas"); });
-  vi.stubGlobal("fetch", fetch);
-  await expect(iniciarPago({ tipo: "pedido", referenciaId: "pedido-1", montoCop: 15000, walletReceptor: input.receiver, walletPagador: "wallet-comprador", urlRetorno: origin + "/pago/retorno" })).rejects.toMatchObject({ name: "LoginInterledgerError", message: expect.stringMatching(/entrar a Interledger/) });
   expect(fetch).not.toHaveBeenCalled();
 });
 
