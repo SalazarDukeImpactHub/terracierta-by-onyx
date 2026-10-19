@@ -19,14 +19,26 @@
 
 > Plataforma web que le da a cada pequeño caficultor de **Antioquia y Marsella** una **wallet propia** para cobrar directo con **Interledger**: vendiendo en su tienda virtual (con INVIMA) o a la mejor cooperativa que le recomienda un agente (sin INVIMA).
 
-**[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)**
+**[🧾 Registro de uso de IA](./AI_USAGE.md)** · **[💬 Registro de prompts](./prompts/)** · **[🇬🇧 English](./README.en.md)** · **[🎬 Video](#-video-de-la-demo)**
 
 > ✅ **Estado actual: funcional sobre la billetera de prueba de Interledger.** El acceso es **real** (cuentas y sesión en Supabase) y los pagos se **ejecutan de verdad** contra la **testnet de Interledger**: mueven **fondos de prueba**, no dinero real. Los mocks (`USE_MOCKS=true`) son un modo demostración **opcional**, apagado cuando la variable falta. Para que una cuenta pague necesita una wallet de prueba y su token cargados en la base (ver [Cuentas y wallets](#-cuentas-y-wallets)). Pendientes y riesgos conocidos: [Limitaciones y roadmap](#-limitaciones-y-roadmap).
 
 ---
 
+<!-- video:inicio -->
+## 🎬 Video de la demo
+
+[![Ver la experiencia completa en YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
+
+**[▶️ Ver la experiencia completa en YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
+
+---
+
+<!-- video:fin -->
+
 ## 📑 Tabla de contenidos
 
+- [🎬 Video de la demo](#-video-de-la-demo)
 - [✨ Qué hace](#-qué-hace)
 - [🎯 Funcionalidades](#-funcionalidades)
 - [🧩 Arquitectura](#-arquitectura)
@@ -257,10 +269,10 @@ Con `USE_MOCKS=true`, `/acceso` también lista cuentas de ejemplo con su correo 
 
 ### 🧪 Probar la Ruta A (con INVIMA)
 
-1. **Tienda** → tienda de Marta Ospina → un producto → **Entrar para pagar** → entre como comprador. Vuelve al mismo producto, ya con su wallet: **Pagar**.
+1. **Tienda** → una tienda (en la versión desplegada, la **Finca Henao** de Álvaro; con los datos de ejemplo locales, la de Marta Ospina) → un producto → **Entrar para pagar** → entre como comprador. Vuelve al mismo producto, ya con su wallet: **Pagar**.
 2. **Modo demostración:** aparece la billetera simulada; **Autorizar** (o **Rechazar**). **Con wallets de Interledger cargadas:** no hay pantalla simulada, el pago se ejecuta contra la testnet y el retorno muestra su estado real.
 3. La pantalla de retorno muestra los cuatro pasos y el recibo; en **Mis compras** (`/comprador`) queda la compra.
-4. Entre como Marta → **Pedidos y pagos recibidos**.
+4. Entre como el dueño de la tienda (Álvaro en la versión desplegada; Marta con los datos de ejemplo) → **Pedidos y pagos recibidos**.
 5. Para ver un pago fallido en modo demostración, entre como el comprador cuyo pago falla: su wallet contiene `fail` y el mock hace que termine en "No se pudo completar".
 
 ### 🧪 Probar la Ruta B (sin INVIMA)
@@ -280,7 +292,7 @@ npm run test:rls    # pruebas de RLS contra la base local (recrea la base antes 
 npm run db:reset    # recrea la base desde las migraciones y el seed
 ```
 
-> ⚠️ **`npm test` aún no pasa limpio:** `jsdom` falta en `package.json` y 2 pruebas de pagos contradicen el código actual (ver [Limitaciones y roadmap](#-limitaciones-y-roadmap)). El resultado de cada corrida, con sus fallos, se registra en [`AI_USAGE.md`](./AI_USAGE.md); aquí no se repiten cifras que puedan quedar viejas.
+> ✅ **`npm test` pasa completo.** Las pruebas de pagos usan mocks: no prueban un pago real. El resultado de cada corrida se registra en [`AI_USAGE.md`](./AI_USAGE.md); aquí no se repiten cifras que puedan quedar viejas.
 
 ### 🔑 Variables de entorno
 
@@ -430,8 +442,7 @@ Cumplimos la **Política de IA del evento**: todo está registrado mientras se t
 | Política de cooperativas | Hoy el checkout admite cooperativas como compradoras, sin pantalla de compras propia; esa política está aceptada en el ADR-001; las cooperativas con cuenta son datos de ejemplo |
 | Doble pago con el módulo real | Un pago pendiente abandonado no se cancela: revisar |
 | Estado de la pasarela en serverless | Según la documentación de la pasarela, sus grants y llaves viven en memoria de un proceso: en Vercel (serverless) el flujo completo puede no cerrarse. Falta validarlo con login real |
-| Pruebas | La suite pasa completa (216 pruebas, 0 fallos, 31 omitidas). Las de pagos usan mocks: no prueban un pago real |
-| Migraciones | Dos migraciones comparten el timestamp `20261017000000` (`comprador` y `usuarios`) |
+| Pruebas | La suite pasa completa. Las de pagos usan mocks: no prueban un pago real |
 | Agente: coordenadas de municipios | Aproximadas; el agente evolucionará (por ejemplo, un modelo que redacte el motivo) |
 | Supabase en la nube + URL pública en Vercel | **Hecho.** Antes de presentar, revise las variables del despliegue ([Desplegar](#-desplegar-en-vercel)). `npm run cloud:reset` borra datos: confirme qué tablas toca (hay tablas nuevas, como `usuarios` y `sesiones`) antes de correrlo |
 | Aviso de modo demostración | Se quitó de la interfaz a pedido del equipo. Con pagos reales ya no aplica; **si se despliega con `USE_MOCKS=true`, hay que decir en la presentación que los pagos son simulados** |

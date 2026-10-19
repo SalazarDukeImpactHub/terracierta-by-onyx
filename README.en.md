@@ -19,7 +19,7 @@
 
 > A web platform that gives every small coffee grower in **Antioquia and Marsella** their own **wallet** to get paid directly with **Interledger**: by selling in their own online shop (if they have INVIMA, the Colombian food-safety registration) or to the best cooperative, recommended by an agent (if they don't).
 
-**[🧾 AI usage log](./AI_USAGE.md)** · **[💬 Prompt log](./prompts/)** *(both written in Spanish)* · **[🇪🇸 Español](./README.md)**
+**[🧾 AI usage log](./AI_USAGE.md)** · **[💬 Prompt log](./prompts/)** *(both written in Spanish)* · **[🇪🇸 Español](./README.md)** · **[🎬 Video](#-demo-video)**
 
 > ℹ️ The app's interface and the project documents are in **Spanish**. In this file, button and screen names appear in Spanish with an English gloss.
 
@@ -27,8 +27,20 @@
 
 ---
 
+<!-- video:inicio -->
+## 🎬 Demo video
+
+[![Watch the full experience on YouTube](https://img.youtube.com/vi/x2wtAdvquYA/hqdefault.jpg)](https://www.youtube.com/watch?v=x2wtAdvquYA)
+
+**[▶️ Watch the full experience on YouTube](https://www.youtube.com/watch?v=x2wtAdvquYA)**
+
+---
+
+<!-- video:fin -->
+
 ## 📑 Table of contents
 
+- [🎬 Demo video](#-demo-video)
 - [✨ What it does](#-what-it-does)
 - [🎯 Features](#-features)
 - [🧩 Architecture](#-architecture)
@@ -259,10 +271,10 @@ With `USE_MOCKS=true`, `/acceso` also lists sample accounts with their email and
 
 ### 🧪 Try Route A (with INVIMA)
 
-1. **Tienda** (Shop) → Marta Ospina's shop → a product → **Entrar para pagar** (Sign in to pay) → sign in as a buyer. You return to the same product, now with your wallet: **Pagar** (Pay).
+1. **Tienda** (Shop) → a shop (in the deployed version, Álvaro's **Finca Henao**; with the local sample data, Marta Ospina's) → a product → **Entrar para pagar** (Sign in to pay) → sign in as a buyer. You return to the same product, now with your wallet: **Pagar** (Pay).
 2. **Demo mode:** the simulated wallet appears; **Autorizar** (Authorize) or **Rechazar** (Reject). **With Interledger wallets loaded:** there is no simulated screen, the payment executes against the testnet and the return screen shows its real status.
 3. The return screen shows the four steps and the receipt; the purchase appears under **Mis compras** (`/comprador`).
-4. Sign in as Marta → **Pedidos y pagos recibidos** (Orders and payments received).
+4. Sign in as the shop owner (Álvaro in the deployed version; Marta with the sample data) → **Pedidos y pagos recibidos** (Orders and payments received).
 5. To see a failed payment in demo mode, sign in as the buyer whose payment fails: their wallet contains `fail`, and the mock makes it end in "No se pudo completar" (Could not be completed).
 
 ### 🧪 Try Route B (without INVIMA)
@@ -282,7 +294,7 @@ npm run test:rls    # RLS tests against the local database (recreates the databa
 npm run db:reset    # recreates the database from the migrations and the seed
 ```
 
-> ⚠️ **`npm test` does not pass cleanly yet:** `jsdom` is missing from `package.json` and 2 payments tests contradict the current code (see [Limitations and roadmap](#-limitations-and-roadmap)). The result of each run, failures included, is recorded in [`AI_USAGE.md`](./AI_USAGE.md); numbers that could go stale are not repeated here.
+> ✅ **`npm test` passes in full.** The payment tests use mocks: they do not test a real payment. The result of each run is recorded in [`AI_USAGE.md`](./AI_USAGE.md); numbers that could go stale are not repeated here.
 
 ### 🔑 Environment variables
 
@@ -432,8 +444,7 @@ We comply with the **event's AI Policy**: everything is recorded as the work hap
 | Cooperative policy | Today the checkout admits cooperatives as buyers, with no purchases screen of their own; that policy is accepted in ADR-001; the cooperatives with accounts are sample data |
 | Double payment with the real module | An abandoned pending payment is not cancelled: review |
 | Gateway state on serverless | According to the gateway's documentation, its grants and keys live in one process's memory: on Vercel (serverless) the full flow may not complete. It still needs validation with a real sign-in |
-| Tests | The suite passes in full (216 tests, 0 failures, 31 skipped). The payment ones use mocks: they do not test a real payment |
-| Migrations | Two migrations share the timestamp `20261017000000` (`comprador` and `usuarios`) |
+| Tests | The suite passes in full. The payment ones use mocks: they do not test a real payment |
 | Agent: municipality coordinates | Approximate; the agent will evolve (for example, a model that writes the reason) |
 | Cloud Supabase + public URL on Vercel | **Done.** Before presenting, check the deployment variables ([Deploy](#-deploy-on-vercel)). `npm run cloud:reset` deletes data: confirm which tables it touches (there are new ones, such as `usuarios` and `sesiones`) before running it |
 | Demo-mode notice | Removed from the interface at the team's request. With real payments it no longer applies; **if deployed with `USE_MOCKS=true`, the presentation must say payments are simulated** |

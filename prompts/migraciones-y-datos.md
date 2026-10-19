@@ -148,3 +148,47 @@ no als extras no necesitamso solo las que ya son limpias y ordenadas todo debe q
 
 ### Resultado breve
 - Se despublicaron los productos de Marta en la nube (no se borraron) y se quitaron las dos cuentas extra. Ambos SQL se probaron en local antes y los ejecutó Jennifer; el agente no aplicó nada en la nube.
+
+---
+
+## Entrada 14 — Adelantar la revisión del README
+
+```
+se esta demmroado mucho alvaro podriamos adelantar algo d eal revision del readme solo etnemso 20 min para subir el ultimo push.
+```
+
+### Resultado breve
+- Se corrigieron cuatro afirmaciones desactualizadas en los README y en `AI_USAGE.md`, en una rama local sin publicar. Quedan el enlace del video y la declaración de IA de los compañeros.
+
+---
+
+## Entrada 15 — Enlace al video
+
+```
+AUN NO ME SUBE EL VIDEO DE YOUTUBE PERO COMO RESPALDO Y EL TIEMPO ESTE ES EL LINK DE VIDS DONDE ESTA PARA VER AGREGALO AL REPO CUANDO ESTE YOUTUBE Y NOS DEJE LO AGREGAMOS (enlace de Google Vids)
+```
+
+### Resultado breve
+- Se agregó al README (ES y EN) la sección del video con el enlace de Google Vids como respaldo. Cuando exista el de YouTube se reemplaza.
+
+---
+
+## Entrada 16 — El video ya está en YouTube
+
+```
+https://youtu.be/x2wtAdvquYA YA ESTA EN YOUTUBE
+```
+
+### Resultado breve
+- Se reemplazó en los README el respaldo de Google Vids por el enlace de YouTube. El agente supuso que era el video corto; Jennifer aclaró después que es el largo (ver la entrada 17).
+
+---
+
+## Entrada 17 — Ese es el video largo
+
+```
+ESE ES EL LARGO APENAS ESTOY TERMIANDO EL CORTO PERO SUBE ESE LARGO Y QUE TODO QUEDE OK ES EL ULTIMMO PUSH POR AHORA
+```
+
+### Resultado breve
+- El botón del README ahora dice «experiencia completa». El video corto se agrega cuando esté subido.
