@@ -41,7 +41,7 @@ export default async function MiInformacion() {
         {perfil.wallet_address ? (
           <p className="mt-4 break-all border border-linea bg-crema px-4 py-3 text-sm">{perfil.wallet_address}</p>
         ) : (
-          <p className="mt-4 text-apagado">Todavía no tenés una billetera asignada.</p>
+          <p className="mt-4 text-apagado">Todavía no tienes una billetera asignada.</p>
         )}
       </section>
     </div>

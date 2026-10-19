@@ -26,7 +26,7 @@ export function createCheckoutHandlers(deps: Dependencies, channel: ReturnType<t
     iniciar: (request: Request) => channel.handle(request, "/api/pagos/iniciar", async (payload) => {
       const perfil = await profile();
       if (!perfil) return json({ error: "Entra con tu cuenta para pagar." }, 401);
-      if (perfil.rol !== "comprador" && perfil.rol !== "cooperativa") return json({ error: "Para comprar necesitás entrar como comprador o como cooperativa." }, 403);
+      if (perfil.rol !== "comprador" && perfil.rol !== "cooperativa") return json({ error: "Para comprar necesitas entrar como comprador o como cooperativa." }, 403);
       channel.limitUser(perfil.id, "start");
       const input = pedido.safeParse(payload);
       if (!input.success) return json({ error: "Producto o cantidad inválidos. El precio y las wallets se obtienen del servidor." }, 400);

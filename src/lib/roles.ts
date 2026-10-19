@@ -1,5 +1,12 @@
 import type { Rol } from "@/adapters/types";
 
+/** Cómo se muestra el rol junto al nombre. */
+export function etiquetaRol(rol: Rol): string {
+  if (rol === "comprador") return "Comprador";
+  if (rol === "cooperativa") return "Cooperativa";
+  return "Caficultor";
+}
+
 /** Pantalla de inicio de cada rol. */
 export function rutaDeRol(rol: Rol): string {
   if (rol === "cooperativa") return "/cooperativa";

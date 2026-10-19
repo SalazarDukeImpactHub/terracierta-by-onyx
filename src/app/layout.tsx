@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Cabecera } from "@/components/cabecera";
 import { Pie } from "@/components/pie";
+import { VueltaPago } from "@/components/vuelta-pago";
 
 // Toda la app depende de la sesión (el encabezado la lee en cada página): nunca se prerenderiza.
 // Sin esto, el build intenta generar páginas estáticas y ejecuta el módulo de login durante la compilación.
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        <VueltaPago />
         <Cabecera />
         <main className="flex-1">{children}</main>
         <Pie />

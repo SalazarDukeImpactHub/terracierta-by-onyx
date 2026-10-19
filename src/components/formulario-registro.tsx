@@ -7,7 +7,7 @@ import { TIPOS_DOCUMENTO } from "@/lib/validacion";
 type RolRegistro = "caficultor" | "comprador";
 
 /**
- * Sign up: acá se SOLICITAN los datos de la persona. La pregunta del INVIMA aparece solo para caficultores y se
+ * Sign up: aquí se SOLICITAN los datos de la persona. La pregunta del INVIMA aparece solo para caficultores y se
  * responde una vez, al crear la cuenta; después la página la lee del perfil y no vuelve a preguntarla.
  */
 export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolRegistro | null; siguiente: string | null }) {
@@ -64,7 +64,7 @@ export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolR
           </label>
           <select id="tipo_documento" name="tipo_documento" defaultValue={v.tipo_documento || ""} required className="campo mt-1">
             <option value="" disabled>
-              Elegí uno
+              Elige uno
             </option>
             {TIPOS_DOCUMENTO.map((tipo) => (
               <option key={tipo.id} value={tipo.id}>
@@ -114,10 +114,10 @@ export function FormularioRegistro({ rolInicial, siguiente }: { rolInicial: RolR
 
       {rol === "caficultor" && (
         <fieldset>
-          <legend className="etiqueta">¿Tenés INVIMA?</legend>
+          <legend className="etiqueta">¿Tienes INVIMA?</legend>
           <p className="mt-1 text-sm text-apagado">
-            De eso depende tu camino: con INVIMA abrís tu tienda; sin INVIMA le vendés tu lote a una cooperativa. Lo respondés
-            una sola vez, acá.
+            De eso depende tu camino: con INVIMA abres tu tienda; sin INVIMA le vendes tu lote a una cooperativa. Lo respondes
+            una sola vez, aquí.
           </p>
           <div className="mt-2 flex gap-6">
             {(

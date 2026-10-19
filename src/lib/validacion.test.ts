@@ -41,7 +41,7 @@ describe("esquemaRegistro (sign up)", () => {
   it("un caficultor DEBE contestar si tiene INVIMA", () => {
     const r = esquemaRegistro.safeParse({ ...base, rol: "caficultor" });
     expect(r.success).toBe(false);
-    if (!r.success) expect(r.error.issues[0].message).toBe("Contanos si tenés INVIMA");
+    if (!r.success) expect(r.error.issues[0].message).toBe("Cuéntanos si tienes INVIMA");
   });
   it("un caficultor con INVIMA queda con tieneInvima = true", () => {
     expect(esquemaRegistro.parse({ ...base, rol: "caficultor", tieneInvima: "si" }).tieneInvima).toBe(true);

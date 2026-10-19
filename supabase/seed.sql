@@ -31,7 +31,7 @@ insert into public.cooperativas (id, perfil_id, nombre, municipio, precio_base_k
 insert into public.productos (id, dueno_id, nombre, descripcion, precio_cop, foto_url, publicado) values
   ('bbbbbbbb-0001-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111',
    'Marsella lavado · 500 g',
-   'Café de mi finca en Marsella, proceso lavado. Cultivado a la sombra, secado al sol. Molido o en grano, vos elegís.',
+   'Café de mi finca en Marsella, proceso lavado. Cultivado a la sombra, secado al sol. Molido o en grano, tú eliges.',
    38000, null, true),
   ('bbbbbbbb-0002-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111',
    'Caturra tostado · 250 g',

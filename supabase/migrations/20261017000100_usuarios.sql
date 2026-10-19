@@ -1,6 +1,6 @@
 -- Cuentas con las que se entra al presionar Entrar.
 -- profiles.id coincide con usuarios.id (el resto de la app sigue leyendo profiles).
--- El token NO lo escribe el registro: se asigna a mano en la base.
+-- La sesión de Interledger no se guarda en esta tabla.
 
 create table public.usuarios (
   id uuid primary key,
@@ -15,7 +15,6 @@ create table public.usuarios (
   contrasena_hash text not null,
   tiene_invima boolean not null,
   rol text not null check (rol in ('caficultor', 'cooperativa', 'comprador')),
-  token text,
   creado_en timestamptz not null default now()
 );
 
@@ -23,7 +22,6 @@ create unique index usuarios_correo_idx on public.usuarios (correo);
 create unique index usuarios_documento_idx on public.usuarios (tipo_documento, numero_documento);
 
 comment on table public.usuarios is 'Cuentas de login. La contraseña se guarda solo como hash scrypt.';
-comment on column public.usuarios.token is 'Se asigna a mano en la base. El formulario de registro no lo escribe.';
 
 create table public.sesiones (
   id text primary key,

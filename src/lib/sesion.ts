@@ -82,18 +82,17 @@ export async function perfilActual(userId: string): Promise<Perfil | null> {
   if (!data) return null;
   const { data: usuario } = await db
     .from("usuarios")
-    .select("token, tipo_documento, numero_documento")
+    .select("tipo_documento, numero_documento")
     .eq("id", userId)
     .maybeSingle();
   return {
     ...(data as Perfil),
-    token: usuario?.token ?? null,
     tipo_documento: usuario?.tipo_documento ?? null,
     numero_documento: usuario?.numero_documento ?? null,
   };
 }
 
-/** Crea la cuenta y el perfil. El token queda vacío para cargarlo a mano en la base. */
+/** Crea la cuenta y el perfil. La billetera de Interledger se abre en su login, no se guarda aquí. */
 export async function registrarUsuario(datos: DatosRegistro): Promise<ResultadoAcceso> {
   const db = clienteAdmin();
   const id = randomUUID();

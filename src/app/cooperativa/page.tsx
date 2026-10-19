@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requerirRol } from "@/adapters/auth";
+import { leerCookieIlp, urlLoginInterledger } from "@/lib/login-interledger";
 import { ofertasRecibidas, type OfertaRecibida } from "@/lib/ruta-b";
 import { formatoCop } from "@/lib/validacion";
 import { aceptarOferta, pagarOferta } from "./actions";
@@ -39,7 +40,7 @@ function TarjetaOferta({ o }: { o: OfertaRecibida }) {
           </form>
         )}
         {(o.estado === "aceptada" || o.estado === "fallida") && (
-          <form action={pagarOferta}>
+          <form action={pagarOferta} data-vuelta-pago="">
             <input type="hidden" name="ofertaId" value={o.id} />
             <button type="submit" className="btn">
               {o.estado === "fallida" ? "Reintentar el pago" : "Pagar y completar la compra"}
@@ -87,10 +88,12 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
       <h1 className="mt-2 text-4xl">{perfil.nombre}</h1>
       <div className="mt-4 border border-linea bg-crema-2 p-4">
         <p className="etiqueta">Tu wallet para pagar</p>
-        <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tenés una wallet asignada."}</p>
-        <p className="mt-2 text-sm text-apagado">
-          {perfil.token ? "La cookie de la billetera ya está guardada en esta cuenta." : "Esta cuenta todavía no tiene la cookie de la billetera."}
-        </p>
+        <p className="mt-1 break-all text-sm">{perfil.wallet_address ?? "Todavía no tienes una wallet asignada."}</p>
+        {(await leerCookieIlp()) ? null : (
+          <a href={urlLoginInterledger()} className="btn mt-4">
+            Entrar a Interledger
+          </a>
+        )}
       </div>
       <p className="mt-6">
         <Link href="/tienda" className="btn">
@@ -106,15 +109,15 @@ export default async function InicioCooperativa({ searchParams }: { searchParams
 
       <Seccion
         titulo="Por responder"
-        vacio="No tenés solicitudes nuevas. Cuando un caficultor te elija, la solicitud de venta aparece acá."
+        vacio="No tienes solicitudes nuevas. Cuando un caficultor te elija, la solicitud de venta aparece aquí."
         ofertas={ofertas.filter((o) => o.estado === "propuesta")}
       />
       <Seccion
         titulo="Por pagar"
-        vacio="No tenés ofertas aceptadas pendientes de pago."
+        vacio="No tienes ofertas aceptadas pendientes de pago."
         ofertas={ofertas.filter((o) => o.estado === "aceptada" || o.estado === "fallida")}
       />
-      <Seccion titulo="Historial" vacio="Todavía no pagaste ningún lote." ofertas={ofertas.filter((o) => o.estado === "pagada")} />
+      <Seccion titulo="Historial" vacio="Todavía no has pagado ningún lote." ofertas={ofertas.filter((o) => o.estado === "pagada")} />
     </section>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * Login real: correo y contraseña contra public.usuarios, sesión en cookie httpOnly.
- * El token de Interledger no se pide en el formulario: se asigna en la columna usuarios.token.
+ * La sesión de Interledger no se guarda en esta tabla: si falta, la app redirige a su login.
  * El registro pide documento, fecha de nacimiento y municipio, y guarda el INVIMA solo si es caficultor.
  */
 import type { CredencialesInicio, DatosRegistro, Perfil, ResultadoAuth, Sesion } from "@/adapters/types";

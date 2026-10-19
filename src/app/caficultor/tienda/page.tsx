@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 const ERROR_TIENDA: Record<string, string> = {
   nombre: "El nombre de la tienda debe tener entre 3 y 80 caracteres.",
   logo: "El logo debe ser JPG, PNG o WebP, de hasta 2 MB.",
-  guardar: "No pudimos guardar la tienda. Probá de nuevo.",
-  tienda: "Para publicar necesitás el nombre y el logo de la tienda.",
+  guardar: "No pudimos guardar la tienda. Intenta de nuevo.",
+  tienda: "Para publicar necesitas el nombre y el logo de la tienda.",
 };
 
 export default async function MiTienda({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -88,12 +88,12 @@ export default async function MiTienda({ searchParams }: { searchParams: Promise
       </form>
 
       <h2 className="mt-10 text-3xl">Productos</h2>
-      {!lista && <p className="mt-2 text-sm text-apagado">Guardá el nombre y el logo antes de publicar.</p>}
+      {!lista && <p className="mt-2 text-sm text-apagado">Guarda el nombre y el logo antes de publicar.</p>}
 
       {(productos ?? []).length === 0 ? (
         <div className="mt-4 border border-dashed border-cobre bg-[#fbf8f1] p-8 text-center">
           <p className="font-titulo text-2xl">Todavía no hay productos</p>
-          <p className="mt-2 text-apagado">Creá el primero y decidí cuándo publicarlo.</p>
+          <p className="mt-2 text-apagado">Crea el primero y decide cuándo publicarlo.</p>
           <Link href="/caficultor/tienda/nuevo" className="btn mt-5">
             Nuevo producto
           </Link>

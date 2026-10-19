@@ -10,7 +10,7 @@ import { rutaDeRol, rutaSegura } from "@/lib/roles";
 export const metadata: Metadata = { title: "Crear cuenta" };
 
 /**
- * Sign up (registro): acá se solicitan los datos de la persona. Si es caficultor, se le pregunta una sola vez si tiene INVIMA.
+ * Sign up (registro): aquí se solicitan los datos de la persona. Si es caficultor, se le pregunta una sola vez si tiene INVIMA.
  * Las cooperativas están precargadas, por eso solo se ofrecen caficultor y comprador.
  */
 export default async function Registro({ searchParams }: { searchParams: Promise<{ rol?: string; siguiente?: string }> }) {
@@ -27,23 +27,23 @@ export default async function Registro({ searchParams }: { searchParams: Promise
     <section className="mx-auto max-w-2xl px-5 py-16">
       <Marca tamano={56} className="mb-4" />
       <p className="etiqueta">Registro</p>
-      <h1 className="mt-2 text-4xl">Creá tu cuenta</h1>
+      <h1 className="mt-2 text-4xl">Crea tu cuenta</h1>
       <p className="mt-3 text-apagado">
-        Contanos quién sos. Con tu cuenta recibís tu billetera: la dirección con la que cobrás o pagás en Terracierta.
+        Cuéntanos quién eres. Con tu cuenta recibes tu billetera: la dirección con la que cobras o pagas en Terracierta.
       </p>
 
       {USE_MOCKS && (
         <p className="mt-4 border border-linea bg-crema-2 p-3 text-sm text-apagado">
-          <span className="etiqueta !text-cereza">Modo demostración</span> · Los pagos son simulados. La cuenta que creás acá sí se guarda.
+          <span className="etiqueta !text-cereza">Modo demostración</span> · Los pagos son simulados. La cuenta que creas aquí sí se guarda.
         </p>
       )}
 
       <FormularioRegistro rolInicial={rolInicial} siguiente={siguiente} />
 
       <p className="mt-6 text-sm text-apagado">
-        ¿Ya tenés cuenta?{" "}
+        ¿Ya tienes cuenta?{" "}
         <Link href={rutaAcceso} className="text-cobre-oscuro underline">
-          Iniciá sesión
+          Inicia sesión
         </Link>
       </p>
     </section>

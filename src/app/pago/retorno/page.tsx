@@ -31,7 +31,7 @@ export default async function RetornoDePago({ searchParams }: { searchParams: Bu
         ) : (
           <>
             <p className="border border-linea bg-crema-2 p-5 text-apagado">
-              No encontramos el pago al que volviste. Si ya aprobaste el pago, revisá tu billetera.
+              No encontramos el pago al que volviste. Si ya aprobaste el pago, revisa tu billetera.
             </p>
             <Link href="/tienda" className="btn btn-borde mt-6">
               Ir a la tienda

@@ -28,19 +28,19 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
     <section className="mx-auto max-w-2xl px-5 py-16">
       <Marca tamano={56} className="mb-4" />
       <p className="etiqueta">{siguiente ? "Para pagar" : "Acceso"}</p>
-      <h1 className="mt-2 text-4xl">{siguiente ? "Iniciá sesión para pagar" : "Iniciá sesión"}</h1>
+      <h1 className="mt-2 text-4xl">{siguiente ? "Inicia sesión para pagar" : "Inicia sesión"}</h1>
       <p className="mt-3 text-apagado">
         {siguiente
-          ? "Para pagar necesitás tu cuenta: así tu billetera queda asociada a tus compras y a cada pago."
-          : "Con tu correo y contraseña entrás a tu espacio: tu rol, tu billetera y tus datos se cargan solos."}
+          ? "Para pagar necesitas tu cuenta: así tu billetera queda asociada a tus compras y a cada pago."
+          : "Con tu correo y contraseña entras a tu espacio: tu rol, tu billetera y tus datos se cargan solos."}
       </p>
 
       <FormularioAcceso siguiente={siguiente} />
 
       <p className="mt-6 text-sm text-apagado">
-        ¿Todavía no tenés cuenta?{" "}
+        ¿Todavía no tienes cuenta?{" "}
         <Link href={rutaRegistro} className="text-cobre-oscuro underline">
-          Registrate
+          Regístrate
         </Link>
       </p>
 
@@ -87,7 +87,7 @@ export default async function Acceso({ searchParams }: { searchParams: Promise<{
       )}
 
       <p className="mt-8 text-sm text-apagado">
-        ¿Solo querés mirar el café? El catálogo es público; la cuenta se pide cuando vas a pagar.{" "}
+        ¿Solo quieres mirar el café? El catálogo es público; la cuenta se pide cuando vas a pagar.{" "}
         <Link href="/tienda" className="text-cobre-oscuro underline">
           Ir a la tienda
         </Link>

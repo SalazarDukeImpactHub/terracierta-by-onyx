@@ -138,7 +138,7 @@ export function puntuarTodas(lote: LoteEntrada, cooperativas: CooperativaEntrada
 
 /**
  * Las 3 mejores. Primero las que PUEDEN comprar el lote; si hay menos de 3, se completan con las
- * demás (marcadas como no elegibles, con el motivo de por qué no calzan).
+ * demás (marcadas como no elegibles, con el motivo de por qué no encajan).
  */
 export function recomendar(lote: LoteEntrada, cooperativas: CooperativaEntrada[]): Recomendacion[] {
   const todas = puntuarTodas(lote, cooperativas);

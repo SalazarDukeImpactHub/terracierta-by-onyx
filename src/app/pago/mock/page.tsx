@@ -31,14 +31,14 @@ export default async function ConsentimientoMock({
   return (
     <section className="mx-auto max-w-xl px-5 py-14">
       <p className="etiqueta !text-cereza">Billetera simulada · modo demostración</p>
-      <h1 className="mt-2 text-4xl">¿Autorizás este pago?</h1>
+      <h1 className="mt-2 text-4xl">¿Autorizas este pago?</h1>
       <p className="mt-3 text-apagado">
-        Así se ve el consentimiento: tu billetera te muestra la cotización exacta y vos aprobás o rechazás antes de que se cobre.
+        Así se ve el consentimiento: tu billetera te muestra la cotización exacta y tú apruebas o rechazas antes de que se cobre.
       </p>
 
       <dl className="mt-6 grid gap-3 border border-linea bg-crema-2 p-6">
         <div>
-          <dt className="etiqueta">Pagás</dt>
+          <dt className="etiqueta">Pagas</dt>
           <dd className="font-titulo text-3xl text-cobre-oscuro">{formatoCop(pago.monto)}</dd>
         </div>
         <div>
